@@ -111,5 +111,166 @@ public class HTRCItemIdentifierFactoryTest {
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
     }
 
+    @Test
+    public void testPageIDsParserParse1() throws ParseException{
+        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100>|  miun.ajj3079.0001.001<4>";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
+        String[] actualVolIDs = new String[2];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+        actualVolIDs[0] = list.get(0).getVolumeID();
+        actualVolIDs[1] = list.get(1).getVolumeID();
+        
+        Assert.assertArrayEquals(expectedVolIDs, actualVolIDs);
+        
+        String[] expectedPageSequences1 = new String[]{"00000001", "00000002", "00000044", "00000100"};
+        String[] actualPageSequences1 = list.get(0).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences1.toString(), expectedPageSequences1, actualPageSequences1);
+        
+        String[] expectedPageSequences2 = new String[]{"00000004"};
+        String[] actualPageSequences2 = list.get(1).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences2.toString(), expectedPageSequences2, actualPageSequences2);
+        
+    }
+    
+    @Test
+    public void testPageIDsParserParse2() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100> | ||  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
+        String[] actualVolIDs = new String[1];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+        actualVolIDs[0] = list.get(0).getVolumeID();
+        
+        Assert.assertArrayEquals(expectedVolIDs, actualVolIDs);
+        
+        String[] expectedPageSequences1 = new String[]{"00000001", "00000002", "00000044", "00000100"};
+        String[] actualPageSequences1 = list.get(0).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences1.toString(), expectedPageSequences1, actualPageSequences1);
+        
+        
+    }
+    
+
+    @Test
+    public void testPageIDsParserParse3() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f <1 ,2  , 44  , 100 >  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
+        String[] actualVolIDs = new String[1];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+        actualVolIDs[0] = list.get(0).getVolumeID();
+        
+        Assert.assertArrayEquals(expectedVolIDs, actualVolIDs);
+        
+        String[] expectedPageSequences1 = new String[]{"00000001", "00000002", "00000044", "00000100"};
+        String[] actualPageSequences1 = list.get(0).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences1.toString(), expectedPageSequences1, actualPageSequences1);
+        
+        
+    }
+
+    @Test
+    public void testPageIDsParserParse4() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f < , , , 1, ,, 2,,, ,  44,,, 100,, ,, >  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
+        String[] actualVolIDs = new String[1];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+        actualVolIDs[0] = list.get(0).getVolumeID();
+        
+        Assert.assertArrayEquals(expectedVolIDs, actualVolIDs);
+        
+        String[] expectedPageSequences1 = new String[]{"00000001", "00000002", "00000044", "00000100"};
+        String[] actualPageSequences1 = list.get(0).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences1.toString(), expectedPageSequences1, actualPageSequences1);
+        
+        
+    }
+
+    @Test (expected = IllegalArgumentException.class)
+    public void testPageIDsParserParseError1() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f < 1, -1 >  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+    @Test (expected = NumberFormatException.class)
+    public void testPageIDsParserParseError2() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f < one, two >  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError3() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f <  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError4() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f 3,4,8,10>  ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError5() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f<>";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+    
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError6() throws ParseException {
+        String rawString = "<1,2,3,4>";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+    
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError7() throws ParseException {
+        String rawString = "loc.ark:/13960/t9q23z43f";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+
 }
 
