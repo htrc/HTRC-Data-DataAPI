@@ -8,15 +8,17 @@
     <servlet-name>jersey-servlet</servlet-name>
     <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
     <init-param>
-      <param-name>com.sun.jersey.config.property.packages</param-name>
-      <param-value>edu.indiana.d2i.htrc.access</param-value>
+      <!-- param-name>com.sun.jersey.config.property.packages</param-name>
+      <param-value>edu.indiana.d2i.htrc.access</param-value -->
+      <param-name>javax.ws.rs.Application</param-name>
+      <param-value>edu.indiana.d2i.htrc.access.HTRCDataAccessApplication</param-value>
     </init-param>
     <init-param>
       <param-name>cassandra.node.count</param-name>
       <param-value>1</param-value>
     </init-param>
     <init-param>
-      <param-name>cassandra.node.name</param-name>
+      <param-name>cassandra.node.name.1</param-name>
       <param-value>coffeetree.cs.indiana.edu</param-value>
     </init-param>
     <init-param>
@@ -25,7 +27,7 @@
     </init-param>
     <init-param>
       <param-name>cassandra.keyspace.name</param-name>
-      <param-value>HTRCCorpus</param-value>
+      <param-value>Yimdata</param-value>
     </init-param>
     <init-param>
       <param-name>volume.content.scf.name</param-name>
@@ -42,6 +44,10 @@
     <init-param>
       <param-name>hector.access.fail.max.delay</param-name>
       <param-value>5000</param-value>
+    </init-param>
+    <init-param>
+      <param-name>log4j.properties.path</param-name>
+      <param-value>lo4j.properties</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
