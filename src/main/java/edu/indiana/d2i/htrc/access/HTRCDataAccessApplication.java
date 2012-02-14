@@ -34,10 +34,15 @@ package edu.indiana.d2i.htrc.access;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
+
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 /**
  * @author Yiming Sun
@@ -45,6 +50,8 @@ import javax.ws.rs.core.Context;
  */
 @ApplicationPath("/")
 public class HTRCDataAccessApplication extends Application {
+    
+    private static Logger log = Logger.getLogger(HTRCDataAccessApplication.class);
     @Context private ServletConfig servletConfig;
     
     
@@ -53,15 +60,31 @@ public class HTRCDataAccessApplication extends Application {
      */
     @Override
     public Set<Class<?>> getClasses() {
-        init();
+//        init();
+        if (log.isDebugEnabled()) log.debug("@Override getClasses() called");
         Set<Class<?>> hashSet = new HashSet<Class<?>>();
         hashSet.add(VolumeAccessResource.class);
-//        hashSet.add(PageAccessResource.class);
+        hashSet.add(PageAccessResource.class);
         return hashSet;
     }
 
+    @PostConstruct
     private void init() {
+        if (log.isDebugEnabled()) log.debug("@PostConstruct init() called");
+        configureLogger(servletConfig);
         HectorResourceSingleton.init(servletConfig);
+        log.info("Application initialized");
+    }
+    
+    private void configureLogger(ServletConfig servletConfig) {
+        String log4jPropertiesPath = (String)servletConfig.getInitParameter("log4j.properties.path");
+        PropertyConfigurator.configure(log4jPropertiesPath);
+        if (log.isDebugEnabled()) log.debug("logger configured");
+    }
+    
+    @PreDestroy
+    private void fin() {
+        if (log.isDebugEnabled()) log.debug("@PreDestroy fin() called");
     }
 }
 
