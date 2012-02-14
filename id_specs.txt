@@ -1,0 +1,4 @@
+volumeIDs are separated by |, i.e.   aaa.abcde|bbb.bcdef
+
+pageIDs: pageIDs are also separated by |, volumeID and pageSequence are separated by <>, and pageSequences are separated by ,   aaa.abcde<1,2,4>|bbb.bcdef<5>
+ 
