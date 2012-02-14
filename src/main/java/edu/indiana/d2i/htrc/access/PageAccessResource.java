@@ -41,6 +41,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.log4j.Logger;
+
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
@@ -56,28 +58,43 @@ import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
 @Path("/pages")
 public class PageAccessResource {
     
+    private static Logger log = Logger.getLogger(PageAccessResource.class);
+    
     
     @GET
     public Response getResource(@QueryParam("pageIDs") String pageIDs,
                                 @QueryParam("concat") boolean concatenate,
                                 @QueryParam("version") int version) {
         
+        if (log.isDebugEnabled()) {
+            log.debug("pageIDs = " + pageIDs);
+            log.debug("concatenate = " + concatenate);
+            log.debug("version = " + version);
+        }
+        
         Response response = null;
         
         Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
         
         try {
-            List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
-            VolumeRetriever volumeRetriever = new HectorVolumeRetriever(pageIDList, HectorResourceSingleton.getInstance());
-            ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_BAG : ZipTypeEnum.SEPARATE_PAGE;
             
-            ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType);
-            
-            StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker);
-            
-            response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_PAGES_ZIP).build();
+            if (pageIDs != null) {
+                List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
+                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(pageIDList, HectorResourceSingleton.getInstance());
+                ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_BAG : ZipTypeEnum.SEPARATE_PAGE;
+                
+                ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType);
+                
+                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker);
+                
+                response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_PAGES_ZIP).build();
+            } else {
+                log.error("Required parameter pageIDs is null");
+                response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter pageIDs</p>").build();
+            }
         } catch (ParseException e) {
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_XHTML).entity("<p>Malformed Page ID List</p>").build();
+            log.error("ParseException", e);
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Page ID List. Offending token: " + e.getMessage() + "</p>").build();
         }
         
         
