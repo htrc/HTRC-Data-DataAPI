@@ -29,7 +29,7 @@
 /**
  * 
  */
-package edu.indiana.d2i.htrc.access;
+package edu.indiana.d2i.htrc.access.exception;
 
 /**
  * @author Yiming Sun
