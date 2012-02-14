@@ -79,10 +79,15 @@ public class HTRCItemIdentifierFactory {
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
-                VolumeIdentifier id = new VolumeIdentifier(token);
-                volumeIDList.add(id);
+                if (!"".equals(token)) {
+                    VolumeIdentifier id = new VolumeIdentifier(token);
+                    volumeIDList.add(id);
+                }
             }
             
+            if (volumeIDList.isEmpty()) {
+                throw new ParseException(identifiersString, 0);
+            }
             return volumeIDList;
         }
     }
