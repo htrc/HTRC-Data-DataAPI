@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import gov.loc.repository.pairtree.Pairtree;
 
@@ -119,7 +120,7 @@ public class VolumeReaderImpl implements VolumeReader {
      * @see edu.indiana.d2i.htrc.access.VolumeReader#nextPage()
      */
     @Override
-    public PageReader nextPage() {
+    public PageReader nextPage() throws KeyNotFoundException {
         return pageIterator.next();
     }
 

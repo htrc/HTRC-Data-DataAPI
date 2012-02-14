@@ -52,9 +52,10 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.HectorResourceSingleton;
+import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
 
@@ -65,6 +66,8 @@ import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
 public class HectorVolumeRetriever implements VolumeRetriever {
     
     private static final Logger log = Logger.getLogger(HectorVolumeRetriever.class);
+    
+    public static final int BAD_PAGE_COUNT = -1;
     
     protected final List<? extends HTRCItemIdentifier> identifiers;
     protected final HectorResourceSingleton hectorResource;
@@ -95,7 +98,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
         return idIterator.hasNext();
     }
     
-    public VolumeReader nextVolume() {
+    public VolumeReader nextVolume() throws KeyNotFoundException {
         HTRCItemIdentifier itemIdentifier = idIterator.next();
         
         VolumeReader volumeReader = retrieveVolume(itemIdentifier);
@@ -103,7 +106,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
     }
     
     
-    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) {
+    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) throws KeyNotFoundException {
         List<String> pageSequences = null;
         Keyspace keyspace = hectorResource.getKeyspace();
         
@@ -121,7 +124,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
     
     
     
-    protected List<PageReader> retrievePageContents(HTRCItemIdentifier identifier, List<String> pageSequences, Keyspace keyspace) throws HTimedOutException {
+    protected List<PageReader> retrievePageContents(HTRCItemIdentifier identifier, List<String> pageSequences, Keyspace keyspace) throws HTimedOutException, KeyNotFoundException {
         List<PageReader> pageReaders = new ArrayList<PageReader>();
         
         
@@ -142,7 +145,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
                 
                 try {
                     QueryResult<HSuperColumn<String, String, byte[]>> queryResult = superColumnQuery.execute();
-                    
+                    success = true;
                     if (queryResult != null) {
                         HSuperColumn<String, String, byte[]> hSuperColumn = queryResult.get();
                         if (hSuperColumn != null) {
@@ -152,12 +155,17 @@ public class HectorVolumeRetriever implements VolumeRetriever {
                                     String pageContents = stringSerializer.fromBytes(column.getValue());
                                     PageReader pageReader = new PageReaderImpl(pageSequence, pageContents); 
                                     pageReaders.add(pageReader);
-                                    success = true;
                                     break;
                                 }
                             }
+                        } else {
+                            if (log.isDebugEnabled()) log.debug("HSuperColumn is null");
+                            throw new KeyNotFoundException(volumeID + "<" + pageSequence + ">");
                         }
                         
+                    } else {
+                        if (log.isDebugEnabled()) log.debug("QueryResult is null");
+                        throw new KeyNotFoundException(volumeID + "<" + pageSequence + ">");
                     }
                 } catch (HTimedOutException e) {
                     if (attemptsLeft > 0) {
@@ -208,8 +216,8 @@ public class HectorVolumeRetriever implements VolumeRetriever {
 //        return builder.toString();
 //    }
     
-    protected int retrievePageCount(HTRCItemIdentifier identifier, Keyspace keyspace) throws HTimedOutException {
-        int pageCount = 0;
+    protected int retrievePageCount(HTRCItemIdentifier identifier, Keyspace keyspace) throws HTimedOutException, KeyNotFoundException {
+        int pageCount = BAD_PAGE_COUNT;
         
         boolean success = false;
         int attemptsLeft = maxAttempts;
@@ -227,7 +235,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
             
             try {
                 QueryResult<HSuperColumn<String, String, byte[]>> queryResult = superColumnQuery.execute();
-                
+                success = true;
                 if (queryResult != null) {
                     HSuperColumn<String, String, byte[]> hSuperColumn = queryResult.get();
                     if (hSuperColumn != null) {
@@ -235,12 +243,22 @@ public class HectorVolumeRetriever implements VolumeRetriever {
                         for (HColumn<String, byte[]> column : columns) {
                             if ("pageCount".endsWith(column.getName())) {
                                 pageCount = integerSerializer.fromBytes(column.getValue());
-                                success = true;
                                 break;
                             }
                         }
+                    } else {
+                        if (log.isDebugEnabled()) log.debug("HSuperColumn is null");
+                        throw new KeyNotFoundException(volumeID);
                     }
                     
+                } else {
+                    if (log.isDebugEnabled()) log.debug("QueryResult is null");
+                    throw new KeyNotFoundException(volumeID);
+                }
+                
+                if (pageCount == BAD_PAGE_COUNT) {
+                    if (log.isDebugEnabled()) log.debug("Unable to find pageCount");
+                    throw new KeyNotFoundException(volumeID);
                 }
             } catch (HTimedOutException e) {
                 if (attemptsLeft > 0) {
