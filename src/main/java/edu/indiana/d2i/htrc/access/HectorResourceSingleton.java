@@ -36,6 +36,8 @@ import java.util.Map;
 
 import javax.servlet.ServletConfig;
 
+import org.apache.log4j.Logger;
+
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
@@ -47,6 +49,7 @@ import me.prettyprint.hector.api.factory.HFactory;
  */
 public class HectorResourceSingleton {
     
+    private static Logger log = Logger.getLogger(HectorResourceSingleton.class);
     
     public static final String PN_CASSANDRA_NODE_COUNT = "cassandra.node.count";
     public static final String PN_CASSANDRA_NODE_NAME_ = "cassandra.node.name.";
@@ -73,6 +76,7 @@ public class HectorResourceSingleton {
         stringParams = new HashMap<String, String>();
         
         String cassandraNodeCountStr = (String)servletConfig.getInitParameter(PN_CASSANDRA_NODE_COUNT);
+        if (log.isDebugEnabled()) log.debug("cassandraNodeCountStr = " + cassandraNodeCountStr);
         stringParams.put(PN_CASSANDRA_NODE_COUNT, cassandraNodeCountStr);
         
         int cassandraNodeCount = Integer.valueOf(cassandraNodeCountStr);
@@ -81,7 +85,8 @@ public class HectorResourceSingleton {
         StringBuilder hostsBuilder = new StringBuilder();
         
         for (int i = 1; i < cassandraNodeCount + 1; i++) {
-            String node = servletConfig.getInitParameter(PN_CASSANDRA_NODE_NAME_ + i);
+            String node = (String)servletConfig.getInitParameter(PN_CASSANDRA_NODE_NAME_ + i);
+            if (log.isDebugEnabled()) log.debug("node = " + node);
             hostsBuilder.append(node);
             stringParams.put(PN_CASSANDRA_NODE_NAME_ + i, node);
             if (i < cassandraNodeCount) {
@@ -91,21 +96,27 @@ public class HectorResourceSingleton {
         
     
         String cassandraClusterName = (String)servletConfig.getInitParameter(PN_CASSANDRA_CLUSTER_NAME);
+        if (log.isDebugEnabled()) log.debug("cassandraClusterName = " + cassandraClusterName);
         stringParams.put(PN_CASSANDRA_CLUSTER_NAME, cassandraClusterName);
         
         String cassandraKeyspaceName = (String)servletConfig.getInitParameter(PN_CASSANDRA_KEYSPACE_NAME);
+        if (log.isDebugEnabled()) log.debug("cassandraKeyspaceName = " + cassandraKeyspaceName);
         stringParams.put(PN_CASSANDRA_KEYSPACE_NAME, cassandraKeyspaceName);
         
         String volumeContentSCFName = (String)servletConfig.getInitParameter(PN_VOLUME_CONTENT_SCF_NAME);
+        if (log.isDebugEnabled()) log.debug("volumeContentSCFName = " + volumeContentSCFName);
         stringParams.put(PN_VOLUME_CONTENT_SCF_NAME, volumeContentSCFName);
         
-        String hectorAccessMaxAttemptsStr = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_MAX_ATTEMPTS);
-        stringParams.put(PN_HECTOR_ACCESS_MAX_ATTEMPTS, hectorAccessMaxAttemptsStr);
+        String hectorAccessMaxAttempts = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_MAX_ATTEMPTS);
+        if (log.isDebugEnabled()) log.debug("hectorAccessMaxAttempts = " + hectorAccessMaxAttempts);
+        stringParams.put(PN_HECTOR_ACCESS_MAX_ATTEMPTS, hectorAccessMaxAttempts);
         
         String hectorAccessFailInitDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_INIT_DELAY);
+        if (log.isDebugEnabled()) log.debug("hectorAccessFailInitDelay = " + hectorAccessFailInitDelay);
         stringParams.put(PN_HECTOR_ACCESS_FAIL_INIT_DELAY, hectorAccessFailInitDelay);
         
         String hectorAccessFailMaxDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_MAX_DELAY);
+        if (log.isDebugEnabled()) log.debug("hectorAccessFailMaxDelay = " + hectorAccessFailMaxDelay);
         stringParams.put(PN_HECTOR_ACCESS_FAIL_MAX_DELAY, hectorAccessFailMaxDelay);
         
         
@@ -113,8 +124,10 @@ public class HectorResourceSingleton {
         CassandraHostConfigurator configurator = new CassandraHostConfigurator(hostsBuilder.toString());
         
         cluster = HFactory.getOrCreateCluster(cassandraClusterName, configurator);
+        if (log.isDebugEnabled()) log.debug("Hector Cluster object created");
         
         keyspace = HFactory.createKeyspace(cassandraKeyspaceName, cluster);
+        if (log.isDebugEnabled()) log.debug("Hector Keyspace object created");
     }
     
     public static synchronized HectorResourceSingleton getInstance() {
@@ -140,6 +153,7 @@ public class HectorResourceSingleton {
             instance = new HectorResourceSingleton(servletConfig);
             initialized = true;
         }
+        log.info("HectorResourceSingleton initialized");
     }
     
     
