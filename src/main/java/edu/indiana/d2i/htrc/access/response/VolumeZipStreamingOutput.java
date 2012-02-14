@@ -35,8 +35,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import org.apache.log4j.Logger;
+
+import edu.indiana.d2i.htrc.access.Constants;
+import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 
@@ -46,6 +52,8 @@ import edu.indiana.d2i.htrc.access.ZipMaker;
  */
 public class VolumeZipStreamingOutput implements StreamingOutput {
 
+    private static Logger log = Logger.getLogger(VolumeZipStreamingOutput.class);
+    
     private VolumeRetriever volumeRetriever = null;
     private ZipMaker zipMaker = null;
     
@@ -60,7 +68,15 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
      */
     @Override
     public void write(OutputStream output) throws IOException, WebApplicationException {
-        zipMaker.makeZipFile(output, volumeRetriever);
+        try {
+            zipMaker.makeZipFile(output, volumeRetriever);
+        } catch (KeyNotFoundException e) {
+            log.error("KeyNotFoundException", e);
+            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key Not Found. " + e.getMessage() + "</p>").build();
+            WebApplicationException exception = new WebApplicationException(response);
+            
+            throw exception;
+        }
     }
 
 }
