@@ -104,41 +104,49 @@ public class HTRCItemIdentifierFactory {
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
-                int length = rawUnit.length();
-                
-                if (rawUnit.charAt(length - 1) == '>') {
-                    int lastIndex = rawUnit.lastIndexOf('<');
-                    if (lastIndex > MIN_VOLUME_ID_LENGTH) {
-                        boolean hasPageSequence = false;
-                        
-                        String volumeID = rawUnit.substring(0, lastIndex);
-                        
-                        VolumePageIdentifier id = new VolumePageIdentifier(volumeID);
-                        
-                        String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1);
-                        
-                        StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, ",");
-                        while (pageTokenizer.hasMoreTokens()) {
-                            String pageSeqStr = pageTokenizer.nextToken().trim();
-                            int pageSeqInt = Integer.valueOf(pageSeqStr);
-                            String pageSequence = generatePageSequenceString(pageSeqInt);
-                            id.addPageSequence(pageSequence);
-                            hasPageSequence = true;
-                        }
-                        
-                        if (!hasPageSequence) {
-                            throw new ParseException(rawUnit, lastIndex);
+                if (!"".endsWith(rawUnit)) {
+                    int length = rawUnit.length();
+                    
+                    if (rawUnit.charAt(length - 1) == '>') {
+                        int lastIndex = rawUnit.lastIndexOf('<');
+                        if (lastIndex > MIN_VOLUME_ID_LENGTH) {
+                            boolean hasPageSequence = false;
+                            
+                            String volumeID = rawUnit.substring(0, lastIndex).trim();
+                            
+                            VolumePageIdentifier id = new VolumePageIdentifier(volumeID);
+                            
+                            String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
+                            
+                            StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, ",");
+                            while (pageTokenizer.hasMoreTokens()) {
+                                String pageSeqStr = pageTokenizer.nextToken().trim();
+                                if (!"".endsWith(pageSeqStr)) {
+                                    int pageSeqInt = Integer.valueOf(pageSeqStr);
+                                    String pageSequence = generatePageSequenceString(pageSeqInt);
+                                    id.addPageSequence(pageSequence);
+                                    hasPageSequence = true;
+                                }
+                            }
+                            
+                            if (!hasPageSequence) {
+                                throw new ParseException(rawUnit, lastIndex);
+                            }
+                            
+                            pageIDList.add(id);
+                            
+                        } else {
+                            throw new ParseException(rawUnit, 0);
                         }
                         
                     } else {
-                        throw new ParseException(rawUnit, 0);
+                        throw new ParseException(rawUnit, rawUnit.length() - 1);
                     }
-                    
-                } else {
-                    throw new ParseException(rawUnit, rawUnit.length() - 1);
                 }
             }
-            
+            if (pageIDList.isEmpty()) {
+                throw new ParseException(identifiersString, 0);
+            }
             return pageIDList;
         }
         
