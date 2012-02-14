@@ -46,7 +46,7 @@ public interface VolumeReader {
     
     public String getVolumeID();
     public String getPairtreeCleanedVolumeID();
-    public PageReader nextPage();
+    public PageReader nextPage() throws KeyNotFoundException;
     public boolean hasMorePages();
     public void setPages(List<PageReader> pageReaders);
 

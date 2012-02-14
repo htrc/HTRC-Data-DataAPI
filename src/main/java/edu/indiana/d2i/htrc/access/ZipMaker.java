@@ -40,6 +40,6 @@ import java.io.OutputStream;
  */
 public interface ZipMaker {
 
-    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException;
+    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException;
 }
 

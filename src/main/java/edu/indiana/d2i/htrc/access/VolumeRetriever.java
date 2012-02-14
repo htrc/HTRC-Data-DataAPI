@@ -38,7 +38,7 @@ package edu.indiana.d2i.htrc.access;
 public interface VolumeRetriever {
 
     public boolean hasMoreVolumes();
-    public VolumeReader nextVolume();
+    public VolumeReader nextVolume() throws KeyNotFoundException;
     
 }
 
