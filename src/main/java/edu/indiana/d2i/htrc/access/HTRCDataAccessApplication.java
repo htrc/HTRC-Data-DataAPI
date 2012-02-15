@@ -31,6 +31,7 @@
  */
 package edu.indiana.d2i.htrc.access;
 
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +44,11 @@ import javax.ws.rs.core.Context;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
+import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 
 /**
  * @author Yiming Sun
@@ -72,7 +78,11 @@ public class HTRCDataAccessApplication extends Application {
     private void init() {
         if (log.isDebugEnabled()) log.debug("@PostConstruct init() called");
         configureLogger(servletConfig);
-        HectorResourceSingleton.init(servletConfig);
+
+        loadParametersToContainer(servletConfig);
+        loadPolicyCheckerRegistry(ParameterContainerSingleton.getInstance());
+        
+        HectorResourceSingleton.init(ParameterContainerSingleton.getInstance());
         log.info("Application initialized");
     }
     
@@ -85,6 +95,30 @@ public class HTRCDataAccessApplication extends Application {
     @PreDestroy
     private void fin() {
         if (log.isDebugEnabled()) log.debug("@PreDestroy fin() called");
+        HectorResourceSingleton.shutdown();
+    }
+    
+    private void loadParametersToContainer(ServletConfig servletConfig) {
+        ParameterContainer parameterContainer = ParameterContainerSingleton.getInstance();
+        Enumeration parameterNames = servletConfig.getInitParameterNames();
+        while(parameterNames.hasMoreElements()) {
+            String parameterName = (String)parameterNames.nextElement();
+            String value = (String)servletConfig.getInitParameter(parameterName);
+            if (log.isDebugEnabled()) log.debug(parameterName + " = " + value);
+            parameterContainer.setParameter(parameterName, value);
+        }
+        if (log.isDebugEnabled()) log.debug("finish loading init-params");
+    }
+    
+    private void loadPolicyCheckerRegistry(ParameterContainer parameterContainer) {
+//        MaxVolumesPolicyChecker.init(parameterContainer);
+//        MaxTotalPagesPolicyChecker.init(parameterContainer);
+//        MaxPagesPerVolumePolicyChecker.init(parameterContainer);
+        
+        PolicyCheckerRegistryImpl registry = PolicyCheckerRegistryImpl.getInstance();
+        registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(parameterContainer));
+        registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(parameterContainer));
+        registry.registerPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME, new MaxPagesPerVolumePolicyChecker(parameterContainer));
     }
 }
 
