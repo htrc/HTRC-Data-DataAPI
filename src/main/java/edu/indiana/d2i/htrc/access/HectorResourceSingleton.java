@@ -68,57 +68,48 @@ public class HectorResourceSingleton {
     
     private Cluster cluster = null;
     private Keyspace keyspace = null;
-    private Map<String, String> stringParams = null;
-//    private Map<String, Integer> intParams = null;
-    
-    private HectorResourceSingleton(final ServletConfig servletConfig) {
-        
-        stringParams = new HashMap<String, String>();
-        
-        String cassandraNodeCountStr = (String)servletConfig.getInitParameter(PN_CASSANDRA_NODE_COUNT);
-        if (log.isDebugEnabled()) log.debug("cassandraNodeCountStr = " + cassandraNodeCountStr);
-        stringParams.put(PN_CASSANDRA_NODE_COUNT, cassandraNodeCountStr);
-        
-        int cassandraNodeCount = Integer.valueOf(cassandraNodeCountStr);
-        
-//        List<String> cassandraNodes = new ArrayList<String>();
+
+    private HectorResourceSingleton(final ParameterContainer parameterContainer) {
+
+        int cassandraNodeCount = Integer.valueOf(parameterContainer.getParameter(PN_CASSANDRA_NODE_COUNT));
+
         StringBuilder hostsBuilder = new StringBuilder();
         
         for (int i = 1; i < cassandraNodeCount + 1; i++) {
-            String node = (String)servletConfig.getInitParameter(PN_CASSANDRA_NODE_NAME_ + i);
-            if (log.isDebugEnabled()) log.debug("node = " + node);
+            String node = parameterContainer.getParameter(PN_CASSANDRA_NODE_NAME_ +  i);
+
             hostsBuilder.append(node);
-            stringParams.put(PN_CASSANDRA_NODE_NAME_ + i, node);
+
             if (i < cassandraNodeCount) {
                 hostsBuilder.append(",");
             }
         }
         
     
-        String cassandraClusterName = (String)servletConfig.getInitParameter(PN_CASSANDRA_CLUSTER_NAME);
-        if (log.isDebugEnabled()) log.debug("cassandraClusterName = " + cassandraClusterName);
-        stringParams.put(PN_CASSANDRA_CLUSTER_NAME, cassandraClusterName);
-        
-        String cassandraKeyspaceName = (String)servletConfig.getInitParameter(PN_CASSANDRA_KEYSPACE_NAME);
-        if (log.isDebugEnabled()) log.debug("cassandraKeyspaceName = " + cassandraKeyspaceName);
-        stringParams.put(PN_CASSANDRA_KEYSPACE_NAME, cassandraKeyspaceName);
-        
-        String volumeContentSCFName = (String)servletConfig.getInitParameter(PN_VOLUME_CONTENT_SCF_NAME);
-        if (log.isDebugEnabled()) log.debug("volumeContentSCFName = " + volumeContentSCFName);
-        stringParams.put(PN_VOLUME_CONTENT_SCF_NAME, volumeContentSCFName);
-        
-        String hectorAccessMaxAttempts = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_MAX_ATTEMPTS);
-        if (log.isDebugEnabled()) log.debug("hectorAccessMaxAttempts = " + hectorAccessMaxAttempts);
-        stringParams.put(PN_HECTOR_ACCESS_MAX_ATTEMPTS, hectorAccessMaxAttempts);
-        
-        String hectorAccessFailInitDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_INIT_DELAY);
-        if (log.isDebugEnabled()) log.debug("hectorAccessFailInitDelay = " + hectorAccessFailInitDelay);
-        stringParams.put(PN_HECTOR_ACCESS_FAIL_INIT_DELAY, hectorAccessFailInitDelay);
-        
-        String hectorAccessFailMaxDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_MAX_DELAY);
-        if (log.isDebugEnabled()) log.debug("hectorAccessFailMaxDelay = " + hectorAccessFailMaxDelay);
-        stringParams.put(PN_HECTOR_ACCESS_FAIL_MAX_DELAY, hectorAccessFailMaxDelay);
-        
+        String cassandraClusterName = parameterContainer.getParameter(PN_CASSANDRA_CLUSTER_NAME);
+//        if (log.isDebugEnabled()) log.debug("cassandraClusterName = " + cassandraClusterName);
+//        stringParams.put(PN_CASSANDRA_CLUSTER_NAME, cassandraClusterName);
+//        
+        String cassandraKeyspaceName = parameterContainer.getParameter(PN_CASSANDRA_KEYSPACE_NAME);
+//        if (log.isDebugEnabled()) log.debug("cassandraKeyspaceName = " + cassandraKeyspaceName);
+//        stringParams.put(PN_CASSANDRA_KEYSPACE_NAME, cassandraKeyspaceName);
+//        
+//        String volumeContentSCFName = (String)servletConfig.getInitParameter(PN_VOLUME_CONTENT_SCF_NAME);
+//        if (log.isDebugEnabled()) log.debug("volumeContentSCFName = " + volumeContentSCFName);
+//        stringParams.put(PN_VOLUME_CONTENT_SCF_NAME, volumeContentSCFName);
+//        
+//        String hectorAccessMaxAttempts = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_MAX_ATTEMPTS);
+//        if (log.isDebugEnabled()) log.debug("hectorAccessMaxAttempts = " + hectorAccessMaxAttempts);
+//        stringParams.put(PN_HECTOR_ACCESS_MAX_ATTEMPTS, hectorAccessMaxAttempts);
+//        
+//        String hectorAccessFailInitDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_INIT_DELAY);
+//        if (log.isDebugEnabled()) log.debug("hectorAccessFailInitDelay = " + hectorAccessFailInitDelay);
+//        stringParams.put(PN_HECTOR_ACCESS_FAIL_INIT_DELAY, hectorAccessFailInitDelay);
+//        
+//        String hectorAccessFailMaxDelay = (String)servletConfig.getInitParameter(PN_HECTOR_ACCESS_FAIL_MAX_DELAY);
+//        if (log.isDebugEnabled()) log.debug("hectorAccessFailMaxDelay = " + hectorAccessFailMaxDelay);
+//        stringParams.put(PN_HECTOR_ACCESS_FAIL_MAX_DELAY, hectorAccessFailMaxDelay);
+//        
         
         
         CassandraHostConfigurator configurator = new CassandraHostConfigurator(hostsBuilder.toString());
@@ -143,20 +134,29 @@ public class HectorResourceSingleton {
         return keyspace;
     }
     
-    public String getParameter(String paramName) {
-        return stringParams.get(paramName);
-    }
+//    public String getParameter(String paramName) {
+//        return stringParams.get(paramName);
+//    }
     
 
-    static synchronized void init(final ServletConfig servletConfig) {
+    static synchronized void init(final ParameterContainer parameterContainer) {
         if (instance == null) {
-            instance = new HectorResourceSingleton(servletConfig);
+            instance = new HectorResourceSingleton(parameterContainer);
             initialized = true;
         }
         log.info("HectorResourceSingleton initialized");
     }
     
-    
+    static synchronized void shutdown() {
+        if (instance != null) {
+            Cluster cluster = instance.getCluster();
+            if (cluster != null) {
+                cluster.getConnectionManager().shutdown();
+                if (log.isDebugEnabled()) log.debug("Hector ConnectionManager shutdown");
+            }
+        }
+        log.info("HectorResourceSingleton shutdown");
+    }
 
 }
 
