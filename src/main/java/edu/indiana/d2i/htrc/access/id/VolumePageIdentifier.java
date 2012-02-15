@@ -62,5 +62,9 @@ public class VolumePageIdentifier extends VolumeIdentifier {
     public void addPageSequence(String pageSequence) {
         pageSequenceSet.add(pageSequence);
     }
+    
+    public int getPageCount() {
+        return pageSequenceSet.size();
+    }
 }
 
