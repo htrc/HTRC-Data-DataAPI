@@ -34,12 +34,15 @@ package edu.indiana.d2i.htrc.access;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+
 /**
  * @author Yiming Sun
  *
  */
 public interface ZipMaker {
 
-    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException;
+    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException;
 }
 

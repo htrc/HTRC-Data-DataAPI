@@ -43,9 +43,11 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
+import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.read.HectorVolumeRetriever;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
@@ -81,7 +83,7 @@ public class VolumeAccessResource {
         try {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
-                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(volumeIDList, HectorResourceSingleton.getInstance());
+                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(volumeIDList, HectorResourceSingleton.getInstance(), ParameterContainerSingleton.getInstance(), PolicyCheckerRegistryImpl.getInstance());
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.COMBINE_PAGE : ZipTypeEnum.SEPARATE_PAGE;
                 
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType);
@@ -97,6 +99,9 @@ public class VolumeAccessResource {
         } catch (ParseException e) {
             log.error("ParseException", e);
             response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Volume ID List. Offending token: " + e.getMessage() + "</p>").build();
+        } catch (PolicyViolationException e) {
+            log.error("PolicyViolationException", e);
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
         }
         
         return response;

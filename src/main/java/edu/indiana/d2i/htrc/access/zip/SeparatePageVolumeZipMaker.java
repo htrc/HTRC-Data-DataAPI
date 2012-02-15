@@ -37,11 +37,12 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 
 /**
  * @author Yiming Sun
@@ -56,7 +57,7 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
      * @see edu.indiana.d2i.htrc.access.ZipMaker#makeZipFile(java.io.OutputStream, java.lang.String, edu.indiana.d2i.htrc.access.VolumeReader)
      */
     @Override
-    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException {
+    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException {
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
         while (volumeRetriever.hasMoreVolumes()) {
