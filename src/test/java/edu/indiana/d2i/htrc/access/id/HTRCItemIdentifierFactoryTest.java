@@ -46,6 +46,7 @@ import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 
 /**
@@ -73,7 +74,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse1() throws ParseException, PolicyViolationException {
         String rawString = "loc.ark:/13960/t9q23z43f |miun.ajj3079.0001.001";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
         String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actual = new String[2];
 
@@ -87,7 +88,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         String actual = list.get(0).getVolumeID();
         String expected = "loc.ark:/13960/t9q23z43f";
@@ -99,7 +100,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f ||  | miun.ajj3079.0001.001";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
         String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actual = new String[2];
 
@@ -131,10 +132,31 @@ public class HTRCItemIdentifierFactoryTest {
     }
 
     
+    @Test
+    public void testVolumeIDsParserParse5() throws ParseException, PolicyViolationException {
+        ParameterContainer container = new TestParameterContainer();
+        container.setParameter(MaxVolumesPolicyChecker.PN_MAX_VOLUMES_ALLOWED, "2");
+//        MaxVolumesPolicyChecker.init(container);
+        PolicyCheckerRegistryImpl registry = PolicyCheckerRegistryImpl.getInstance();
+        registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(container));
+
+        String rawString = "loc.ark:/13960/t9q23z43f |miun.ajj3079.0001.001 | miun.ajj3079.0001.001 | loc.ark:/13960/t9q23z43f  |loc.ark:/13960/t9q23z43f ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, registry);
+        String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
+        String[] actual = new String[2];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        actual[0] = list.get(0).getVolumeID();
+        actual[1] = list.get(1).getVolumeID();
+            
+        Assert.assertArrayEquals(expected, actual);
+    }
+
+    
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError1() throws ParseException, PolicyViolationException  {
         String rawString = " ||  |";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
     }
@@ -158,7 +180,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse1() throws ParseException, PolicyViolationException {
         String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100>|  miun.ajj3079.0001.001<4>";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actualVolIDs = new String[2];
@@ -185,7 +207,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100> | ||  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
@@ -208,7 +230,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f <1 ,2  , 44  , 100 >  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
@@ -230,7 +252,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse4() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f < , , , 1, ,, 2,,, ,  44,,, 100,, ,, >  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
@@ -293,19 +315,63 @@ public class HTRCItemIdentifierFactoryTest {
     }
 
     
-    @Test (expected = IllegalArgumentException.class)
+    @Test
+    public void testPageIDsParserParse6() throws ParseException, PolicyViolationException {
+        ParameterContainer container = new TestParameterContainer();
+        container.setParameter(MaxVolumesPolicyChecker.PN_MAX_VOLUMES_ALLOWED, "2");
+        container.setParameter(MaxTotalPagesPolicyChecker.PN_MAX_TOTAL_PAGES_ALLOWED, "10");
+        container.setParameter(MaxPagesPerVolumePolicyChecker.PN_MAX_PAGES_PER_VOLUME_ALLOWED, "8");
+        
+        PolicyCheckerRegistryImpl registry = PolicyCheckerRegistryImpl.getInstance();
+
+//        MaxVolumesPolicyChecker.init(container);
+        registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(container));
+        
+//        MaxTotalPagesPolicyChecker.init(container);
+        registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(container));
+        
+//        MaxPagesPerVolumePolicyChecker.init(container);
+        registry.registerPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME, new MaxPagesPerVolumePolicyChecker(container));
+
+        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100>|  miun.ajj3079.0001.001<4> | loc.ark:/13960/t9q23z43f <22, 12, 17>";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, registry);
+
+        String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
+        String[] actualVolIDs = new String[2];
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+        actualVolIDs[0] = list.get(0).getVolumeID();
+        actualVolIDs[1] = list.get(1).getVolumeID();
+        
+        Assert.assertArrayEquals(expectedVolIDs, actualVolIDs);
+        
+        String[] expectedPageSequences1 = new String[]{"00000001", "00000002", "00000012", "00000017", "00000022", "00000044", "00000100"};
+        String[] actualPageSequences1 = list.get(0).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences1.toString(), expectedPageSequences1, actualPageSequences1);
+        
+        String[] expectedPageSequences2 = new String[]{"00000004"};
+        String[] actualPageSequences2 = list.get(1).getPageSequences().toArray(new String[0]);
+        
+        Assert.assertArrayEquals(actualPageSequences2.toString(), expectedPageSequences2, actualPageSequences2);
+        
+    }
+    
+    
+    @Test (expected = ParseException.class)
     public void testPageIDsParserParseError1() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f < 1, -1 >  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
     }
 
-    @Test (expected = NumberFormatException.class)
+    @Test (expected = ParseException.class)
     public void testPageIDsParserParseError2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f < one, two >  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -315,7 +381,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f <  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -325,7 +391,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError4() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f 3,4,8,10>  ";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -334,7 +400,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError5() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f<>";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -343,7 +409,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError6() throws ParseException, PolicyViolationException  {
         String rawString = "<1,2,3,4>";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -353,7 +419,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError7() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f";
-        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
         
@@ -399,6 +465,26 @@ public class HTRCItemIdentifierFactoryTest {
         parser.parse(rawString);
     }
 
+
+
+    @Test (expected = PolicyViolationException.class)
+    public void testPageIDsParserParseError10() throws ParseException, PolicyViolationException {
+        ParameterContainer container = new TestParameterContainer();
+        container.setParameter(MaxTotalPagesPolicyChecker.PN_MAX_TOTAL_PAGES_ALLOWED, "100");
+        container.setParameter(MaxPagesPerVolumePolicyChecker.PN_MAX_PAGES_PER_VOLUME_ALLOWED, "3");
+        
+//        MaxTotalPagesPolicyChecker.init(container);
+        PolicyCheckerRegistryImpl registry = PolicyCheckerRegistryImpl.getInstance();
+        registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(container));
+        
+//        MaxPagesPerVolumePolicyChecker.init(container);
+        registry.registerPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME, new MaxPagesPerVolumePolicyChecker(container));
+
+        String rawString = "loc.ark:/13960/t9q23z43f <1> |loc.ark:/13960/t9q23z43f<2>|loc.ark:/13960/t9q23z43f<44>|loc.ark:/13960/t9q23z43f<100>";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, registry);
+
+        parser.parse(rawString);
+    }
 
 
 }
