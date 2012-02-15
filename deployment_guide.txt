@@ -1,0 +1,33 @@
+
+To build a WAR for Tomcat, run
+
+> mvn package
+
+==============================
+
+Before building the WAR, edit the parameters in src/main/webapp/WEB-INF/web.xml to properly configure the server
+
+Here is a list of parameters found in web.xml and their explanations:
+
+cassandra.node.count  -  number of cassandra seed nodes for your cassandra cluster
+
+cassandra.node.name.<n> - individual cassandra seed node names.  <n> is an integer starting at 1, and it must end at cassandra.node.count
+
+cassandra.cluster.name  - a name assigned to Hector Cluster object.  Up to Cassandra/Hector 0.8.2 this name doesn't seem to matter and need not to be the same as the Cluster name configured for cassandra
+
+cassandra.keyspace.name  - name of Cassandra keyspace that holds HTRC Corpus.  This name must be exactly what's in Cassandra
+
+volume.content.scf.name  - name of the super column family that holds volume content.  this assumes a super column family schema.  most likely to change soon
+
+hector.access.max.attempts  - maximum number of attempts a Hector request should try to access Cassandra. Using default settings, Hector requests to Cassandra can time out, so the code uses exponential back-off to try multiple times.
+
+hector.access.fail.init.delay  - initial amount of time (in milliseconds) Hector should wait before trying to send the request to Cassandra again.
+
+hector.access.fail.max.delay  - maximum amount of time (in milliseconds) Hector can wait before trying to send the request to Cassandra again.  Hector waits for hector.access.fail.init.delay ms on the first HTimedOutException, and for subsequent failures it doubles the amount of time to wait, until the amount exceeds hector.access.fail.max.delay, and then it waits for the max delay amount until either the request succeeds or the max attempts have reached.
+
+max.volumes.allowed  - maximum number volumes a client can retrieve in one request.  Use 0 to set unlimited.  This is entirely based on the number of unique volumeIDs in the request.
+
+max.total.pages.allowed  - maximum number of pages a client can retrieve in one request.  Use 0 to set unlimited.  This is the total number of pages tallied from all volumes.
+
+max.pages.per.volume.allowed  - maximum number of pages from each individual volume a client can retrieve in one request.  Use 0 to set unlimited.
+
