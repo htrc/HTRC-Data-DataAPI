@@ -33,6 +33,8 @@ package edu.indiana.d2i.htrc.access;
 
 import java.util.List;
 
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+
 /**
  * @author Yiming Sun
  *

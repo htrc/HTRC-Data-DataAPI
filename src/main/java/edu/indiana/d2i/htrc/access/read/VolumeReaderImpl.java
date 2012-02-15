@@ -36,8 +36,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import gov.loc.repository.pairtree.Pairtree;
 
 /**
