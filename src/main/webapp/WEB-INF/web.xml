@@ -46,6 +46,18 @@
       <param-value>5000</param-value>
     </init-param>
     <init-param>
+      <param-name>max.volumes.allowed</param-name>
+      <param-value>0</param-value>
+    </init-param>
+    <init-param>
+      <param-name>max.total.pages.allowed</param-name>
+      <param-value>0</param-value>
+    </init-param>
+    <init-param>
+      <param-name>max.pages.per.volume.allowed</param-name>
+      <param-value>0</param-value>
+    </init-param>
+    <init-param>
       <param-name>log4j.properties.path</param-name>
       <param-value>lo4j.properties</param-value>
     </init-param>
