@@ -37,17 +37,18 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 
 /**
  * @author Yiming Sun
  *
  */
 public class MakeZipUtility {
-    public static byte[] getSeparatePageZipAsByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException {
+    public static byte[] getSeparatePageZipAsByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
         zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
@@ -75,7 +76,7 @@ public class MakeZipUtility {
     }
     
     
-    public static byte[] getCombinePageZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException {
+    public static byte[] getCombinePageZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
         zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
@@ -103,7 +104,7 @@ public class MakeZipUtility {
         return expectedOutputStream.toByteArray();
     }
     
-    public static byte[] getWordBagZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException {
+    public static byte[] getWordBagZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
         zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);

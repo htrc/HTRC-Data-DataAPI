@@ -37,9 +37,9 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.VolumeIdentifier;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;

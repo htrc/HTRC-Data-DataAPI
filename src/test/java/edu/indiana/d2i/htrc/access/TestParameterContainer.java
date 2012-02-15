@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  ExceptionalVolumeRetriever.java
+# File:  TestParameterContainer.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -29,32 +29,36 @@
 /**
  * 
  */
-package edu.indiana.d2i.htrc.access.read;
+package edu.indiana.d2i.htrc.access;
 
-import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeRetriever;
-import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Yiming Sun
  *
  */
-public class ExceptionalVolumeRetriever implements VolumeRetriever {
+public class TestParameterContainer implements ParameterContainer {
 
+    private final Map<String, String> map;
+    
+    public TestParameterContainer() {
+        this.map = new HashMap<String, String>();
+    }
     /**
-     * @see edu.indiana.d2i.htrc.access.VolumeRetriever#hasMoreVolumes()
+     * @see edu.indiana.d2i.htrc.access.ParameterContainer#getParameter(java.lang.String)
      */
     @Override
-    public boolean hasMoreVolumes() {
-        return true;
+    public String getParameter(String parameterName) {
+        return map.get(parameterName);
     }
 
     /**
-     * @see edu.indiana.d2i.htrc.access.VolumeRetriever#nextVolume()
+     * @see edu.indiana.d2i.htrc.access.ParameterContainer#setParameter(java.lang.String, java.lang.String)
      */
     @Override
-    public VolumeReader nextVolume() throws KeyNotFoundException {
-        throw new KeyNotFoundException("test.offending/key");
+    public void setParameter(String name, String value) {
+        this.map.put(name, value);
     }
 
 }

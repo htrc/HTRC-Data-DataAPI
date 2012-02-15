@@ -35,10 +35,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.VolumePageIdentifier;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;

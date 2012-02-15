@@ -37,9 +37,10 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.read.ExceptionalVolumeRetriever;
 import edu.indiana.d2i.htrc.access.read.TestVolumeRetriever;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
@@ -53,7 +54,7 @@ public class ZipMakerFactoryTest {
     
     
     @Test
-    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException {
+    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getSeparatePageZipAsByteArray(volumeRetriever);
         
@@ -68,7 +69,7 @@ public class ZipMakerFactoryTest {
     
     
     @Test
-    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException {
+    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getCombinePageZipByteArray(volumeRetriever);
         
@@ -83,7 +84,7 @@ public class ZipMakerFactoryTest {
     
     
     @Test
-    public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException {
+    public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getWordBagZipByteArray(volumeRetriever);
         
@@ -97,7 +98,7 @@ public class ZipMakerFactoryTest {
     }
     
     @Test(expected = KeyNotFoundException.class)
-    public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException {
+    public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.SEPARATE_PAGE);
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
@@ -108,7 +109,7 @@ public class ZipMakerFactoryTest {
     
 
     @Test(expected = KeyNotFoundException.class)
-    public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException {
+    public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.COMBINE_PAGE);
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
@@ -118,7 +119,7 @@ public class ZipMakerFactoryTest {
     }
 
     @Test(expected = KeyNotFoundException.class)
-    public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException {
+    public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG);
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
