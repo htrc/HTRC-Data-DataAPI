@@ -52,11 +52,18 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.HectorResourceSingleton;
-import edu.indiana.d2i.htrc.access.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.ParameterContainer;
+import edu.indiana.d2i.htrc.access.PolicyChecker;
+import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
+import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
 
 /**
@@ -71,6 +78,13 @@ public class HectorVolumeRetriever implements VolumeRetriever {
     
     protected final List<? extends HTRCItemIdentifier> identifiers;
     protected final HectorResourceSingleton hectorResource;
+    protected final ParameterContainer parameterContainer;
+    
+//    protected final PolicyCheckerRegistry policyCheckerRegistry;
+  
+    protected final PolicyChecker maxVolumesPolicyChecker;
+    protected final PolicyChecker maxTotalPagesPolicyChecker;
+    protected final PolicyChecker maxPagesPerVolumeChecker;
     
     protected Iterator<? extends HTRCItemIdentifier> idIterator = null;
     
@@ -82,31 +96,47 @@ public class HectorVolumeRetriever implements VolumeRetriever {
     protected final long initFailDelay;
     protected final long maxFailDelay;
     
-    public HectorVolumeRetriever(List<? extends HTRCItemIdentifier> identifiers, HectorResourceSingleton hectorResource) {
+    protected int volumeCount;
+    protected int totalPageCount;
+    protected int perVolumePageCount;
+    
+    public HectorVolumeRetriever(List<? extends HTRCItemIdentifier> identifiers, HectorResourceSingleton hectorResource, ParameterContainer parameterContainer, PolicyCheckerRegistry policyCheckerRegistry) {
         this.identifiers = identifiers;
         this.hectorResource = hectorResource;
+        this.parameterContainer = parameterContainer;
         this.idIterator = identifiers.iterator();
         this.stringSerializer = new StringSerializer();
         this.bytesArraySerializer = new BytesArraySerializer();
         this.integerSerializer = new IntegerSerializer();
-        this.maxAttempts = Integer.valueOf(hectorResource.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_MAX_ATTEMPTS));
-        this.initFailDelay = Long.valueOf(hectorResource.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_FAIL_INIT_DELAY));
-        this.maxFailDelay = Long.valueOf(hectorResource.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_FAIL_MAX_DELAY));
+        this.maxAttempts = Integer.valueOf(parameterContainer.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_MAX_ATTEMPTS));
+        this.initFailDelay = Long.valueOf(parameterContainer.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_FAIL_INIT_DELAY));
+        this.maxFailDelay = Long.valueOf(parameterContainer.getParameter(HectorResourceSingleton.PN_HECTOR_ACCESS_FAIL_MAX_DELAY));
+        
+        this.maxVolumesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
+        this.maxTotalPagesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME);
+        this.maxPagesPerVolumeChecker = policyCheckerRegistry.getPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME);
+        
+        volumeCount = 0;
+        totalPageCount = 0;
+        perVolumePageCount = 0;
     }
     
     public boolean hasMoreVolumes() {
         return idIterator.hasNext();
     }
     
-    public VolumeReader nextVolume() throws KeyNotFoundException {
+    public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException {
         HTRCItemIdentifier itemIdentifier = idIterator.next();
+        perVolumePageCount = 0;
         
         VolumeReader volumeReader = retrieveVolume(itemIdentifier);
+        volumeCount++;
+        maxVolumesPolicyChecker.check(volumeCount, itemIdentifier.getVolumeID());
         return volumeReader;
     }
     
     
-    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) throws KeyNotFoundException {
+    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) throws KeyNotFoundException, PolicyViolationException {
         List<String> pageSequences = null;
         Keyspace keyspace = hectorResource.getKeyspace();
         
@@ -116,6 +146,12 @@ public class HectorVolumeRetriever implements VolumeRetriever {
         } else {
             pageSequences = identifier.getPageSequences();
         }
+        perVolumePageCount = pageSequences.size();
+        totalPageCount += perVolumePageCount;
+        
+        maxTotalPagesPolicyChecker.check(totalPageCount, identifier.getVolumeID());
+        maxPagesPerVolumeChecker.check(perVolumePageCount, identifier.getVolumeID());
+        
         VolumeReaderImpl fullVolumeReader = new VolumeReaderImpl(identifier);
         List<PageReader> pageContents = retrievePageContents(identifier, pageSequences, keyspace);
         fullVolumeReader.setPages(pageContents);
@@ -131,7 +167,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
         String volumeID = identifier.getVolumeID();
         
         SuperColumnQuery<String, String, String, byte[]> superColumnQuery = HFactory.createSuperColumnQuery(keyspace, stringSerializer, stringSerializer, stringSerializer, bytesArraySerializer);
-        superColumnQuery.setColumnFamily(hectorResource.getParameter(HectorResourceSingleton.PN_VOLUME_CONTENT_SCF_NAME));
+        superColumnQuery.setColumnFamily(parameterContainer.getParameter(HectorResourceSingleton.PN_VOLUME_CONTENT_SCF_NAME));
         superColumnQuery.setKey(volumeID);
         
         for (String pageSequence : pageSequences) {
@@ -227,7 +263,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
         String volumeID = identifier.getVolumeID();
         
         SuperColumnQuery<String, String, String, byte[]> superColumnQuery = HFactory.createSuperColumnQuery(keyspace, stringSerializer, stringSerializer, stringSerializer, bytesArraySerializer);
-        superColumnQuery.setColumnFamily(hectorResource.getParameter(HectorResourceSingleton.PN_VOLUME_CONTENT_SCF_NAME));
+        superColumnQuery.setColumnFamily(parameterContainer.getParameter(HectorResourceSingleton.PN_VOLUME_CONTENT_SCF_NAME));
         superColumnQuery.setKey(volumeID);
         superColumnQuery.setSuperName("metadata");
         
