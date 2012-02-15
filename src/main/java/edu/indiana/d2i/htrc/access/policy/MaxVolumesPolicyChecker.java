@@ -31,6 +31,8 @@
  */
 package edu.indiana.d2i.htrc.access.policy;
 
+import org.apache.log4j.Logger;
+
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.PolicyChecker;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -41,6 +43,8 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
  */
 public final class MaxVolumesPolicyChecker implements PolicyChecker {
 
+    private static Logger log = Logger.getLogger(MaxVolumesPolicyChecker.class);
+    
     public static final String PN_MAX_VOLUMES_ALLOWED = "max.volumes.allowed";
     public static final String POLICY_NAME = "Max Volumes Allowed";
     
@@ -83,6 +87,7 @@ public final class MaxVolumesPolicyChecker implements PolicyChecker {
      */
     @Override
     public void check(int value, String token) throws PolicyViolationException {
+        if (log.isDebugEnabled()) log.debug("maxVolumesAllowed: " + maxVolumesAllowed + " check value: " + value);
         if (this.maxVolumesAllowed > 0 && value > maxVolumesAllowed) {
             throw new PolicyViolationException(POLICY_NAME, this.maxVolumesAllowed, token);
         }
