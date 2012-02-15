@@ -76,7 +76,7 @@ public class PageAccessResource {
         
         Response response = null;
         
-        Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID);
+        Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, PolicyCheckerRegistryImpl.getInstance());
         
         try {
             

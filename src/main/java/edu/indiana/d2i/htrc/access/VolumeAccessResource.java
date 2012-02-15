@@ -79,7 +79,7 @@ public class VolumeAccessResource {
         
         Response response = null;
         
-        Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID);
+        Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
         try {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
