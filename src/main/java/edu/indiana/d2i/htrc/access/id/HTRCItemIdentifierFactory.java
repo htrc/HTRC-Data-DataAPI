@@ -37,6 +37,13 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.PolicyChecker;
+import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
+import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
+import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 
 /**
  * @author Yiming Sun
@@ -47,8 +54,18 @@ public class HTRCItemIdentifierFactory {
     public static abstract class Parser {
         
         public static final int PAGE_SEQUENCE_LENGTH = 8;
-
-        public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException;
+        
+        public static final String PN_MAX_TOTAL_PAGES_ALLOWED = "max.total.pages.allowed";
+        public static final String PN_MAX_PAGES_PER_VOLUME_ALLOWED = "max.pages.per.volume.allowed";
+        
+        protected PolicyCheckerRegistry policyCheckerRegistry = new NullPolicyCheckerRegistry();
+        
+        public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;
+        
+        
+        public void setPolicyCheckerRegistry(PolicyCheckerRegistry policyCheckerRegistry) {
+            this.policyCheckerRegistry = policyCheckerRegistry;
+        }
         
         public static String generatePageSequenceString(int pageSequence) {
             if (pageSequence > 0) {
@@ -74,7 +91,11 @@ public class HTRCItemIdentifierFactory {
          * @see edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<VolumeIdentifier> parse(String identifiersString) throws ParseException {
+        public List<VolumeIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
+            PolicyChecker maxVolumesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
+            
+            int volumeCount = 0;
+            
             List<VolumeIdentifier> volumeIDList = new ArrayList<VolumeIdentifier>();
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
@@ -82,6 +103,8 @@ public class HTRCItemIdentifierFactory {
                 if (!"".equals(token)) {
                     VolumeIdentifier id = new VolumeIdentifier(token);
                     volumeIDList.add(id);
+                    volumeCount++;
+                    maxVolumesPolicyChecker.check(volumeCount, token);
                 }
             }
             
@@ -99,12 +122,26 @@ public class HTRCItemIdentifierFactory {
          * @see edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<VolumePageIdentifier> parse(String identifiersString) throws ParseException {
+        public List<VolumePageIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
+            PolicyChecker maxVolumesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
+            PolicyChecker maxTotalPagesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME);
+            PolicyChecker maxPagesPerVolumePolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME);
+            
+            int volumeCount = 0;
+            int totalPageCount = 0;
+            int perVolumePageCount = 0;
+            
             List<VolumePageIdentifier> pageIDList = new ArrayList<VolumePageIdentifier>();
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
-                if (!"".endsWith(rawUnit)) {
+                
+                if (!"".equals(rawUnit)) {
+
+                    volumeCount++;
+                    perVolumePageCount = 0;
+                    
+
                     int length = rawUnit.length();
                     
                     if (rawUnit.charAt(length - 1) == '>') {
@@ -121,19 +158,26 @@ public class HTRCItemIdentifierFactory {
                             StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, ",");
                             while (pageTokenizer.hasMoreTokens()) {
                                 String pageSeqStr = pageTokenizer.nextToken().trim();
-                                if (!"".endsWith(pageSeqStr)) {
+                                if (!"".equals(pageSeqStr)) {
                                     int pageSeqInt = Integer.valueOf(pageSeqStr);
                                     String pageSequence = generatePageSequenceString(pageSeqInt);
                                     id.addPageSequence(pageSequence);
                                     hasPageSequence = true;
+                                    perVolumePageCount++;
+                                    
                                 }
                             }
+                            totalPageCount += perVolumePageCount;
                             
                             if (!hasPageSequence) {
                                 throw new ParseException(rawUnit, lastIndex);
                             }
                             
                             pageIDList.add(id);
+                            
+                            maxVolumesPolicyChecker.check(volumeCount, volumeID);
+                            maxTotalPagesPolicyChecker.check(totalPageCount, rawUnit);
+                            maxPagesPerVolumePolicyChecker.check(perVolumePageCount, rawUnit);
                             
                         } else {
                             throw new ParseException(rawUnit, 0);
@@ -161,15 +205,24 @@ public class HTRCItemIdentifierFactory {
             this.parser = parser;
         }
         
-        Parser getParser() {
+        private Parser getParser(PolicyCheckerRegistry policyCheckerRegistry) {
+            if (policyCheckerRegistry == null) {
+                parser.setPolicyCheckerRegistry(new NullPolicyCheckerRegistry());
+            } else {
+                parser.setPolicyCheckerRegistry(policyCheckerRegistry);
+            }
             return parser;
         }
     }
     
     public static Parser getParser(IDTypeEnum type) {
-        return type.getParser();
+        return getParser(type, null);
     }
     
+    public static Parser getParser(IDTypeEnum type, PolicyCheckerRegistry policyCheckerRegistry) {
+        Parser parser = type.getParser(policyCheckerRegistry);
+        return parser;
+    }
 
 }
 
