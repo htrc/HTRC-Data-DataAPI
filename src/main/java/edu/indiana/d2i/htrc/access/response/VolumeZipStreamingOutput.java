@@ -41,6 +41,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
@@ -57,10 +58,12 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
     
     private VolumeRetriever volumeRetriever = null;
     private ZipMaker zipMaker = null;
+    private Auditor auditor = null;
     
-    public VolumeZipStreamingOutput(VolumeRetriever volumeRetriever, ZipMaker zipMaker) {
+    public VolumeZipStreamingOutput(VolumeRetriever volumeRetriever, ZipMaker zipMaker, Auditor auditor) {
         this.volumeRetriever = volumeRetriever;
         this.zipMaker = zipMaker;
+        this.auditor = auditor;
     }
     
     
@@ -74,12 +77,14 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
         } catch (KeyNotFoundException e) {
             log.error("KeyNotFoundException", e);
             Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key Not Found. " + e.getMessage() + "</p>").build();
+            auditor.error("Key Not Found", "Key Not Found", e.getMessage());
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
             Response response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
+            auditor.error("Policy Violation", "Request too greedy", e.getMessage());
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;

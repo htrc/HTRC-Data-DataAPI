@@ -37,6 +37,7 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
@@ -45,8 +46,10 @@ import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 public class WordBagZipMaker implements ZipMaker {
     
-    WordBagZipMaker() {
-        
+    protected final Auditor auditor;
+    
+    WordBagZipMaker(Auditor auditor) {
+        this.auditor = auditor;
     }
 
     /**
@@ -65,6 +68,7 @@ public class WordBagZipMaker implements ZipMaker {
                 PageReader pageReader = volumeReader.nextPage();
                 String pageContent = pageReader.getPageContent();
                 zipOutputStream.write(pageContent.getBytes());
+                auditor.audit("ACCESSED", volumeReader.getVolumeID(), pageReader.getPageSequence());
             }
         }
 

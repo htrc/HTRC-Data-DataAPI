@@ -33,10 +33,13 @@ package edu.indiana.d2i.htrc.access.zip;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
@@ -50,8 +53,9 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
  */
 public class CombinePageVolumeZipMaker implements ZipMaker {
     
-    CombinePageVolumeZipMaker() {
-    
+    protected final Auditor auditor;
+    CombinePageVolumeZipMaker(Auditor auditor) {
+        this.auditor = auditor;
     }
 
     /**
@@ -70,6 +74,7 @@ public class CombinePageVolumeZipMaker implements ZipMaker {
                 PageReader pageReader = volumeReader.nextPage();
                 String pageContent = pageReader.getPageContent();
                 zipOutputStream.write(pageContent.getBytes());
+                auditor.audit("ACCESSED", volumeReader.getVolumeID(), pageReader.getPageSequence());
             }
             zipOutputStream.closeEntry();
         }

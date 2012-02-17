@@ -45,6 +45,7 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -80,9 +81,15 @@ public class HTRCDataAccessApplication extends Application {
         configureLogger(servletConfig);
 
         loadParametersToContainer(servletConfig);
-        loadPolicyCheckerRegistry(ParameterContainerSingleton.getInstance());
         
-        HectorResourceSingleton.init(ParameterContainerSingleton.getInstance());
+        ParameterContainer parameterContainer = ParameterContainerSingleton.getInstance();
+        
+        loadPolicyCheckerRegistry(parameterContainer);
+        
+        HectorResourceSingleton.init(parameterContainer);
+
+        AuditorFactory.init(parameterContainer);
+        
         log.info("Application initialized");
     }
     
@@ -100,7 +107,7 @@ public class HTRCDataAccessApplication extends Application {
     
     private void loadParametersToContainer(ServletConfig servletConfig) {
         ParameterContainer parameterContainer = ParameterContainerSingleton.getInstance();
-        Enumeration parameterNames = servletConfig.getInitParameterNames();
+        Enumeration<?> parameterNames = servletConfig.getInitParameterNames();
         while(parameterNames.hasMoreElements()) {
             String parameterName = (String)parameterNames.nextElement();
             String value = (String)servletConfig.getInitParameter(parameterName);
@@ -120,5 +127,6 @@ public class HTRCDataAccessApplication extends Application {
         registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(parameterContainer));
         registry.registerPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME, new MaxPagesPerVolumePolicyChecker(parameterContainer));
     }
+    
 }
 

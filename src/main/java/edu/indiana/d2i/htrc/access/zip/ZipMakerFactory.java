@@ -31,6 +31,7 @@
  */
 package edu.indiana.d2i.htrc.access.zip;
 
+import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 
 /**
@@ -45,17 +46,17 @@ public class ZipMakerFactory {
         WORD_BAG;
     }
     
-    public static ZipMaker newInstance(ZipTypeEnum type) {
+    public static ZipMaker newInstance(ZipTypeEnum type, Auditor auditor) {
         ZipMaker zipMaker = null;
         switch (type) {
         case COMBINE_PAGE:
-            zipMaker = new CombinePageVolumeZipMaker();
+            zipMaker = new CombinePageVolumeZipMaker(auditor);
             break;
         case SEPARATE_PAGE:
-            zipMaker = new SeparatePageVolumeZipMaker();
+            zipMaker = new SeparatePageVolumeZipMaker(auditor);
             break;
         case WORD_BAG:
-            zipMaker = new WordBagZipMaker();
+            zipMaker = new WordBagZipMaker(auditor);
             break;
         }
         

@@ -34,15 +34,19 @@ package edu.indiana.d2i.htrc.access;
 import java.text.ParseException;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
@@ -67,8 +71,10 @@ public class VolumeAccessResource {
     
     @GET
     public Response getResource(@QueryParam("volumeIDs") String volumeIDs, 
-                               @QueryParam("concat") boolean concatenate,
-                               @QueryParam("version") int version) {
+                                @QueryParam("concat") boolean concatenate,
+                                @QueryParam("version") int version,
+                                @Context HttpHeaders httpHeaders,
+                                @Context HttpServletRequest httpServletRequest) {
         
         if (log.isDebugEnabled()) {
             log.debug("volumeIDs = " + volumeIDs);
@@ -78,33 +84,47 @@ public class VolumeAccessResource {
                 
         
         Response response = null;
+        ContextExtractor contextExtractor = new ContextExtractor(httpServletRequest, httpHeaders);
+        Auditor auditor = AuditorFactory.getAuditor(contextExtractor);
         
         Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
         try {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
+                
+                for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
+                    auditor.audit("REQUESTED", volumeIdentifier.getVolumeID());
+                }
+                
                 VolumeRetriever volumeRetriever = new HectorVolumeRetriever(volumeIDList, HectorResourceSingleton.getInstance(), ParameterContainerSingleton.getInstance(), PolicyCheckerRegistryImpl.getInstance());
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.COMBINE_PAGE : ZipTypeEnum.SEPARATE_PAGE;
                 
-                ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType);
+                ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
                 
-                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker);
+                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker, auditor);
                 
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_VOLUMES_ZIP).build();
             } else {
                 log.error("Required parameter volumeIDs is null");
                 response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter volumeIDs</p>").build();
+                auditor.error("Missing Parameter", "Parameter volumeIDs required", "");
+
             }
             
         } catch (ParseException e) {
             log.error("ParseException", e);
             response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Volume ID List. Offending token: " + e.getMessage() + "</p>").build();
+            auditor.error("ParseException", "Malformed Volume ID List", e.getMessage());
+            
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
             response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
+            auditor.error("PolicyViolation", "Request too greedy", e.getMessage());
+
         }
         
         return response;
     }
+    
 }
 
