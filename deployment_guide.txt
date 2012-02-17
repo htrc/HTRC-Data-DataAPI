@@ -31,3 +31,4 @@ max.total.pages.allowed  - maximum number of pages a client can retrieve in one 
 
 max.pages.per.volume.allowed  - maximum number of pages from each individual volume a client can retrieve in one request.  Use 0 to set unlimited.
 
+audit.class  - specifies which auditor implementation to use. Must be the fully qualified class name of a class that extends Auditor.  Currently there are two: edu.indiana.d2i.htrc.access.audit.NullAuditor and edu.indiana.d2i.htrc.access.audit.Log4jAuditor.  The first one is a dummy that does nothing.  The second one uses log4j to write audit files.
