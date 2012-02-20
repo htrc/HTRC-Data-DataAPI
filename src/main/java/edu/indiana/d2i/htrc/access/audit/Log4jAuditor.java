@@ -53,11 +53,15 @@ public final class Log4jAuditor extends Auditor {
     private static final String UNKNOWN = "UNKNOWN";
     private static final String VIA = "->";
     
-    private String userID = UNKNOWN;
-    private String userIP = UNKNOWN;
+//    private String userID = UNKNOWN;
+//    private String userIP = UNKNOWN;
+    
+    private String userIdentity = null;
     
     public Log4jAuditor(ContextExtractor contextExtractor) {
         super(contextExtractor);
+        String userID = UNKNOWN;
+        String userIP = UNKNOWN;
 
         List<String> context = contextExtractor.getContext("remoteUser");
         userID = listToString(context);
@@ -77,6 +81,10 @@ public final class Log4jAuditor extends Auditor {
         } else {
             userIP = forwardedFor + VIA + remoteAddr;
         }
+        
+        StringBuilder builder  = new StringBuilder(userID);
+        builder.append(TAB).append(userIP).append(TAB);
+        userIdentity = builder.toString();
     }
   
     /**
@@ -84,9 +92,12 @@ public final class Log4jAuditor extends Auditor {
      */
     @Override
     public void audit(String action, String volumeID, String... pageSequences) {
-        StringBuilder builder = new StringBuilder(userID);
-        builder.append(TAB).append(userIP).append(TAB).append(action).append(TAB).append(volumeID);
-        
+//        StringBuilder builder = new StringBuilder(userID);
+//        builder.append(TAB).append(userIP).append(TAB).append(action).append(TAB).append(volumeID);
+
+    	StringBuilder builder = new StringBuilder(userIdentity);
+    	builder.append(action).append(TAB).append(volumeID);
+    	
         if (pageSequences != null) {
             int length = pageSequences.length;
             if (length > 0) {
@@ -102,8 +113,10 @@ public final class Log4jAuditor extends Auditor {
     
     @Override
     public void error(String errorType, String message, String cause) {
-        StringBuilder builder = new StringBuilder(userID);
-        builder.append(TAB).append(userIP).append(TAB).append(errorType).append(TAB).append(message).append(TAB).append(cause);
+//        StringBuilder builder = new StringBuilder(userID);
+//        builder.append(TAB).append(userIP).append(TAB).append(errorType).append(TAB).append(message).append(TAB).append(cause);
+    	StringBuilder builder = new StringBuilder(userIdentity);
+    	builder.append(errorType).append(TAB).append(message).append(TAB).append(cause);
         auditLogger.error(builder.toString());
     }
     
