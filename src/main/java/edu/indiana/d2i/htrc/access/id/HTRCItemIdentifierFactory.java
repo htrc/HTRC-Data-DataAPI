@@ -42,12 +42,8 @@ import java.util.StringTokenizer;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
-import edu.indiana.d2i.htrc.access.PolicyChecker;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
-import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
-import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 
 /**
@@ -84,7 +80,7 @@ public class HTRCItemIdentifierFactory {
                 builder.append(sequenceString);
                 return builder.toString();
             } else {
-                throw new IllegalArgumentException("Page sequence cannot be negative");
+                throw new IllegalArgumentException("Page sequence must be positive");
             }
         }
         
@@ -97,13 +93,9 @@ public class HTRCItemIdentifierFactory {
          */
         @Override
         public List<VolumeIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
-            PolicyChecker maxVolumesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
-            
-            int volumeCount = 0;
             
             Map<String, VolumeIdentifier> volumeIDMap = new HashMap<String, VolumeIdentifier>();
-            
-//            List<VolumeIdentifier> volumeIDList = new ArrayList<VolumeIdentifier>();
+
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
@@ -112,8 +104,6 @@ public class HTRCItemIdentifierFactory {
                     if (volumeIdentifier == null) {
                         volumeIdentifier = new VolumeIdentifier(token);
                         volumeIDMap.put(token, volumeIdentifier);
-                        volumeCount++;
-                        maxVolumesPolicyChecker.check(volumeCount, token);
 
                     }
                 }
@@ -137,26 +127,13 @@ public class HTRCItemIdentifierFactory {
          */
         @Override
         public List<VolumePageIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
-            PolicyChecker maxVolumesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
-            PolicyChecker maxTotalPagesPolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME);
-            PolicyChecker maxPagesPerVolumePolicyChecker = policyCheckerRegistry.getPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME);
-            
-            int volumeCount = 0;
-            int totalPageCount = 0;
-            int perVolumePageCount = 0;
-            
+
             Map<String, VolumePageIdentifier> pageIDMap = new HashMap<String, VolumePageIdentifier>();
-//            List<VolumePageIdentifier> pageIDList = new ArrayList<VolumePageIdentifier>();
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
                 
                 if (!"".equals(rawUnit)) {
-
-//                    volumeCount++;
-//                    perVolumePageCount = 0;
-                    
-
                     int length = rawUnit.length();
                     
                     if (rawUnit.charAt(length - 1) == '>') {
@@ -171,19 +148,8 @@ public class HTRCItemIdentifierFactory {
                             if (volumePageIdentifier == null) {
                                 volumePageIdentifier = new VolumePageIdentifier(volumeID);
                                 pageIDMap.put(volumeID, volumePageIdentifier);
-                                volumeCount++;
-                                if (log.isDebugEnabled()) log.debug("new identifier created: " + volumeID + " volumeCount: " + volumeCount);
-                            } else {
-                                // this step is necessary because if a volume ID occurs multiple times in one request
-                                // then the total page count has already counted the number of pages from the previous
-                                // occurances, so we need to "uncount" the number of pages already in this volume here
-                                // so that when the total page is counted again, these exists page sequences don't get
-                                // counted multiple times.
-                                totalPageCount -= volumePageIdentifier.getPageCount();
-                                if (log.isDebugEnabled()) log.debug("existing identifier: " + volumeID + " pageCount: " + volumePageIdentifier.getPageCount());
                             }
-//                            VolumePageIdentifier id = new VolumePageIdentifier(volumeID);
-                            
+
                             String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
                             
                             StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, ",");
@@ -205,20 +171,10 @@ public class HTRCItemIdentifierFactory {
                                     
                                 }
                             }
-//                            totalPageCount += perVolumePageCount;
-                            
+
                             if (!hasPageSequence) {
                                 throw new ParseException(rawUnit, lastIndex);
                             }
-                            
-//                            pageIDList.add(id);
-                            
-                            perVolumePageCount = volumePageIdentifier.getPageCount();
-                            totalPageCount += perVolumePageCount;   
-                            maxVolumesPolicyChecker.check(volumeCount, volumeID);
-                            maxTotalPagesPolicyChecker.check(totalPageCount, rawUnit);
-                            maxPagesPerVolumePolicyChecker.check(perVolumePageCount, rawUnit);
-                            
                         } else {
                             throw new ParseException(rawUnit, 0);
                         }
@@ -254,10 +210,6 @@ public class HTRCItemIdentifierFactory {
             return parser;
         }
     }
-    
-//    public static Parser getParser(IDTypeEnum type) {
-//        return getParser(type, null);
-//    }
     
     public static Parser getParser(IDTypeEnum type, PolicyCheckerRegistry policyCheckerRegistry) {
         Parser parser = type.getParser(policyCheckerRegistry);
