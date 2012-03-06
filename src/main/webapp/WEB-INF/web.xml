@@ -30,7 +30,7 @@
       <param-value>Yimdata</param-value>
     </init-param>
     <init-param>
-      <param-name>volume.content.scf.name</param-name>
+      <param-name>volume.content.cf.name</param-name>
       <param-value>VolumeContents</param-value>
     </init-param>
     <init-param>

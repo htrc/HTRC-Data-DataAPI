@@ -50,6 +50,7 @@ import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
+import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
  * @author Yiming Sun
@@ -86,7 +87,7 @@ public class HTRCDataAccessApplication extends Application {
         
         loadPolicyCheckerRegistry(parameterContainer);
         
-        HectorResourceSingleton.init(parameterContainer);
+        HectorResource.initSingletonInstance(parameterContainer);
 
         AuditorFactory.init(parameterContainer);
         
@@ -102,7 +103,7 @@ public class HTRCDataAccessApplication extends Application {
     @PreDestroy
     private void fin() {
         if (log.isDebugEnabled()) log.debug("@PreDestroy fin() called");
-        HectorResourceSingleton.shutdown();
+        HectorResource.getSingletonInstance().shutdown();
     }
     
     private void loadParametersToContainer(ServletConfig servletConfig) {
@@ -118,10 +119,6 @@ public class HTRCDataAccessApplication extends Application {
     }
     
     private void loadPolicyCheckerRegistry(ParameterContainer parameterContainer) {
-//        MaxVolumesPolicyChecker.init(parameterContainer);
-//        MaxTotalPagesPolicyChecker.init(parameterContainer);
-//        MaxPagesPerVolumePolicyChecker.init(parameterContainer);
-        
         PolicyCheckerRegistryImpl registry = PolicyCheckerRegistryImpl.getInstance();
         registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(parameterContainer));
         registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(parameterContainer));
