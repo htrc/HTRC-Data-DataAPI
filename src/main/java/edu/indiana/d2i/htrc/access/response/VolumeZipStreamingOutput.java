@@ -39,6 +39,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import me.prettyprint.hector.api.exceptions.HTimedOutException;
+
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.Auditor;
@@ -76,15 +78,22 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
             zipMaker.makeZipFile(output, volumeRetriever);
         } catch (KeyNotFoundException e) {
             log.error("KeyNotFoundException", e);
-            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key Not Found. " + e.getMessage() + "</p>").build();
-            auditor.error("Key Not Found", "Key Not Found", e.getMessage());
+            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
+            auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
             Response response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
-            auditor.error("Policy Violation", "Request too greedy", e.getMessage());
+            auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
+            WebApplicationException exception = new WebApplicationException(response);
+            
+            throw exception;
+        } catch (HTimedOutException e) {
+            log.error("HTimedOutException", e);
+            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
+            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;
