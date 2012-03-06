@@ -53,7 +53,7 @@ import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
  */
 public class ZipMakerFactoryTest {
     
-    
+    // This case tests that SeparatePageZipMaker properly generates a zip file with each volume as a directory, and each page belonging to the volume a separate text file under the directory
     @Test
     public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
@@ -68,7 +68,7 @@ public class ZipMakerFactoryTest {
         Assert.assertArrayEquals(expected, actual.toByteArray());
     }
     
-    
+    // This case tests that CombinePageZipMaker properly generates a zip file with all pages of each volume concatenated into a single text file for that volume
     @Test
     public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
@@ -83,7 +83,7 @@ public class ZipMakerFactoryTest {
         Assert.assertArrayEquals(expected, actual.toByteArray());
     }
     
-    
+    // This case tests that WordBagPageZipMaker properly generates a zip file with all pages from all volumes concatenated into a single "bag of words" text file
     @Test
     public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
@@ -98,6 +98,7 @@ public class ZipMakerFactoryTest {
         Assert.assertArrayEquals(expected, actual.toByteArray());
     }
     
+    // This case tests that SeparatePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
     public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
@@ -108,7 +109,7 @@ public class ZipMakerFactoryTest {
         
     }
     
-
+    // This case tests that CombinePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
     public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
@@ -119,6 +120,7 @@ public class ZipMakerFactoryTest {
         
     }
 
+    // This case tests that WordBagPageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
     public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
