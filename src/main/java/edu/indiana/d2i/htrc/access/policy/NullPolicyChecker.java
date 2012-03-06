@@ -48,5 +48,14 @@ public class NullPolicyChecker implements PolicyChecker {
         // do nothing, all pass
     }
 
+    /**
+     * @see edu.indiana.d2i.htrc.access.PolicyChecker#getLimit()
+     */
+    @Override
+    public int getLimit() {
+        // always return 0
+        return 0;
+    }
+
 }
 

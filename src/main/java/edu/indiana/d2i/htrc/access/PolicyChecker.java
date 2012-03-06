@@ -39,6 +39,7 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
  */
 public interface PolicyChecker {
     public void check(int value, String token) throws PolicyViolationException;
+    public int getLimit();
 
 }
 

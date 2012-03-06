@@ -46,9 +46,6 @@ public class MaxPagesPerVolumePolicyChecker implements PolicyChecker {
     
     private final int maxPagesPerVolumeAllowed;
     
-//    private static MaxPagesPerVolumePolicyChecker instance = null;
-//    private static boolean initialized = false;
-    
     public MaxPagesPerVolumePolicyChecker(ParameterContainer parameterContainer) {
         int defaultValue = 0;
         String value = parameterContainer.getParameter(PN_MAX_PAGES_PER_VOLUME_ALLOWED);
@@ -60,23 +57,6 @@ public class MaxPagesPerVolumePolicyChecker implements PolicyChecker {
         this.maxPagesPerVolumeAllowed = defaultValue;
     }
     
-//    public static synchronized MaxPagesPerVolumePolicyChecker getInstance() {
-//        assert(initialized);
-//        return instance;
-//    }
-//
-//    public static synchronized void init(ParameterContainer parameterContainer) {
-//        if (!initialized) {
-//            int defaultValue = 0;
-//            String value = parameterContainer.getParameter(PN_MAX_PAGES_PER_VOLUME_ALLOWED);
-//            if (value != null) {
-//                int intVal = Integer.valueOf(value);
-//                defaultValue = (intVal > 0) ? intVal : 0;
-//            }
-//            instance = new MaxPagesPerVolumePolicyChecker(defaultValue);
-//            initialized = true;
-//        }
-//    }
     /**
      * @see edu.indiana.d2i.htrc.access.PolicyChecker#check(int)
      */
@@ -87,5 +67,14 @@ public class MaxPagesPerVolumePolicyChecker implements PolicyChecker {
         }
     }
 
+    /**
+     * @see edu.indiana.d2i.htrc.access.PolicyChecker#getLimit()
+     */
+    @Override
+    public int getLimit() {
+        return maxPagesPerVolumeAllowed;
+    }
+
+    
 }
 

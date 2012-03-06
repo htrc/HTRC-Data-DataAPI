@@ -46,9 +46,6 @@ public class MaxTotalPagesPolicyChecker implements PolicyChecker {
     
     private final int maxTotalPagesAllowed;
     
-//    private static MaxTotalPagesPolicyChecker instance = null;
-//    private static boolean initialized = false;
-    
     public MaxTotalPagesPolicyChecker(ParameterContainer parameterContainer) {
         int defaultValue = 0;
         String value = parameterContainer.getParameter(PN_MAX_TOTAL_PAGES_ALLOWED);
@@ -60,23 +57,6 @@ public class MaxTotalPagesPolicyChecker implements PolicyChecker {
         this.maxTotalPagesAllowed = defaultValue;
     }
     
-//    public static synchronized MaxTotalPagesPolicyChecker getInstance() {
-//        assert(initialized);
-//        return instance;
-//    }
-//
-//    public static synchronized void init(ParameterContainer parameterContainer) {
-//        if (!initialized) {
-//            int defaultValue = 0;
-//            String value = parameterContainer.getParameter(PN_MAX_TOTAL_PAGES_ALLOWED);
-//            if (value != null) {
-//                int intVal = Integer.valueOf(value);
-//                defaultValue = (intVal > 0) ? intVal : 0;
-//            }
-//            instance = new MaxTotalPagesPolicyChecker(defaultValue);
-//            initialized = true;
-//        }
-//    }
     /**
      * @see edu.indiana.d2i.htrc.access.PolicyChecker#check(int)
      */
@@ -85,6 +65,14 @@ public class MaxTotalPagesPolicyChecker implements PolicyChecker {
         if (this.maxTotalPagesAllowed > 0 && value > maxTotalPagesAllowed) {
             throw new PolicyViolationException(POLICY_NAME, this.maxTotalPagesAllowed, token);
         }
+    }
+
+    /**
+     * @see edu.indiana.d2i.htrc.access.PolicyChecker#getLimit()
+     */
+    @Override
+    public int getLimit() {
+        return maxTotalPagesAllowed;
     }
 
 }

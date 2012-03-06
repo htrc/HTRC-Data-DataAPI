@@ -50,9 +50,6 @@ public final class MaxVolumesPolicyChecker implements PolicyChecker {
     
     private final int maxVolumesAllowed;
     
-//    private static MaxVolumesPolicyChecker instance = null;
-//    private static boolean initialized = false;
-    
     public MaxVolumesPolicyChecker(ParameterContainer parameterContainer) {
         int defaultValue = 0;
         if (parameterContainer != null) {
@@ -64,24 +61,7 @@ public final class MaxVolumesPolicyChecker implements PolicyChecker {
         }
         this.maxVolumesAllowed = defaultValue;
     }
-    
-//    public static synchronized MaxVolumesPolicyChecker getInstance() {
-//        assert(initialized);
-//        return instance;
-//    }
 
-//    public static synchronized void init(ParameterContainer parameterContainer) {
-//        if (!initialized) {
-//            int defaultValue = 0;
-//            String value = parameterContainer.getParameter(PN_MAX_VOLUMES_ALLOWED);
-//            if (value != null) {
-//                int intVal = Integer.valueOf(value);
-//                defaultValue = (intVal > 0) ? intVal : 0;
-//            }
-//            instance = new MaxVolumesPolicyChecker(defaultValue);
-//            initialized = true;
-//        }
-//    }
     /**
      * @see edu.indiana.d2i.htrc.access.PolicyChecker#check(int)
      */
@@ -91,6 +71,14 @@ public final class MaxVolumesPolicyChecker implements PolicyChecker {
         if (this.maxVolumesAllowed > 0 && value > maxVolumesAllowed) {
             throw new PolicyViolationException(POLICY_NAME, this.maxVolumesAllowed, token);
         }
+    }
+
+    /**
+     * @see edu.indiana.d2i.htrc.access.PolicyChecker#getLimit()
+     */
+    @Override
+    public int getLimit() {
+        return maxVolumesAllowed;
     }
 
 }
