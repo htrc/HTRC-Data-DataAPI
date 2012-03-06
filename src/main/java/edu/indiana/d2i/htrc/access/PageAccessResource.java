@@ -33,6 +33,7 @@ package edu.indiana.d2i.htrc.access;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -44,16 +45,21 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import me.prettyprint.hector.api.exceptions.HTimedOutException;
+
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
+import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
+import edu.indiana.d2i.htrc.access.read.HectorResource;
 import edu.indiana.d2i.htrc.access.read.HectorVolumeRetriever;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
+import edu.indiana.d2i.htrc.access.validity.PageValidityChecker;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
 
@@ -95,7 +101,11 @@ public class PageAccessResource {
                     auditor.audit("REQUESTED", pageIdentifier.getVolumeID(), pageIdentifier.getPageSequences().toArray(new String[0]));
                 }
                 
-                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(pageIDList, HectorResourceSingleton.getInstance(), ParameterContainerSingleton.getInstance(), PolicyCheckerRegistryImpl.getInstance());
+                RequestValidityChecker validityChecker = new PageValidityChecker(HectorResource.getSingletonInstance(), ParameterContainerSingleton.getInstance(), PolicyCheckerRegistryImpl.getInstance());
+                Map<String, ? extends VolumeInfo> volumeInfoMap = validityChecker.validateRequest(pageIDList);
+                
+                
+                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(pageIDList, HectorResource.getSingletonInstance(), volumeInfoMap);
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_BAG : ZipTypeEnum.SEPARATE_PAGE;
                 
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
@@ -110,12 +120,20 @@ public class PageAccessResource {
             }
         } catch (ParseException e) {
             log.error("ParseException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Page ID List. Offending token: " + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Page ID list. Offending token: " + e.getMessage() + "</p>").build();
             auditor.error("ParseException", "Malformed Page ID List", e.getMessage());
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
             response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
-            auditor.error("PolicyViolation", "Request too greedy", e.getMessage());
+            auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
+        } catch (KeyNotFoundException e) {
+            log.error("KeyNotFoundException", e);
+            response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
+            auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
+        } catch (HTimedOutException e) {
+            log.error("HTimedOutException", e);
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
+            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
         }
         
         
