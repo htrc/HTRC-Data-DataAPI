@@ -31,8 +31,6 @@
  */
 package edu.indiana.d2i.htrc.access.id;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,6 +40,7 @@ import org.junit.Test;
  */
 public class VolumePageIdentifierTest {
 
+    // This case tests that a VolumePageIdentifier should output its page sequences sorted in ascending order
     @Test
     public void testGetPageSequences1() {
         String[] inputString = new String[] {"00029340", "00021022","99999999", "00000099", "34521334" };
@@ -58,6 +57,7 @@ public class VolumePageIdentifierTest {
         Assert.assertArrayEquals(expectedString, actualString);
     }
     
+    // This case tests that VolumePageIdentifier should coalesce redundant page sequences into one corrance and sort page sequences in ascending order
     @Test
     public void testGetPageSequences2() {
         String[] inputString = new String[] {"99999999","00029340", "00021022","00029340", "99999999", "00000099", "34521334" };

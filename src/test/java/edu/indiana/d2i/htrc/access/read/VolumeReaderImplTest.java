@@ -42,7 +42,8 @@ import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.VolumeIdentifier;
-import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
+import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl;
+import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl.PageReaderImpl;
 
 /**
  * @author Yiming Sun
@@ -50,6 +51,7 @@ import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
  */
 public class VolumeReaderImplTest {
     
+    // This case tests that pairtree-cleaned volumeID is properly generated from a volumeID (colons and slashes are properly escaped)
     @Test
     public void testGetPairtreeCleanedVolumeID1() {
         String volumeID = "loc.ark:/13960/t9q23z43f";
@@ -63,6 +65,7 @@ public class VolumeReaderImplTest {
         Assert.assertEquals(expectedCleandVolumeID, actualCleanedVolumeID);
     }
 
+    // This case tests that pairtree-cleaned volumeID is properly generated from a volumeID (periods are properly escaped)
     @Test
     public void testGetPairtreeCleanedVolumeID2() {
         String volumeID = "miun.ajj3079.0001.001";
@@ -76,6 +79,7 @@ public class VolumeReaderImplTest {
         Assert.assertEquals(expectedCleandVolumeID, actualCleanedVolumeID);
     }
 
+    // This case tests that PageReader properly outputs the data it holds
     @Test
     public void testPageReaderImpl() throws KeyNotFoundException {
         List<PageReader> pageReaders = new ArrayList<PageReader>();
