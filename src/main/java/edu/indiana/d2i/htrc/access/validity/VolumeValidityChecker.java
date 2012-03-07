@@ -99,7 +99,10 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
             
             totalPageCount += perVolumePageCount;
             
-            maxTotalPagesPolicyChecker.check(totalPageCount, volumeID + "<" + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount + 1) + ">");
+            int delta = maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount + 1;
+            String message = (delta > 0) ? volumeID + "<" + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(delta) + ">" : volumeID;
+            
+            maxTotalPagesPolicyChecker.check(totalPageCount, message);
             
             previousTotalPageCount = totalPageCount;
             volumeInfoMap.put(volumeID, volumeInfo);

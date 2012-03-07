@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -296,5 +297,87 @@ public class RequestValidityCheckerTest {
         checker.validateRequest(idList);
         
     }
+
+    // This case tests that by disabling all limits there should not be any violations for VolumeIDs
+    // This case modifies the default limits settings
+    @Test
+    public void testVolumesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+        
+        boolean testPassed = false;
+
+        VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), 
+                                                               new VolumeIdentifier(TestHectorResource.VOLUME_IDS[0]),
+                                                               new VolumeIdentifier(TestHectorResource.VOLUME_IDS[3]),
+                                                               new VolumeIdentifier(TestHectorResource.VOLUME_IDS[1])};
+        
+        
+        try {
+            List<VolumeIdentifier> idList = Arrays.asList(volumeIDs);
+    
+            setupWithLimits("0", "0", "0");
+            
+            VolumeValidityChecker checker = new VolumeValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
+            checker.validateRequest(idList);
+            testPassed = true;
+        } finally {
+            setupWithDefaultLimits();
+            Assert.assertTrue(testPassed);
+        }
+        
+    }
+    
+
+    
+    // This case tests that by disabling all limits there should not be any violations for VolumePageIDs
+    // This case modifies the default limits settings
+    @Test
+    public void testPagesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+        
+        boolean testPassed = false;
+        
+        VolumePageIdentifier[] volumePageIDs = new VolumePageIdentifier[] {new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[3]),
+                                                                           new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]),
+                                                                           new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[0]),
+                                                                           new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[2])};
+
+        volumePageIDs[0].addPageSequence("00000001");
+        volumePageIDs[0].addPageSequence("00000003");
+        volumePageIDs[0].addPageSequence("00000002");
+        
+        volumePageIDs[1].addPageSequence("00000004");
+        volumePageIDs[1].addPageSequence("00000001");
+        volumePageIDs[1].addPageSequence("00000002");
+        volumePageIDs[1].addPageSequence("00000005");
+        volumePageIDs[1].addPageSequence("00000003");
+
+        volumePageIDs[2].addPageSequence("00000003");
+        volumePageIDs[2].addPageSequence("00000002");
+        volumePageIDs[2].addPageSequence("00000004");
+        volumePageIDs[2].addPageSequence("00000006");
+        volumePageIDs[2].addPageSequence("00000001");
+        volumePageIDs[2].addPageSequence("00000005");
+
+        volumePageIDs[3].addPageSequence("00000001");
+        volumePageIDs[3].addPageSequence("00000004");
+        volumePageIDs[3].addPageSequence("00000003");
+        volumePageIDs[3].addPageSequence("00000002");
+
+        try {
+            List<VolumePageIdentifier> idList = Arrays.asList(volumePageIDs);
+    
+            setupWithLimits("0", "0", "0");
+            
+            PageValidityChecker checker = new PageValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
+            checker.validateRequest(idList);
+            testPassed = true;
+        } finally {
+            setupWithDefaultLimits();
+        }
+        
+        Assert.assertTrue(testPassed);
+        
+    }
+    
+
 }
 

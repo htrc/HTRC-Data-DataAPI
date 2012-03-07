@@ -110,7 +110,7 @@ public class PageValidityChecker implements RequestValidityChecker {
             
             perVolumePageCount = pageSequences.size();
             int seqIndex = perVolumePageCount - maxPagesPerVolumeChecker.getLimit();
-            seqIndex = seqIndex < 0 ? 0 : seqIndex;
+            seqIndex = (seqIndex < 0) ? 0 : (seqIndex >= perVolumePageCount) ? perVolumePageCount - 1 : seqIndex;
             
             maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + "<" + pageSequences.get(seqIndex) + ">");
 
@@ -118,7 +118,7 @@ public class PageValidityChecker implements RequestValidityChecker {
             totalPageCount += perVolumePageCount;
 
             seqIndex = perVolumePageCount - (maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount);
-            seqIndex = seqIndex < 0 ? 0 : seqIndex;
+            seqIndex = seqIndex < 0 ? 0 : (seqIndex >= perVolumePageCount) ? perVolumePageCount - 1 : seqIndex;
             
             maxTotalPagesPolicyChecker.check(totalPageCount, volumeID + "<" + pageSequences.get(seqIndex) + ">");
 
