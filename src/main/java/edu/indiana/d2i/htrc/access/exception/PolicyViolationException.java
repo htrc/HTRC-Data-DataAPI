@@ -35,7 +35,7 @@ package edu.indiana.d2i.htrc.access.exception;
  * @author Yiming Sun
  *
  */
-public class PolicyViolationException extends Exception {
+public class PolicyViolationException extends DataAPIException {
     
     public PolicyViolationException(String policyName, int max, String offendingID) {
         super("Request violates " + policyName + " " + max + ". Offending ID: " + offendingID);

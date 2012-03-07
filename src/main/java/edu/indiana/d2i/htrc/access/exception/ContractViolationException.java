@@ -35,7 +35,25 @@ package edu.indiana.d2i.htrc.access.exception;
  * @author Yiming Sun
  *
  */
-public class ContractViolationException extends Exception {
+public class ContractViolationException extends DataAPIException {
+
+    /**
+     * @param message
+     * @param throwable
+     */
+    public ContractViolationException(String message, Throwable throwable) {
+        super(message, throwable);
+        // TODO Auto-generated constructor stub
+    }
+
+    /**
+     * @param message
+     */
+    public ContractViolationException(String message) {
+        super(message);
+    }
+    
+    
 
 }
 

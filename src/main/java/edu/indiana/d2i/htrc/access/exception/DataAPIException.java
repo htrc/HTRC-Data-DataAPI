@@ -8,7 +8,7 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  KeyNotFoundException.java
+# File:  DataAPIException.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -35,16 +35,15 @@ package edu.indiana.d2i.htrc.access.exception;
  * @author Yiming Sun
  *
  */
-public class KeyNotFoundException extends DataAPIException {
+public abstract class DataAPIException extends Exception {
     
-    public KeyNotFoundException(String key) {
-        super("Offending key: " + key);
+    public DataAPIException(String message, Throwable throwable) {
+        super(message, throwable);
     }
     
-    public KeyNotFoundException(String key, String message) {
-        super("Offending key: " + key + " " + message);
+    public DataAPIException(String message) {
+        super(message);
     }
-    
 
 }
 
