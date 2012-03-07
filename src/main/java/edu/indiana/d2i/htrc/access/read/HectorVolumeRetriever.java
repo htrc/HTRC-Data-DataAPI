@@ -37,8 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import me.prettyprint.hector.api.Keyspace;
-
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
@@ -48,6 +46,7 @@ import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl;
 
@@ -78,7 +77,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
         return idIterator.hasNext();
     }
     
-    public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException {
+    public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         HTRCItemIdentifier itemIdentifier = idIterator.next();
         
         VolumeReader volumeReader = retrieveVolume(itemIdentifier);
@@ -86,7 +85,7 @@ public class HectorVolumeRetriever implements VolumeRetriever {
     }
     
     
-    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) throws KeyNotFoundException, PolicyViolationException {
+    protected VolumeReader retrieveVolume(HTRCItemIdentifier identifier) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         List<String> pageSequences = null;
 //        Keyspace keyspace = hectorResource.getKeyspace();
         

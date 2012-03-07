@@ -43,6 +43,7 @@ import edu.indiana.d2i.htrc.access.RequestValidityChecker;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
@@ -81,7 +82,7 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
      * @see edu.indiana.d2i.htrc.access.RequestValidityChecker#validateRequest(java.util.List)
      */
     @Override
-    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws KeyNotFoundException, PolicyViolationException {
+    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         Map<String, VolumeInfo> volumeInfoMap = new HashMap<String, VolumeInfo>();
         
         int previousTotalPageCount = 0;

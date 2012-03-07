@@ -58,6 +58,7 @@ import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl.PageReaderImpl;
 import gov.loc.repository.pairtree.Pairtree;
 
@@ -288,7 +289,7 @@ public abstract class HectorResource {
         return keyspace;
     }
     
-    public VolumeInfo getVolumeInfo(String volumeID) throws KeyNotFoundException, HTimedOutException {
+    public VolumeInfo getVolumeInfo(String volumeID) throws KeyNotFoundException, RepositoryException {
         VolumeInfo volumeInfo = null;
         
         boolean success = false;
@@ -359,7 +360,7 @@ public abstract class HectorResource {
                     failDelay = (failDelay * 2) > maxFailDelay ? maxFailDelay : (failDelay * 2);
                 } else {
                     log.error("Failed to get VolumeInfo: " + volumeID, e);
-                    throw e;
+                    throw new RepositoryException("Retrieving volume info failed. VolumeID: " + volumeID, e);
                 }
             }
                 
@@ -371,7 +372,7 @@ public abstract class HectorResource {
     
     
     
-    public List<PageReader> retrievePageContents(String volumeID, List<String> pageSequences) throws KeyNotFoundException, HTimedOutException {
+    public List<PageReader> retrievePageContents(String volumeID, List<String> pageSequences) throws KeyNotFoundException, RepositoryException {
         List<PageReader> pageReaders = new ArrayList<PageReader>();
         
         boolean success = false;
@@ -444,7 +445,7 @@ public abstract class HectorResource {
                     failDelay = (failDelay * 2) > maxFailDelay ? maxFailDelay : (failDelay * 2);
                 } else {
                     log.error("Failed to get page contents: " + volumeID, e);
-                    throw e;
+                    throw new RepositoryException("Retrieving page contents failed. VolumeID: " + volumeID, e);
                 }
             }
         

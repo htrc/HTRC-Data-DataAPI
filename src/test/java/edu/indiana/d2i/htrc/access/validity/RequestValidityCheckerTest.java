@@ -42,6 +42,7 @@ import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.TestParameterContainer;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.VolumeIdentifier;
 import edu.indiana.d2i.htrc.access.id.VolumePageIdentifier;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
@@ -100,7 +101,7 @@ public class RequestValidityCheckerTest {
 
     // This case tests that a KeyNotFoundException should be raised when a non-existing volumeID is requested.
     @Test(expected = KeyNotFoundException.class)
-    public void testInvalidVolumeID1() throws KeyNotFoundException, PolicyViolationException {
+    public void testInvalidVolumeID1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), new VolumeIdentifier(NON_EXISTING_VOLUME_ID), new VolumeIdentifier(TestHectorResource.VOLUME_IDS[3])};
         List<VolumeIdentifier> idList = Arrays.asList(volumeIDs);
         VolumeValidityChecker checker = new VolumeValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
@@ -109,7 +110,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a KeyNotFoundException should be raised when a non-existing pageSequence of an existing volumeID is requested.
     @Test(expected = KeyNotFoundException.class)
-    public void testInvalidPageID1()  throws KeyNotFoundException, PolicyViolationException {
+    public void testInvalidPageID1()  throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumePageIdentifier pageID1 = new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
@@ -133,7 +134,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a KeyNotFoundException should be raised when a non-existing volumeID is requested
     @Test(expected = KeyNotFoundException.class)
-    public void testInvalidPageID2() throws KeyNotFoundException, PolicyViolationException {
+    public void testInvalidPageID2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumePageIdentifier pageID1 = new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
@@ -157,7 +158,7 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyVioationException should be raised when number of volumeIDs requested exceeds max volume limit of 3
     // This case modifies the default limits setting so other limits won't trigger the exceptions
     @Test(expected = PolicyViolationException.class)
-    public void testMaxVolumesViolation1() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxVolumesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), 
                                                                new VolumeIdentifier(TestHectorResource.VOLUME_IDS[0]),
                                                                new VolumeIdentifier(TestHectorResource.VOLUME_IDS[3]),
@@ -177,7 +178,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a PolicyViolationException should be raised when number of pageIDs requested exceeds max volume limit of 3
     @Test(expected = PolicyViolationException.class)
-    public void testMaxVolumesViolation2() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxVolumesViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumePageIdentifier pageID1 = new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000001");
         
@@ -205,7 +206,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a PolicyViolationException should be raised when volumes requested have total page count exceeding max total page limit of 10
     @Test(expected = PolicyViolationException.class)
-    public void testMaxTotalPagesViolation1() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxTotalPagesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), 
                 new VolumeIdentifier(TestHectorResource.VOLUME_IDS[1]),
                 new VolumeIdentifier(TestHectorResource.VOLUME_IDS[3])};
@@ -218,7 +219,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a PolicyViolationException should be raised when total number of pages requested exceeds max total page limit of 10
     @Test(expected = PolicyViolationException.class)
-    public void testMaxTotalPagesViolation2() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxTotalPagesViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumePageIdentifier pageID1 = new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
@@ -250,7 +251,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a PolicyViolationException should be raised when a requested volume has number of pages exceeding max pages per volume limit of 5
     @Test(expected = PolicyViolationException.class)
-    public void testMaxPagesPerVolumeViolation1() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxPagesPerVolumeViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), 
                 new VolumeIdentifier(TestHectorResource.VOLUME_IDS[0])};
 
@@ -263,7 +264,7 @@ public class RequestValidityCheckerTest {
     
     // This case tests that a PolicyViolationException should be raised when number of pages requested for a volume exceeeds max pages per volume limit of 5
     @Test(expected = PolicyViolationException.class)
-    public void testMaxPagesPerVolumeViolation2() throws KeyNotFoundException, PolicyViolationException {
+    public void testMaxPagesPerVolumeViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         VolumePageIdentifier pageID1 = new VolumePageIdentifier(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");

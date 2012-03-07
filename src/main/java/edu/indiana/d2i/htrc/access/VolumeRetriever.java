@@ -33,6 +33,7 @@ package edu.indiana.d2i.htrc.access;
 
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 
 /**
  * @author Yiming Sun
@@ -41,7 +42,7 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 public interface VolumeRetriever {
 
     public boolean hasMoreVolumes();
-    public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException;
+    public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException, RepositoryException;
     
 }
 

@@ -39,16 +39,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import me.prettyprint.hector.api.exceptions.HTimedOutException;
-
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 
 /**
  * @author Yiming Sun
@@ -90,10 +90,24 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;
-        } catch (HTimedOutException e) {
-            log.error("HTimedOutException", e);
+//        } catch (HTimedOutException e) {
+//            log.error("HTimedOutException", e);
+//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
+//            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
+//            WebApplicationException exception = new WebApplicationException(response);
+//            
+//            throw exception;
+        } catch (RepositoryException e) {
+            log.error("RepositoryException", e);
             Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
-            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
+            auditor.error("RepositoryException", "Cassandra Timed Out", e.getMessage());
+            WebApplicationException exception = new WebApplicationException(response);
+            
+            throw exception;
+        } catch (DataAPIException e) {
+            log.error("DataAPIException", e);
+            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
+            auditor.error("DataAPIException", "Unspecified Error", e.getMessage());
             WebApplicationException exception = new WebApplicationException(response);
             
             throw exception;

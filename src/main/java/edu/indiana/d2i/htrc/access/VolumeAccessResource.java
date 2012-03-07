@@ -50,8 +50,10 @@ import me.prettyprint.hector.api.exceptions.HTimedOutException;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
@@ -135,10 +137,18 @@ public class VolumeAccessResource {
             log.error("KeyNotFoundException", e);
             response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
             auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
-        } catch (HTimedOutException e) {
-            log.error("HTimedOutException", e);
+//        } catch (HTimedOutException e) {
+//            log.error("HTimedOutException", e);
+//            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
+//            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
+        } catch (RepositoryException e) {
+            log.error("RepositoryException", e);
             response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
-            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
+            auditor.error("RepositoryException", "Cassandra Timed Out", e.getMessage());
+        } catch (DataAPIException e) {
+            log.error("DataAPIException", e);
+            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
+            auditor.error("DataAPIException", "Unspecified Error", e.getMessage());
         }
         
         return response;
