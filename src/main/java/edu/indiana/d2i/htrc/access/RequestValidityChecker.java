@@ -34,8 +34,7 @@ package edu.indiana.d2i.htrc.access;
 import java.util.List;
 import java.util.Map;
 
-import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 
 /**
  * @author Yiming Sun
@@ -43,7 +42,7 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
  */
 public interface RequestValidityChecker {
     
-    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws KeyNotFoundException, PolicyViolationException;
+    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws DataAPIException;
 
 }
 
