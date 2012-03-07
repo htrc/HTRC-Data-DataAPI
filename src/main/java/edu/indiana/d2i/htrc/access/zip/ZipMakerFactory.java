@@ -31,6 +31,11 @@
  */
 package edu.indiana.d2i.htrc.access.zip;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 
@@ -39,6 +44,23 @@ import edu.indiana.d2i.htrc.access.ZipMaker;
  *
  */
 public class ZipMakerFactory {
+    
+    protected static class Helper {
+        protected static final String ERROR_ENTRY_HEADING = "Caught the following error while generating the ZIP file.  This ZIP file is likely to be incomplete and missing some entries." + System.getProperty("line.separator");
+        
+        protected static void injectErrorEntry(ZipOutputStream outputStream, boolean entryOpen, Exception e) throws IOException {
+            if (entryOpen) {
+                outputStream.closeEntry();
+            }
+            ZipEntry zipEntry = new ZipEntry("ERROR.err");
+            outputStream.putNextEntry(zipEntry);
+            outputStream.write(ERROR_ENTRY_HEADING.getBytes());
+            PrintStream printStream = new PrintStream(outputStream);
+            e.printStackTrace(printStream);
+            
+            outputStream.closeEntry();
+        }
+    }
     
     public static enum ZipTypeEnum {
         SEPARATE_PAGE,

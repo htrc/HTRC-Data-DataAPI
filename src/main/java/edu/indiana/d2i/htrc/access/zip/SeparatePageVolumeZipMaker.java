@@ -37,6 +37,8 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.log4j.Logger;
+
 import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
@@ -44,6 +46,7 @@ import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 
 /**
  * @author Yiming Sun
@@ -51,6 +54,7 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
  */
 public class SeparatePageVolumeZipMaker implements ZipMaker {
 
+    private static Logger log = Logger.getLogger(SeparatePageVolumeZipMaker.class);
     protected final Auditor auditor;
     
     SeparatePageVolumeZipMaker(Auditor auditor) {
@@ -60,28 +64,53 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
      * @see edu.indiana.d2i.htrc.access.ZipMaker#makeZipFile(java.io.OutputStream, java.lang.String, edu.indiana.d2i.htrc.access.VolumeReader)
      */
     @Override
-    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void makeZipFile(OutputStream outputStream, VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
+        
+        boolean entryOpen = false;
+        
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
-        while (volumeRetriever.hasMoreVolumes()) {
-            VolumeReader volumeReader = volumeRetriever.nextVolume();
-            String volumeIDDirName = volumeReader.getPairtreeCleanedVolumeID() + "/";
-            ZipEntry zipEntry = new ZipEntry(volumeIDDirName);
-            zipOutputStream.putNextEntry(zipEntry);
-            zipOutputStream.closeEntry();
-            
-            while (volumeReader.hasMorePages()) {
-                PageReader pageReader = volumeReader.nextPage();
-                String pageSequence = pageReader.getPageSequence();
-                ZipEntry pageContentsEntry = new ZipEntry(volumeIDDirName + pageSequence + ".txt");
-                zipOutputStream.putNextEntry(pageContentsEntry);
-                zipOutputStream.write(pageReader.getPageContent().getBytes());
+        
+        try {
+            while (volumeRetriever.hasMoreVolumes()) {
+                VolumeReader volumeReader = volumeRetriever.nextVolume();
+                String volumeIDDirName = volumeReader.getPairtreeCleanedVolumeID() + "/";
+                ZipEntry zipEntry = new ZipEntry(volumeIDDirName);
+                zipOutputStream.putNextEntry(zipEntry);
+                entryOpen = true;
                 zipOutputStream.closeEntry();
-                auditor.audit("ACCESSED", volumeReader.getVolumeID(), pageSequence);
+                entryOpen = false;
+                while (volumeReader.hasMorePages()) {
+                    PageReader pageReader = volumeReader.nextPage();
+                    String pageSequence = pageReader.getPageSequence();
+                    ZipEntry pageContentsEntry = new ZipEntry(volumeIDDirName + pageSequence + ".txt");
+                    zipOutputStream.putNextEntry(pageContentsEntry);
+                    entryOpen = true;
+                    zipOutputStream.write(pageReader.getPageContent().getBytes());
+                    zipOutputStream.closeEntry();
+                    entryOpen = false;
+                    auditor.audit("ACCESSED", volumeReader.getVolumeID(), pageSequence);
+                }
+                
             }
-            
+        } catch (KeyNotFoundException e) {
+            log.error("KeyNotFoundException", e);
+            log.info("Caught exception while making zip file, injecting ERROR.err entry");
+            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
+            throw e;
+        } catch (PolicyViolationException e) {
+            log.error("PolicyViolationException", e);
+            log.info("Caught exception while making zip file, injecting ERROR.err entry");
+            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
+            throw e;
+        } catch (RepositoryException e) {
+            log.error("RepositoryException", e);
+            log.info("Caught exception while making zip file, injecting ERROR.err entry");
+            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
+            throw e;
+        } finally {
+            zipOutputStream.close();
         }
-        zipOutputStream.close();
 
     }
 
