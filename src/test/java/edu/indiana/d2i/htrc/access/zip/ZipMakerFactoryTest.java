@@ -31,8 +31,11 @@
  */
 package edu.indiana.d2i.htrc.access.zip;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,8 +43,10 @@ import org.junit.Test;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.audit.NullAuditor;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
+import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.read.ExceptionalVolumeRetriever;
 import edu.indiana.d2i.htrc.access.read.TestVolumeRetriever;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
@@ -55,7 +60,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that SeparatePageZipMaker properly generates a zip file with each volume as a directory, and each page belonging to the volume a separate text file under the directory
     @Test
-    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getSeparatePageZipAsByteArray(volumeRetriever);
         
@@ -70,7 +75,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that CombinePageZipMaker properly generates a zip file with all pages of each volume concatenated into a single text file for that volume
     @Test
-    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getCombinePageZipByteArray(volumeRetriever);
         
@@ -85,7 +90,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that WordBagPageZipMaker properly generates a zip file with all pages from all volumes concatenated into a single "bag of words" text file
     @Test
-    public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getWordBagZipByteArray(volumeRetriever);
         
@@ -100,7 +105,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that SeparatePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
-    public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.SEPARATE_PAGE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
@@ -111,7 +116,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that CombinePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
-    public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.COMBINE_PAGE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
@@ -122,7 +127,7 @@ public class ZipMakerFactoryTest {
 
     // This case tests that WordBagPageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
     @Test(expected = KeyNotFoundException.class)
-    public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException {
+    public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
@@ -130,5 +135,103 @@ public class ZipMakerFactoryTest {
         zipMaker.makeZipFile(actual, volumeRetriever);
         
     }
+    
+    // This case tests that SeparatePageZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
+    @Test
+    public void testSeparatePageZipMakerErrorEntry() throws IOException {
+        
+        boolean hasErrorEntry = false;
+        
+        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.SEPARATE_PAGE, new NullAuditor(null));
+        ByteArrayOutputStream actual = new ByteArrayOutputStream();
+        try {
+            zipMaker.makeZipFile(actual, volumeRetriever);
+        } catch (DataAPIException e) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+            ZipEntry zipEntry = null;
+            do {
+                zipEntry = zipInputStream.getNextEntry();
+                if (zipEntry != null) {
+                    String name = zipEntry.getName();
+                    zipInputStream.closeEntry();
+                    if ("ERROR.err".equals(name)) {
+                        hasErrorEntry = true;
+                    }
+                }
+            } while (zipEntry != null);
+            zipInputStream.close();
+            
+            Assert.assertEquals(true, hasErrorEntry);
+        } 
+    }
+    
+
+    
+    // This case tests that CombinePageZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
+    @Test
+    public void testCombinePageZipMakerErrorEntry() throws IOException {
+        
+        boolean hasErrorEntry = false;
+        
+        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.COMBINE_PAGE, new NullAuditor(null));
+        ByteArrayOutputStream actual = new ByteArrayOutputStream();
+        try {
+            zipMaker.makeZipFile(actual, volumeRetriever);
+        } catch (DataAPIException e) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+            ZipEntry zipEntry = null;
+            do {
+                zipEntry = zipInputStream.getNextEntry();
+                if (zipEntry != null) {
+                    String name = zipEntry.getName();
+                    zipInputStream.closeEntry();
+                    if ("ERROR.err".equals(name)) {
+                        hasErrorEntry = true;
+                    }
+                }
+            } while (zipEntry != null);
+            zipInputStream.close();
+            
+            Assert.assertEquals(true, hasErrorEntry);
+        } 
+    }
+    
+
+    // This case tests that WordBagZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
+    @Test
+    public void testWordBagZipMakerErrorEntry() throws IOException {
+        
+        boolean hasErrorEntry = false;
+        
+        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG, new NullAuditor(null));
+        ByteArrayOutputStream actual = new ByteArrayOutputStream();
+        try {
+            zipMaker.makeZipFile(actual, volumeRetriever);
+        } catch (DataAPIException e) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+            ZipEntry zipEntry = null;
+            do {
+                zipEntry = zipInputStream.getNextEntry();
+                if (zipEntry != null) {
+                    String name = zipEntry.getName();
+                    zipInputStream.closeEntry();
+                    if ("ERROR.err".equals(name)) {
+                        hasErrorEntry = true;
+                    }
+                }
+            } while (zipEntry != null);
+            zipInputStream.close();
+            
+            Assert.assertEquals(true, hasErrorEntry);
+        } 
+    }
+
+    
 }
 
