@@ -411,13 +411,13 @@ public abstract class HectorResource {
                                     index++;
                                 } else {
                                     log.error("Column names mismatch. Expected " + columnNames[index] + " Actual: " + name);
-                                    throw new KeyNotFoundException(volumeID + "<" + columnNames[index] + ">");
+                                    throw new KeyNotFoundException(volumeID + "<" + pageSequences.get(index) + ">");
                                 }
                             }
                             
                             if (index < columnNames.length) {
                                 log.error("Column count mismatch. Expected " + columnNames.length + " Actual: " + index);
-                                throw new KeyNotFoundException(volumeID + "<" + columnNames[index] + ">");
+                                throw new KeyNotFoundException(volumeID + "<" + pageSequences.get(index) + ">");
                             }
                         } else {
                             log.error("List<HColumn<>> is null or isEmpty for volume: " + volumeID);
