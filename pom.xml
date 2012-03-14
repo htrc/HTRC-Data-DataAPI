@@ -4,7 +4,7 @@
   <groupId>edu.indiana.d2i.htrc.access</groupId>
   <artifactId>data-api</artifactId>
   <packaging>war</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>data-api Maven Webapp</name>
   <url>http://maven.apache.org</url>
   
