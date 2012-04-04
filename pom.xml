@@ -21,6 +21,12 @@
       <name>Archiva Repository on bitternut</name>
       <url>http://bitternut.cs.indiana.edu:10090/archiva/repository/internal</url>
     </repository>
+
+    <repository>
+      <id>archiva.bitternut.cs.indiana.edu/snapshots</id>
+      <name>Archiva Repository snapshots on bitternut</name>
+      <url>http://bitternut.cs.indiana.edu:10090/archiva/repository/snapshots</url>
+    </repository>
   </repositories>
   
   
@@ -61,6 +67,20 @@
       <artifactId>log4j</artifactId>
       <version>1.2.16</version>
     </dependency>
+    
+    <dependency>
+      <groupId>edu.indiana.d2i.htrc.oauth2</groupId>
+      <artifactId>common</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>edu.indiana.d2i.htrc.oauth2</groupId>
+      <artifactId>filter</artifactId>
+      <version>0.1-SNAPSHOT</version>
+    </dependency>
+    
+    
   </dependencies>
   
   
