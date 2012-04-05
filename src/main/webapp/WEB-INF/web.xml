@@ -72,8 +72,12 @@
     <filter-name>oauth2-filter</filter-name>
     <filter-class>edu.indiana.d2i.htrc.oauth2.filter.OAuth2Filter</filter-class>
     <init-param>
-      <param-name>ds-name</param-name>
+      <param-name>ds.name</param-name>
       <param-value>jdbc/oauthStore</param-value>
+    </init-param>
+    <init-param>
+      <param-name>log4j.properties.path</param-name>
+      <param-value>log4j.properties</param-value>
     </init-param>
   </filter>
   
