@@ -59,7 +59,7 @@
     </init-param>
     <init-param>
       <param-name>auditor.class</param-name>
-      <param-value>edu.indiana.d2i.htrc.access.audit.Log4jAuditor</param-value>
+      <param-value>edu.indiana.d2i.htrc.audit.Log4jAuditor</param-value>
     </init-param>
     <init-param>
       <param-name>log4j.properties.path</param-name>
@@ -78,6 +78,10 @@
     <init-param>
       <param-name>log4j.properties.path</param-name>
       <param-value>log4j.properties</param-value>
+    </init-param>
+    <init-param>
+      <param-name>auditor.class</param-name>
+      <param-value>edu.indiana.d2i.htrc.audit.Log4jAuditor</param-value>
     </init-param>
   </filter>
   
