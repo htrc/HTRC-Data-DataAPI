@@ -36,8 +36,8 @@ import java.io.PrintStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.ZipMaker;
+import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
  * @author Yiming Sun

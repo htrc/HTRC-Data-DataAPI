@@ -42,7 +42,6 @@ import org.junit.Test;
 
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
-import edu.indiana.d2i.htrc.access.audit.NullAuditor;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -50,6 +49,7 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.read.ExceptionalVolumeRetriever;
 import edu.indiana.d2i.htrc.access.read.TestVolumeRetriever;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
+import edu.indiana.d2i.htrc.audit.NullAuditor;
 
 
 /**

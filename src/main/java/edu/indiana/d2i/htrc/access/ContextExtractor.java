@@ -33,16 +33,20 @@ package edu.indiana.d2i.htrc.access;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.log4j.Logger;
+
+import edu.indiana.d2i.htrc.oauth2.common.ContextExtractor;
 
 /**
  * @author Yiming Sun
@@ -57,7 +61,11 @@ public class ContextExtractor {
     public ContextExtractor(HttpServletRequest httpServletRequest, HttpHeaders httpHeaders) {
         contextMap = new HashMap<String, List<String>>();
         extractFromRequest(contextMap, httpServletRequest);
-        extractFromHeaders(contextMap, httpHeaders);
+        if (httpHeaders != null) {
+            extractFromHeaders(contextMap, httpHeaders);
+        } else {
+            extractHeadersFromRequest(contextMap, httpServletRequest);
+        }
     }
     
     public List<String> getContext(String key) {
@@ -68,6 +76,11 @@ public class ContextExtractor {
         }
         return list;
     }
+    
+    public Map<String, List<String>> getContextMap() {
+        return this.contextMap;
+    }
+    
     
     protected void extractFromRequest(Map<String, List<String>> map, HttpServletRequest httpServletRequest) {
         String remoteAddr = httpServletRequest.getRemoteAddr();
@@ -107,33 +120,66 @@ public class ContextExtractor {
     
     
     protected void extractFromHeaders(Map<String, List<String>> map, HttpHeaders httpHeaders) {
-        MultivaluedMap<String, String> requestHeaders = httpHeaders.getRequestHeaders();
-        Set<String> keySet = requestHeaders.keySet();
-        for (String key : keySet) {
-            List<String> list = requestHeaders.get(key.toLowerCase());
-            if (list != null && !list.isEmpty()) {
-                if (log.isDebugEnabled()) {
-                    StringBuilder builder = new StringBuilder(key);
-                    builder.append(":");
-                    for (String string : list) {
-                        builder.append(string).append(" ");
+        if (httpHeaders != null) {
+            MultivaluedMap<String, String> requestHeaders = httpHeaders.getRequestHeaders();
+            Set<String> keySet = requestHeaders.keySet();
+            for (String key : keySet) {
+                List<String> list = requestHeaders.get(key.toLowerCase());
+                if (list != null && !list.isEmpty()) {
+                    if (log.isDebugEnabled()) {
+                        StringBuilder builder = new StringBuilder(key);
+                        builder.append(":");
+                        for (String string : list) {
+                            builder.append(string).append(" ");
+                        }
+                        log.debug(builder.toString());
                     }
-                    log.debug(builder.toString());
-                }
-                
-                List<String> list2 = map.get(key);
-                if (list2 == null) {
-                    list2 = new ArrayList<String>(list);
-                    map.put(key.toLowerCase(), list2);
+                    
+                    List<String> list2 = map.get(key);
+                    if (list2 == null) {
+                        list2 = new ArrayList<String>(list);
+                        map.put(key.toLowerCase(), list2);
+                    } else {
+                        list2.addAll(list);
+                    }
                 } else {
-                    list2.addAll(list);
+                    if (log.isDebugEnabled()) log.debug(key + ": null | empty");
                 }
-            } else {
-                if (log.isDebugEnabled()) log.debug(key + ": null | empty");
+            }
+        }        
+    }
+    
+    // the warning is due to raw Enumeration type returned from HttpServletRequest.getHeaderNames()
+    @SuppressWarnings("unchecked")
+    protected void extractHeadersFromRequest(Map<String, List<String>> map, HttpServletRequest httpServletRequest) {
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        
+        for (String headerName = headerNames.nextElement(); headerNames.hasMoreElements();) {
+            String value = httpServletRequest.getHeader(headerName);
+            List<String> valueList = decomposeValueToList(value);
+            map.put(headerName, valueList);
+            if (log.isDebugEnabled()) {
+                StringBuilder builder = new StringBuilder(headerName);
+                builder.append(":");
+                for (String string : valueList) {
+                    builder.append(string).append(" ");
+                }
+                log.debug(builder.toString());
             }
         }
-        
     }
 
+    protected List<String> decomposeValueToList(String value) {
+        List<String> list = new ArrayList<String>();
+        
+        StringTokenizer tokenizer = new StringTokenizer(value, ",");
+        while (tokenizer.hasMoreTokens()) {
+            String val = tokenizer.nextToken().trim();
+            if (!"".equals(val)) {
+                list.add(val);
+            }
+        }
+        return list;
+    }
 }
 

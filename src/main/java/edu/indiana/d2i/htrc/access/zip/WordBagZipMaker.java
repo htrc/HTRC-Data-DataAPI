@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2012 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.Auditor;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
@@ -47,6 +46,7 @@ import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
+import edu.indiana.d2i.htrc.audit.Auditor;
 
 public class WordBagZipMaker implements ZipMaker {
     

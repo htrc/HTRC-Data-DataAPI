@@ -45,11 +45,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import me.prettyprint.hector.api.exceptions.HTimedOutException;
-
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -64,6 +61,8 @@ import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.validity.VolumeValidityChecker;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
+import edu.indiana.d2i.htrc.audit.Auditor;
+import edu.indiana.d2i.htrc.audit.AuditorFactory;
 
 /**
  * @author Yiming Sun
@@ -93,7 +92,7 @@ public class VolumeAccessResource {
         
         Response response = null;
         ContextExtractor contextExtractor = new ContextExtractor(httpServletRequest, httpHeaders);
-        Auditor auditor = AuditorFactory.getAuditor(contextExtractor);
+        Auditor auditor = AuditorFactory.getAuditor(contextExtractor.getContextMap());
         
         Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
         

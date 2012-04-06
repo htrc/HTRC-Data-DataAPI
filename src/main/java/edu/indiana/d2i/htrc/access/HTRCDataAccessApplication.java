@@ -45,12 +45,12 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import edu.indiana.d2i.htrc.access.audit.AuditorFactory;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
+import edu.indiana.d2i.htrc.audit.AuditorFactory;
 
 /**
  * @author Yiming Sun
@@ -89,7 +89,7 @@ public class HTRCDataAccessApplication extends Application {
         
         HectorResource.initSingletonInstance(parameterContainer);
 
-        AuditorFactory.init(parameterContainer);
+        AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
         
         log.info("Application initialized");
     }
