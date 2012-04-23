@@ -46,8 +46,6 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.oauth2.common.ContextExtractor;
-
 /**
  * @author Yiming Sun
  *
