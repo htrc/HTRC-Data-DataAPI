@@ -152,7 +152,8 @@ public class ContextExtractor {
     protected void extractHeadersFromRequest(Map<String, List<String>> map, HttpServletRequest httpServletRequest) {
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         
-        for (String headerName = headerNames.nextElement(); headerNames.hasMoreElements();) {
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
             String value = httpServletRequest.getHeader(headerName);
             List<String> valueList = decomposeValueToList(value);
             map.put(headerName, valueList);
