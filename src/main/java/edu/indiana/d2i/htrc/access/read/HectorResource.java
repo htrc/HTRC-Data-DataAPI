@@ -36,11 +36,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
 import me.prettyprint.cassandra.serializers.BytesArraySerializer;
 import me.prettyprint.cassandra.serializers.IntegerSerializer;
 import me.prettyprint.cassandra.serializers.StringSerializer;
 import me.prettyprint.cassandra.service.CassandraHostConfigurator;
 import me.prettyprint.hector.api.Cluster;
+import me.prettyprint.hector.api.HConsistencyLevel;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.Serializer;
 import me.prettyprint.hector.api.beans.ColumnSlice;
@@ -262,12 +264,22 @@ public abstract class HectorResource {
         if (log.isDebugEnabled()) log.debug("cassandraKeyspaceName = " + cassandraKeyspaceName);
         
         
+        // set the read consistency level to ONE, which means as long as it gets the record from one
+        // replica, it is a success.  With 3 nodes in total and replication factor of 2, this level
+        // is more practical than a quorum. With a quorum, each read must get the same data from
+        // (replication_factor / 2) + 1 nodes, which is 2 nodes in our case.  And if one node happens
+        // to be nonresponsive, the quorum doesn't form, and the read fails.
+        // This is unnecessary since the default consistency level for write is quorum, the read just
+        // need to get ONE good copy of the data.
+        ConfigurableConsistencyLevel configurableConsistencyLevel = new ConfigurableConsistencyLevel();
+        configurableConsistencyLevel.setDefaultReadConsistencyLevel(HConsistencyLevel.ONE);
+        
         CassandraHostConfigurator configurator = new CassandraHostConfigurator(hostsBuilder.toString());
         
         cluster = HFactory.getOrCreateCluster(cassandraClusterName, configurator);
         if (log.isDebugEnabled()) log.debug("Hector Cluster object created");
         
-        keyspace = HFactory.createKeyspace(cassandraKeyspaceName, cluster);
+        keyspace = HFactory.createKeyspace(cassandraKeyspaceName, cluster, configurableConsistencyLevel);
         if (log.isDebugEnabled()) log.debug("Hector Keyspace object created");
         
         this.stringSerializer = new StringSerializer();
