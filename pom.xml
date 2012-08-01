@@ -52,7 +52,7 @@
     <dependency>
       <groupId>org.hectorclient</groupId>
       <artifactId>hector-core</artifactId>
-      <version>1.1-0</version>
+      <version>1.1-1</version>
     </dependency>
     
     <dependency>
@@ -97,7 +97,7 @@
   
   
   <build>
-    <finalName>data-api</finalName>
+    <finalName>async-data-api</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

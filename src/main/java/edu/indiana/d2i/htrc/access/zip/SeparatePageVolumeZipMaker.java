@@ -33,6 +33,8 @@ package edu.indiana.d2i.htrc.access.zip;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -55,6 +57,8 @@ import edu.indiana.d2i.htrc.audit.Auditor;
 public class SeparatePageVolumeZipMaker implements ZipMaker {
 
     private static Logger log = Logger.getLogger(SeparatePageVolumeZipMaker.class);
+    protected static final String ACCESSED_ACTION = "ACCESSED";
+    protected static final int DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE = 400;
     protected final Auditor auditor;
     
     SeparatePageVolumeZipMaker(Auditor auditor) {
@@ -68,12 +72,24 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
         
         boolean entryOpen = false;
         
+        String currentVolumeID = null;
+        List<String> currentPageSequences = null;
+        
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
-        zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
+        zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
         
         try {
             while (volumeRetriever.hasMoreVolumes()) {
                 VolumeReader volumeReader = volumeRetriever.nextVolume();
+                String volumeID = volumeReader.getVolumeID();
+                if (!volumeID.equals(currentVolumeID)) {
+                    if (currentVolumeID != null) {
+                        auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
+                    }
+                    currentVolumeID = volumeID;
+                    currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
+                }
+                
                 String volumeIDDirName = volumeReader.getPairtreeCleanedVolumeID() + "/";
                 ZipEntry zipEntry = new ZipEntry(volumeIDDirName);
                 zipOutputStream.putNextEntry(zipEntry);
@@ -89,7 +105,7 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
                     zipOutputStream.write(pageReader.getPageContent().getBytes());
                     zipOutputStream.closeEntry();
                     entryOpen = false;
-                    auditor.audit("ACCESSED", volumeReader.getVolumeID(), pageSequence);
+                    currentPageSequences.add(pageSequence);
                 }
                 
             }
@@ -109,6 +125,9 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
             ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
             throw e;
         } finally {
+            if (currentVolumeID != null) {
+                auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
+            }
             zipOutputStream.close();
         }
 

@@ -46,6 +46,10 @@
       <param-value>5000</param-value>
     </init-param>
     <init-param>
+      <param-name>async.worker.count</param-name>
+      <param-value>8</param-value>
+    </init-param>
+    <init-param>
       <param-name>max.volumes.allowed</param-name>
       <param-value>0</param-value>
     </init-param>

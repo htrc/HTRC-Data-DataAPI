@@ -146,7 +146,7 @@ public abstract class HectorResource {
         protected Iterator<PageReader> pageIterator;
         
         
-        protected VolumeReaderImpl(HTRCItemIdentifier identifier) {
+        public VolumeReaderImpl(HTRCItemIdentifier identifier) {
             Pairtree pairtree = new Pairtree();
             this.volumeID = identifier.getVolumeID();
             this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));

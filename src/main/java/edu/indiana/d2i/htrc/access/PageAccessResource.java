@@ -33,7 +33,6 @@ package edu.indiana.d2i.htrc.access;
 
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -47,18 +46,15 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.exception.DataAPIException;
-import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
+import edu.indiana.d2i.htrc.access.async.AsyncJob;
+import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
+import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
-import edu.indiana.d2i.htrc.access.read.HectorResource;
-import edu.indiana.d2i.htrc.access.read.HectorVolumeRetriever;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
-import edu.indiana.d2i.htrc.access.validity.PageValidityChecker;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory.ZipTypeEnum;
 import edu.indiana.d2i.htrc.audit.Auditor;
@@ -98,22 +94,30 @@ public class PageAccessResource {
             if (pageIDs != null) {
                 List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
                 
+                AsyncVolumeRetriever asyncVolumeRetriever = new AsyncVolumeRetriever();
+                
                 for (HTRCItemIdentifier pageIdentifier : pageIDList) {
-                    auditor.audit("REQUESTED", pageIdentifier.getVolumeID(), pageIdentifier.getPageSequences().toArray(new String[0]));
+                    String volumeID = pageIdentifier.getVolumeID();
+                    auditor.audit("REQUESTED", volumeID, pageIdentifier.getPageSequences().toArray(new String[0]));
+                    asyncVolumeRetriever.addOutstandingVolumeID(volumeID);
                 }
                 
-                RequestValidityChecker validityChecker = new PageValidityChecker(HectorResource.getSingletonInstance(), ParameterContainerSingleton.getInstance(), PolicyCheckerRegistryImpl.getInstance());
-                Map<String, ? extends VolumeInfo> volumeInfoMap = validityChecker.validateRequest(pageIDList);
-                
-                
-                VolumeRetriever volumeRetriever = new HectorVolumeRetriever(pageIDList, HectorResource.getSingletonInstance(), volumeInfoMap);
+
+                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_BAG : ZipTypeEnum.SEPARATE_PAGE;
-                
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
-                
-                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker, auditor);
-                
+                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(asyncVolumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_PAGES_ZIP).build();
+
+                // adding jobs to the queue as the last step to ensure all other
+                // objects are properly created
+                for (HTRCItemIdentifier pageIdentifier : pageIDList) {
+                    AsyncJob asyncJob = new AsyncJob(pageIdentifier, asyncVolumeRetriever);
+                    asyncJobManager.addJob(asyncJob);
+                }
+
+            
             } else {
                 log.error("Required parameter pageIDs is null");
                 response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter pageIDs</p>").build();
@@ -127,22 +131,6 @@ public class PageAccessResource {
             log.error("PolicyViolationException", e);
             response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
             auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
-        } catch (KeyNotFoundException e) {
-            log.error("KeyNotFoundException", e);
-            response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
-            auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
-//        } catch (HTimedOutException e) {
-//            log.error("HTimedOutException", e);
-//            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
-//            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
-        } catch (RepositoryException e) {
-            log.error("RepositoryException", e);
-            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
-            auditor.error("RepositoryException", "Cassandra Timed Out", e.getMessage());
-        } catch (DataAPIException e) {
-            log.error("DataAPIException", e);
-            response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
-            auditor.error("DataAPIException", "Unspecified Error", e.getMessage());
         }
         
         

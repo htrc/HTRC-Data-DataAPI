@@ -52,7 +52,7 @@ public class MakeZipUtility {
     public static byte[] getSeparatePageZipAsByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
-        zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
+        zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
         
         while (volumeRetriever.hasMoreVolumes()) {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
@@ -80,7 +80,7 @@ public class MakeZipUtility {
     public static byte[] getCombinePageZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
-        zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
+        zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
         
         while (volumeRetriever.hasMoreVolumes()) {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
@@ -108,7 +108,7 @@ public class MakeZipUtility {
     public static byte[] getWordBagZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
-        zipOutputStream.setLevel(Deflater.BEST_COMPRESSION);
+        zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
 
         ZipEntry zipEntry = new ZipEntry("wordbag.txt");
         zipOutputStream.putNextEntry(zipEntry);

@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2012 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
@@ -16,8 +16,8 @@
 #
 # -----------------------------------------------------------------
 #
-# Project: data-api
-# File:  ContractChecker.java
+# Project: data-api-async-experimental
+# File:  Callback.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -29,16 +29,18 @@
 /**
  * 
  */
-package edu.indiana.d2i.htrc.access;
+package edu.indiana.d2i.htrc.access.async;
 
-import edu.indiana.d2i.htrc.access.exception.ContractViolationException;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
+
 
 /**
  * @author Yiming Sun
  *
  */
-public interface RequestContractChecker {
+public interface Callback {
     
-    public void check(ContextExtractor contextExtractor) throws ContractViolationException;
+    public void finished(ExceptionAwareVolumeReader exceptionAwareVolumeReader);
+    public void failed(ExceptionAwareVolumeReader exceptionAwareVolumeReader, DataAPIException dataAPIException);
 }
 

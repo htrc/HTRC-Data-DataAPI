@@ -45,6 +45,7 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
+import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -91,6 +92,7 @@ public class HTRCDataAccessApplication extends Application {
 
         AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
         
+        AsyncJobManager.init(parameterContainer, HectorResource.getSingletonInstance());
         log.info("Application initialized");
     }
     
@@ -104,6 +106,7 @@ public class HTRCDataAccessApplication extends Application {
     private void fin() {
         if (log.isDebugEnabled()) log.debug("@PreDestroy fin() called");
         HectorResource.getSingletonInstance().shutdown();
+        AsyncJobManager.getInstance().shutdown();
     }
     
     private void loadParametersToContainer(ServletConfig servletConfig) {

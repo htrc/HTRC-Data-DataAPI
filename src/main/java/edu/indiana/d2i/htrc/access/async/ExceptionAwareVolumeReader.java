@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2012 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,7 +8,7 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
@@ -16,8 +16,8 @@
 #
 # -----------------------------------------------------------------
 #
-# Project: data-api
-# File:  ContractViolationException.java
+# Project: data-api-async-experimental
+# File:  TypedVolumeReader.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -29,31 +29,24 @@
 /**
  * 
  */
-package edu.indiana.d2i.htrc.access.exception;
+package edu.indiana.d2i.htrc.access.async;
+
+import edu.indiana.d2i.htrc.access.VolumeReader;
+import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 
 /**
  * @author Yiming Sun
  *
  */
-public class ContractViolationException extends DataAPIException {
-
-    /**
-     * @param message
-     * @param throwable
-     */
-    public ContractViolationException(String message, Throwable throwable) {
-        super(message, throwable);
-        // TODO Auto-generated constructor stub
-    }
-
-    /**
-     * @param message
-     */
-    public ContractViolationException(String message) {
-        super(message);
+public interface ExceptionAwareVolumeReader extends VolumeReader {
+    public static enum DataType {
+        CONTENT,
+        EXCEPTION_KEY_NOT_FOUND,
+        EXCEPTION_REPOSITORY,
+        EXCEPTION_POLICY_VIOLATION;
     }
     
-    
-
+    public DataType getDataType();
+    public DataAPIException getException();
 }
 
