@@ -54,6 +54,7 @@ import me.prettyprint.hector.api.query.SliceQuery;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
@@ -423,13 +424,13 @@ public abstract class HectorResource {
                                     index++;
                                 } else {
                                     log.error("Column names mismatch. Expected " + columnNames[index] + " Actual: " + name);
-                                    throw new KeyNotFoundException(volumeID + "<" + pageSequences.get(index) + ">");
+                                    throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(index) + Constants.PAGE_SEQ_END_MARK);
                                 }
                             }
                             
                             if (index < columnNames.length) {
                                 log.error("Column count mismatch. Expected " + columnNames.length + " Actual: " + index);
-                                throw new KeyNotFoundException(volumeID + "<" + pageSequences.get(index) + ">");
+                                throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(index) + Constants.PAGE_SEQ_END_MARK);
                             }
                         } else {
                             log.error("List<HColumn<>> is null or isEmpty for volume: " + volumeID);

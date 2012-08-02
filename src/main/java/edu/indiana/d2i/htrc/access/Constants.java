@@ -45,5 +45,13 @@ public final class Constants {
     public static final String FILENAME_VOLUMES_ZIP = "filename=\"volumes.zip\"";
     public static final String FILENAME_PAGES_ZIP = "filename=\"pages.zip\"";
     
+    public static final String ID_SEPARATOR = "|";
+    public static final char PAGE_SEQ_START_MARK = '[';
+    public static final char PAGE_SEQ_END_MARK = ']';
+    public static final String PAGE_SEQ_SEPARATOR = ",";
+    public static final char PAGE_SEQ_PADDING_CHAR = '0';
+    
+
+    
 }
 

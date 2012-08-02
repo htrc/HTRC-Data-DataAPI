@@ -148,7 +148,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that pageIDs separated by pipe should be properly parsed, and page sequences can be multiple separated by comma, or can be a single pageSequence without comma
     @Test
     public void testPageIDsParserParse1() throws ParseException, PolicyViolationException {
-        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100>|  miun.ajj3079.0001.001<4>";
+        String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100]|  miun.ajj3079.0001.001[4]";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
@@ -176,7 +176,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that multiple pipes and spaces can be tolerated and ignored by the parser as long as there is at least one valid pageID 
     @Test
     public void testPageIDsParserParse2() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100> | ||  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100] | ||  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
@@ -200,7 +200,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that extra spaces in page sequence list can be tolerated and page sequences are correctly parsed
     @Test
     public void testPageIDsParserParse3() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f <1 ,2  , 44  , 100 >  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [1 ,2  , 44  , 100 ]  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
@@ -223,7 +223,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that multiple commas in page sequence list can be tolerated and page sequences are correctly parsed
     @Test
     public void testPageIDsParserParse4() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f < , , , 1, ,, 2,,, ,  44,,, 100,, ,, >  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [ , , , 1, ,, 2,,, ,  44,,, 100,, ,, ]  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
@@ -248,7 +248,7 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse6() throws ParseException, PolicyViolationException {
 
-        String rawString = "loc.ark:/13960/t9q23z43f <1,2, 44, 100, 2, 44>|  miun.ajj3079.0001.001<4> | loc.ark:/13960/t9q23z43f <22, 12, 2, 17>";
+        String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100, 2, 44]|  miun.ajj3079.0001.001[4] | loc.ark:/13960/t9q23z43f [22, 12, 2, 17]";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
@@ -277,7 +277,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if a page sequence is not positive
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError1() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f < 1, -1 >  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [ 1, -1 ]  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
@@ -287,7 +287,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if a page sequence is not numeric
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError2() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f < one, two >  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [ one, two ]  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
@@ -298,7 +298,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if page sequence list is malformed (missing closing angle bracket)
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError3() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f <  ";
+        String rawString = "loc.ark:/13960/t9q23z43f [  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
@@ -309,7 +309,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if page sequence list is malformed (missing opening angle bracket)
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError4() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f 3,4,8,10>  ";
+        String rawString = "loc.ark:/13960/t9q23z43f 3,4,8,10]  ";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
@@ -319,7 +319,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if the page sequence list does not have page sequences
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError5() throws ParseException, PolicyViolationException  {
-        String rawString = "loc.ark:/13960/t9q23z43f<>";
+        String rawString = "loc.ark:/13960/t9q23z43f[]";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
@@ -329,7 +329,7 @@ public class HTRCItemIdentifierFactoryTest {
     // This case tests that a ParseException should be raised if the pageID does not have the volume identifier portion
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError6() throws ParseException, PolicyViolationException  {
-        String rawString = "<1,2,3,4>";
+        String rawString = "[1,2,3,4]";
         HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);

@@ -39,6 +39,7 @@ import java.util.Map;
 import me.prettyprint.hector.api.Cluster;
 import me.prettyprint.hector.api.Keyspace;
 import me.prettyprint.hector.api.exceptions.HTimedOutException;
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
@@ -100,7 +101,7 @@ public class TestHectorResource extends HectorResource {
             for (String pageSequence : pageSequences) {
                 PageReader pageReader = pageReaderMap.get(pageSequence);
                 if (pageReader == null) {
-                    throw new KeyNotFoundException(volumeID + "<" + pageSequence + ">");
+                    throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequence + Constants.PAGE_SEQ_END_MARK);
                 } else {
                     pageReaderList.add(pageReader);
                 }

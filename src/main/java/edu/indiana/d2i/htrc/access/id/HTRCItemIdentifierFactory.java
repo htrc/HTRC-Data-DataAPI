@@ -41,6 +41,7 @@ import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -59,6 +60,12 @@ public class HTRCItemIdentifierFactory {
         public static final String PN_MAX_TOTAL_PAGES_ALLOWED = "max.total.pages.allowed";
         public static final String PN_MAX_PAGES_PER_VOLUME_ALLOWED = "max.pages.per.volume.allowed";
         
+//        protected static final String ID_SEPARATOR = "|";
+//        protected static final char PAGE_SEQ_START_MARK = '[';
+//        protected static final char PAGE_SEQ_END_MARK = ']';
+//        protected static final String PAGE_SEQ_SEPARATOR = ",";
+//        protected static final char PAGE_SEQ_PADDING_CHAR = '0';
+        
         protected PolicyCheckerRegistry policyCheckerRegistry = new NullPolicyCheckerRegistry();
         
         public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;
@@ -75,7 +82,7 @@ public class HTRCItemIdentifierFactory {
                 int padLength = PAGE_SEQUENCE_LENGTH - sequenceString.length();
                 
                 for (int i = 0; i < padLength; i++) {
-                    builder.append('0');
+                    builder.append(Constants.PAGE_SEQ_PADDING_CHAR);
                 }
                 builder.append(sequenceString);
                 return builder.toString();
@@ -96,7 +103,7 @@ public class HTRCItemIdentifierFactory {
             
             Map<String, VolumeIdentifier> volumeIDMap = new HashMap<String, VolumeIdentifier>();
 
-            StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
+            StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
                 if (!"".equals(token)) {
@@ -129,15 +136,15 @@ public class HTRCItemIdentifierFactory {
         public List<VolumePageIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
 
             Map<String, VolumePageIdentifier> pageIDMap = new HashMap<String, VolumePageIdentifier>();
-            StringTokenizer tokenizer = new StringTokenizer(identifiersString, "|");
+            StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
                 
                 if (!"".equals(rawUnit)) {
                     int length = rawUnit.length();
                     
-                    if (rawUnit.charAt(length - 1) == '>') {
-                        int lastIndex = rawUnit.lastIndexOf('<');
+                    if (rawUnit.charAt(length - 1) == Constants.PAGE_SEQ_END_MARK) {
+                        int lastIndex = rawUnit.lastIndexOf(Constants.PAGE_SEQ_START_MARK);
                         if (lastIndex > MIN_VOLUME_ID_LENGTH) {
                             boolean hasPageSequence = false;
                             
@@ -152,7 +159,7 @@ public class HTRCItemIdentifierFactory {
 
                             String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
                             
-                            StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, ",");
+                            StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, Constants.PAGE_SEQ_SEPARATOR);
                             while (pageTokenizer.hasMoreTokens()) {
                                 String pageSeqStr = pageTokenizer.nextToken().trim();
                                 if (!"".equals(pageSeqStr)) {
@@ -163,10 +170,10 @@ public class HTRCItemIdentifierFactory {
                                         hasPageSequence = true;
                                     } catch (NumberFormatException e) {
                                         log.error("NumberFormatException while parsing page sequence", e);
-                                        throw new ParseException(volumeID + "<" + pageSeqStr + ">", 0);
+                                        throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
                                     } catch (IllegalArgumentException e) {
                                         log.error("IllegalArgumentException while parsing page sequence", e);
-                                        throw new ParseException(volumeID + "<" + pageSeqStr + ">", 0);
+                                        throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
                                     }
                                     
                                 }
