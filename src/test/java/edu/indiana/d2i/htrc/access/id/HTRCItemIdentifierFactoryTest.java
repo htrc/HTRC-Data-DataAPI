@@ -144,6 +144,62 @@ public class HTRCItemIdentifierFactoryTest {
         List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
     }
     
+    // This case tests that a malformed volumeID without any dot shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError2() throws ParseException, PolicyViolationException {
+        String rawString = "abc";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+    
+    // This case tests that a malformed volumeID with only a prefix shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError3() throws ParseException, PolicyViolationException {
+        String rawString = "abc.";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+
+    // This case tests that a malformed volumeID with only a prefix and a trailing space shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError4() throws ParseException, PolicyViolationException {
+        String rawString = "abc. ";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+    
+    // This case tests that a malformed volumeID with a dot but no prefix shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError5() throws ParseException, PolicyViolationException {
+        String rawString = ".abc";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+
+    // This case tests that a malformed volumeID with a dot and a leading space but no prefix shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError6() throws ParseException, PolicyViolationException {
+        String rawString = " .abc";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+
+    // This case tests that a malformed volumeID that is only a dot shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError7() throws ParseException, PolicyViolationException {
+        String rawString = ".";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+    
+    // This case tests that a malformed volumeID among well formed volumeIDs shall raise a ParseException
+    @Test(expected = ParseException.class)
+    public void testVolumeIDsParserParseError8() throws ParseException, PolicyViolationException {
+        String rawString = "aaa.bcde|ac.10211| bad. | xyz.0334";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+    }
+    
 
     // This case tests that pageIDs separated by pipe should be properly parsed, and page sequences can be multiple separated by comma, or can be a single pageSequence without comma
     @Test
@@ -347,6 +403,68 @@ public class HTRCItemIdentifierFactoryTest {
         
     }
     
+
+    // This case tests that a ParseException should be raised if volume ID portion is malformed with only a prefix
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError8() throws ParseException, PolicyViolationException  {
+        String rawString = "ord.[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+    
+
+    // This case tests that a ParseException should be raised if volume ID portion is malformed with no prefix
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError9() throws ParseException, PolicyViolationException  {
+        String rawString = "ord[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+    
+    // This case tests that a ParseException should be raised if volume ID portion is malformed with only a dot but no prefix
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError10() throws ParseException, PolicyViolationException  {
+        String rawString = ".ord[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+
+    // This case tests that a ParseException should be raised if volume ID portion is malformed with only a dot and a leading space but no prefix
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError11() throws ParseException, PolicyViolationException  {
+        String rawString = " .ord[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+    // This case tests that a ParseException should be raised if volume ID portion is malformed with only a dot
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError12() throws ParseException, PolicyViolationException  {
+        String rawString = ".[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
+
+    // This case tests that a ParseException should be raised if one of page IDs has a malformed volume ID portion
+    @Test (expected = ParseException.class)
+    public void testPageIDsParserParseError13() throws ParseException, PolicyViolationException  {
+        String rawString = "ord.csa[1,2,3] | rpt.a123[43,11,19] | aadsf[12,4,2] | m.1[1,2,3]";
+        HTRCItemIdentifierFactory.Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+
+        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        
+    }
 
 }
 

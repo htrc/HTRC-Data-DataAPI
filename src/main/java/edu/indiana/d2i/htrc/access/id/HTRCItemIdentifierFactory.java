@@ -38,8 +38,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.mortbay.log.Log;
 
 import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
@@ -54,6 +57,9 @@ import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 public class HTRCItemIdentifierFactory {
     
     public static abstract class Parser {
+        
+        protected static final String VOLUME_ID_PATTERN_STRING = ".+\\..+";
+        protected static final Pattern VOLUME_ID_PATTERN = Pattern.compile(VOLUME_ID_PATTERN_STRING);
         
         public static final int PAGE_SEQUENCE_LENGTH = 8;
         
@@ -95,6 +101,7 @@ public class HTRCItemIdentifierFactory {
     
 
     static class VolumeIDsParser extends Parser {
+        private static final Logger log = Logger.getLogger(VolumeIDsParser.class);
         /**
          * @see edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser#parse(java.lang.String)
          */
@@ -107,11 +114,18 @@ public class HTRCItemIdentifierFactory {
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
                 if (!"".equals(token)) {
-                    VolumeIdentifier volumeIdentifier = volumeIDMap.get(token);
-                    if (volumeIdentifier == null) {
-                        volumeIdentifier = new VolumeIdentifier(token);
-                        volumeIDMap.put(token, volumeIdentifier);
-
+                    if (log.isDebugEnabled()) Log.debug("unverified volume ID: " + token);
+                    Matcher matcher = VOLUME_ID_PATTERN.matcher(token);
+                    if (matcher.matches()) {
+                        if (log.isDebugEnabled()) Log.debug("volume ID: " + token);
+                        VolumeIdentifier volumeIdentifier = volumeIDMap.get(token);
+                        if (volumeIdentifier == null) {
+                            volumeIdentifier = new VolumeIdentifier(token);
+                            volumeIDMap.put(token, volumeIdentifier);
+    
+                        }
+                    } else {
+                        throw new ParseException(token, 0);
                     }
                 }
             }
@@ -149,38 +163,44 @@ public class HTRCItemIdentifierFactory {
                             boolean hasPageSequence = false;
                             
                             String volumeID = rawUnit.substring(0, lastIndex).trim();
-                            if (log.isDebugEnabled()) log.debug("parsed volumeID: " + volumeID);
+                            if (log.isDebugEnabled()) log.debug("unverified volumeID: " + volumeID);
                             
-                            VolumePageIdentifier volumePageIdentifier = pageIDMap.get(volumeID);
-                            if (volumePageIdentifier == null) {
-                                volumePageIdentifier = new VolumePageIdentifier(volumeID);
-                                pageIDMap.put(volumeID, volumePageIdentifier);
-                            }
-
-                            String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
-                            
-                            StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, Constants.PAGE_SEQ_SEPARATOR);
-                            while (pageTokenizer.hasMoreTokens()) {
-                                String pageSeqStr = pageTokenizer.nextToken().trim();
-                                if (!"".equals(pageSeqStr)) {
-                                    try {
-                                        int pageSeqInt = Integer.valueOf(pageSeqStr);
-                                        String pageSequence = generatePageSequenceString(pageSeqInt);
-                                        volumePageIdentifier.addPageSequence(pageSequence);
-                                        hasPageSequence = true;
-                                    } catch (NumberFormatException e) {
-                                        log.error("NumberFormatException while parsing page sequence", e);
-                                        throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
-                                    } catch (IllegalArgumentException e) {
-                                        log.error("IllegalArgumentException while parsing page sequence", e);
-                                        throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
-                                    }
-                                    
+                            Matcher matcher = VOLUME_ID_PATTERN.matcher(volumeID);
+                            if (matcher.matches()) {
+                                if (log.isDebugEnabled()) log.debug("volume ID: " + volumeID);
+                                VolumePageIdentifier volumePageIdentifier = pageIDMap.get(volumeID);
+                                if (volumePageIdentifier == null) {
+                                    volumePageIdentifier = new VolumePageIdentifier(volumeID);
+                                    pageIDMap.put(volumeID, volumePageIdentifier);
                                 }
-                            }
-
-                            if (!hasPageSequence) {
-                                throw new ParseException(rawUnit, lastIndex);
+    
+                                String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
+                                
+                                StringTokenizer pageTokenizer = new StringTokenizer(pageSeqRaw, Constants.PAGE_SEQ_SEPARATOR);
+                                while (pageTokenizer.hasMoreTokens()) {
+                                    String pageSeqStr = pageTokenizer.nextToken().trim();
+                                    if (!"".equals(pageSeqStr)) {
+                                        try {
+                                            int pageSeqInt = Integer.valueOf(pageSeqStr);
+                                            String pageSequence = generatePageSequenceString(pageSeqInt);
+                                            volumePageIdentifier.addPageSequence(pageSequence);
+                                            hasPageSequence = true;
+                                        } catch (NumberFormatException e) {
+                                            log.error("NumberFormatException while parsing page sequence", e);
+                                            throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
+                                        } catch (IllegalArgumentException e) {
+                                            log.error("IllegalArgumentException while parsing page sequence", e);
+                                            throw new ParseException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSeqStr + Constants.PAGE_SEQ_END_MARK, 0);
+                                        }
+                                        
+                                    }
+                                }
+    
+                                if (!hasPageSequence) {
+                                    throw new ParseException(rawUnit, lastIndex);
+                                }
+                            } else {
+                                throw new ParseException(rawUnit, 0);
                             }
                         } else {
                             throw new ParseException(rawUnit, 0);
@@ -223,5 +243,9 @@ public class HTRCItemIdentifierFactory {
         return parser;
     }
 
+    public static void main(String[] args) {
+        Matcher m = Parser.VOLUME_ID_PATTERN.matcher("a.$aa");
+        System.out.println(m.matches());
+    }
 }
 
