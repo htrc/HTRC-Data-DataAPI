@@ -25,6 +25,8 @@ hector.access.fail.init.delay  - initial amount of time (in milliseconds) Hector
 
 hector.access.fail.max.delay  - maximum amount of time (in milliseconds) Hector can wait before trying to send the request to Cassandra again.  Hector waits for hector.access.fail.init.delay ms on the first HTimedOutException, and for subsequent failures it doubles the amount of time to wait, until the amount exceeds hector.access.fail.max.delay, and then it waits for the max delay amount until either the request succeeds or the max attempts have reached.
 
+async.worker.count - number of asynchronous worker threads to deploy
+
 max.volumes.allowed  - maximum number volumes a client can retrieve in one request.  Use 0 to set unlimited.  This is entirely based on the number of unique volumeIDs in the request.
 
 max.total.pages.allowed  - maximum number of pages a client can retrieve in one request.  Use 0 to set unlimited.  This is the total number of pages tallied from all volumes.
