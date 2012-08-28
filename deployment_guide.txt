@@ -1,7 +1,7 @@
 
 To build a WAR for Tomcat, run
 
-> mvn package
+> mvn clean package
 
 ==============================
 
