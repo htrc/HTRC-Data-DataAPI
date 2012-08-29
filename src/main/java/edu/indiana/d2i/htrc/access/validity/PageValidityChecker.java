@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.PolicyChecker;
@@ -103,7 +104,7 @@ public class PageValidityChecker implements RequestValidityChecker {
             for (String pageSequence : pageSequences) {
                 int value = Integer.parseInt(pageSequence);
                 if (value > volumeHighestPageSequence) {
-                    throw new KeyNotFoundException(volumeID + "<" + pageSequence + ">");
+                    throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequence + Constants.PAGE_SEQ_END_MARK);
                 }
             }
                 
@@ -112,7 +113,7 @@ public class PageValidityChecker implements RequestValidityChecker {
             int seqIndex = perVolumePageCount - maxPagesPerVolumeChecker.getLimit();
             seqIndex = (seqIndex < 0) ? 0 : (seqIndex >= perVolumePageCount) ? perVolumePageCount - 1 : seqIndex;
             
-            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + "<" + pageSequences.get(seqIndex) + ">");
+            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(seqIndex) + Constants.PAGE_SEQ_END_MARK);
 
             
             totalPageCount += perVolumePageCount;
@@ -120,7 +121,7 @@ public class PageValidityChecker implements RequestValidityChecker {
             seqIndex = perVolumePageCount - (maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount);
             seqIndex = seqIndex < 0 ? 0 : (seqIndex >= perVolumePageCount) ? perVolumePageCount - 1 : seqIndex;
             
-            maxTotalPagesPolicyChecker.check(totalPageCount, volumeID + "<" + pageSequences.get(seqIndex) + ">");
+            maxTotalPagesPolicyChecker.check(totalPageCount, volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(seqIndex) + Constants.PAGE_SEQ_END_MARK);
 
             previousTotalPageCount = totalPageCount;
             volumeInfoMap.put(volumeID, volumeInfo);

@@ -38,6 +38,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
@@ -140,7 +141,7 @@ public class AsyncWorker implements Runnable {
         for (String pageSequence : pageSequences) {
             int value = Integer.parseInt(pageSequence);
             if (value > maxPageSequence) {
-                throw new KeyNotFoundException(volumeID + "<" + pageSequence + ">");
+                throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequence + Constants.PAGE_SEQ_END_MARK);
             }
         }
     }

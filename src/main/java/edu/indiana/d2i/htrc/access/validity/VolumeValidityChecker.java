@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.PolicyChecker;
@@ -95,12 +96,12 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
             maxVolumesPolicyChecker.check(volumeCount, volumeID);
 
             perVolumePageCount = volumeInfo.getPageCount();
-            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + "<" + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + ">");
+            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + Constants.PAGE_SEQ_END_MARK);
             
             totalPageCount += perVolumePageCount;
             
             int delta = maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount + 1;
-            String message = (delta > 0) ? volumeID + "<" + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(delta) + ">" : volumeID;
+            String message = (delta > 0) ? volumeID + Constants.PAGE_SEQ_START_MARK + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(delta) + Constants.PAGE_SEQ_END_MARK : volumeID;
             
             maxTotalPagesPolicyChecker.check(totalPageCount, message);
             
