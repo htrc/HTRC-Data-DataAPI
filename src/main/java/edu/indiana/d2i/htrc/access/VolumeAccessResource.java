@@ -35,7 +35,10 @@ import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -73,9 +76,21 @@ public class VolumeAccessResource {
     private static Logger log = Logger.getLogger(VolumeAccessResource.class);
     
     @GET
-    public Response getResource(@QueryParam("volumeIDs") String volumeIDs, 
-                                @QueryParam("concat") boolean concatenate,
-                                @QueryParam("version") int version,
+    public Response getResourceGet(@QueryParam("volumeIDs") String volumeIDs,
+                                   @QueryParam("concat") boolean concatenate,
+                                   @QueryParam("version") int version,
+                                   @Context HttpHeaders httpHeaders,
+                                   @Context HttpServletRequest httpServletRequest) {
+        
+        return getResourcePost(volumeIDs, concatenate, version, httpHeaders, httpServletRequest);
+    }
+        
+    
+    @POST
+    @Consumes("application/x-www-form-urlencoded")
+    public Response getResourcePost(@FormParam("volumeIDs") String volumeIDs, 
+                                @FormParam("concat") boolean concatenate,
+                                @FormParam("version") int version,
                                 @Context HttpHeaders httpHeaders,
                                 @Context HttpServletRequest httpServletRequest) {
         

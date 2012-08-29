@@ -35,7 +35,10 @@ import java.text.ParseException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -70,11 +73,21 @@ public class PageAccessResource {
     private static Logger log = Logger.getLogger(PageAccessResource.class);
     
     @GET
-    public Response getResource(@QueryParam("pageIDs") String pageIDs,
-                                @QueryParam("concat") boolean concatenate,
-                                @QueryParam("version") int version,
-                                @Context HttpHeaders httpHeaders,
-                                @Context HttpServletRequest httpServletRequest) {
+    public Response getResourceGet(@QueryParam("pageIDs") String pageIDs,
+                                   @QueryParam("concat") boolean concatenate,
+                                   @QueryParam("version") int version,
+                                   @Context HttpHeaders httpHeaders,
+                                   @Context HttpServletRequest httpServletRequest) {
+        return getResourcePost(pageIDs, concatenate, version, httpHeaders, httpServletRequest);
+    }
+    
+    @POST
+    @Consumes("application/x-www-form-urlencoded")
+    public Response getResourcePost(@FormParam("pageIDs") String pageIDs,
+                                    @FormParam("concat") boolean concatenate,
+                                    @FormParam("version") int version,
+                                    @Context HttpHeaders httpHeaders,
+                                    @Context HttpServletRequest httpServletRequest) {
         
         
         if (log.isDebugEnabled()) {
