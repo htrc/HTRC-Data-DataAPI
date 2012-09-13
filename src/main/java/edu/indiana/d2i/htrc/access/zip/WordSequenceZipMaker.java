@@ -50,14 +50,14 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
-public class WordBagZipMaker implements ZipMaker {
+public class WordSequenceZipMaker implements ZipMaker {
     
-    private static Logger log = Logger.getLogger(WordBagZipMaker.class);
+    private static Logger log = Logger.getLogger(WordSequenceZipMaker.class);
     protected static final String ACCESSED_ACTION = "ACCESSED";
     protected static final int DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE = 400;
     protected final Auditor auditor;
     
-    WordBagZipMaker(Auditor auditor) {
+    WordSequenceZipMaker(Auditor auditor) {
         this.auditor = auditor;
     }
 
@@ -76,7 +76,7 @@ public class WordBagZipMaker implements ZipMaker {
         zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
         
         try {
-            ZipEntry zipEntry = new ZipEntry("wordbag.txt");
+            ZipEntry zipEntry = new ZipEntry("wordseq.txt");
             zipOutputStream.putNextEntry(zipEntry);
             entryOpen = true;
             while (volumeRetriever.hasMoreVolumes()) {

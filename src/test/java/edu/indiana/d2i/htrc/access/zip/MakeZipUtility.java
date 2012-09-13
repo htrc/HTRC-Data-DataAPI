@@ -105,12 +105,12 @@ public class MakeZipUtility {
         return expectedOutputStream.toByteArray();
     }
     
-    public static byte[] getWordBagZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public static byte[] getWordSequenceZipByteArray(VolumeRetriever volumeRetriever) throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException {
         ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
         ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
         zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
 
-        ZipEntry zipEntry = new ZipEntry("wordbag.txt");
+        ZipEntry zipEntry = new ZipEntry("wordseq.txt");
         zipOutputStream.putNextEntry(zipEntry);
 
         while (volumeRetriever.hasMoreVolumes()) {

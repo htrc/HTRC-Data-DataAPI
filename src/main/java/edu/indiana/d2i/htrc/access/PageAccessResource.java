@@ -118,7 +118,7 @@ public class PageAccessResource {
 
                 AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
 
-                ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_BAG : ZipTypeEnum.SEPARATE_PAGE;
+                ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_SEQUENCE : ZipTypeEnum.SEPARATE_PAGE;
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
                 StreamingOutput streamingOutput = new VolumeZipStreamingOutput(asyncVolumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_PAGES_ZIP).build();

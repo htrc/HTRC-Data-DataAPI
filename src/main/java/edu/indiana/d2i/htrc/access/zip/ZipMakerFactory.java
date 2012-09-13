@@ -65,7 +65,7 @@ public class ZipMakerFactory {
     public static enum ZipTypeEnum {
         SEPARATE_PAGE,
         COMBINE_PAGE,
-        WORD_BAG;
+        WORD_SEQUENCE;
     }
     
     public static ZipMaker newInstance(ZipTypeEnum type, Auditor auditor) {
@@ -77,8 +77,8 @@ public class ZipMakerFactory {
         case SEPARATE_PAGE:
             zipMaker = new SeparatePageVolumeZipMaker(auditor);
             break;
-        case WORD_BAG:
-            zipMaker = new WordBagZipMaker(auditor);
+        case WORD_SEQUENCE:
+            zipMaker = new WordSequenceZipMaker(auditor);
             break;
         }
         

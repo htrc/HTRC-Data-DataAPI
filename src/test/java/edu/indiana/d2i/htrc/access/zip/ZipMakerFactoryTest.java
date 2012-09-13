@@ -90,12 +90,12 @@ public class ZipMakerFactoryTest {
     
     // This case tests that WordBagPageZipMaker properly generates a zip file with all pages from all volumes concatenated into a single "bag of words" text file
     @Test
-    public void testWordBagPageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
+    public void testWordSequencePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
-        byte[] expected = MakeZipUtility.getWordBagZipByteArray(volumeRetriever);
+        byte[] expected = MakeZipUtility.getWordSequenceZipByteArray(volumeRetriever);
         
         VolumeRetriever volumeRetriever2 = new TestVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG, new NullAuditor(null));
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_SEQUENCE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
         
         zipMaker.makeZipFile(actual, volumeRetriever2);
@@ -129,7 +129,7 @@ public class ZipMakerFactoryTest {
     @Test(expected = KeyNotFoundException.class)
     public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG, new NullAuditor(null));
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_SEQUENCE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
         
         zipMaker.makeZipFile(actual, volumeRetriever);
@@ -203,12 +203,12 @@ public class ZipMakerFactoryTest {
 
     // This case tests that WordBagZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
     @Test
-    public void testWordBagZipMakerErrorEntry() throws IOException {
+    public void testWordSequenceZipMakerErrorEntry() throws IOException {
         
         boolean hasErrorEntry = false;
         
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_BAG, new NullAuditor(null));
+        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_SEQUENCE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
         try {
             zipMaker.makeZipFile(actual, volumeRetriever);
