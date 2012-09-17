@@ -156,7 +156,7 @@ public abstract class HectorResource {
         }
 
         public void setPages(List<PageReader> pages) {
-            this.pages = Collections.unmodifiableList(pages);
+            this.pages = pages;
 //            this.pageIterator = pages.iterator();
         }
         
