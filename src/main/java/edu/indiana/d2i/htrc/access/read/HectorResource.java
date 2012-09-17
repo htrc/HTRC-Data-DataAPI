@@ -144,7 +144,7 @@ public abstract class HectorResource {
         protected final String volumeID;
         protected final String pairtreeCleanedVolumeID;
         protected List<PageReader> pages;
-        protected Iterator<PageReader> pageIterator;
+//        protected Iterator<PageReader> pageIterator;
         
         
         public VolumeReaderImpl(HTRCItemIdentifier identifier) {
@@ -152,12 +152,12 @@ public abstract class HectorResource {
             this.volumeID = identifier.getVolumeID();
             this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));
             this.pages = null;
-            this.pageIterator = null;
+//            this.pageIterator = null;
         }
 
         public void setPages(List<PageReader> pages) {
             this.pages = Collections.unmodifiableList(pages);
-            this.pageIterator = pages.iterator();
+//            this.pageIterator = pages.iterator();
         }
         
         private String getPrefix(String volumeID) {
@@ -189,8 +189,12 @@ public abstract class HectorResource {
          * @see edu.indiana.d2i.htrc.access.VolumeReader#nextPage()
          */
         @Override
-        public PageReader nextPage() throws KeyNotFoundException {
-            return pageIterator.next();
+        public PageReader nextPage() {
+            PageReader pageReader = null;
+            if (!pages.isEmpty()) {
+                pageReader = pages.remove(0);
+            } 
+            return pageReader;
         }
 
         /**
@@ -198,7 +202,7 @@ public abstract class HectorResource {
          */
         @Override
         public boolean hasMorePages() {
-            return pageIterator.hasNext();
+            return !pages.isEmpty();
         }
 
     }

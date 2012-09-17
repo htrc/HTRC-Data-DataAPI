@@ -33,8 +33,6 @@ package edu.indiana.d2i.htrc.access;
 
 import java.util.List;
 
-import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-
 /**
  * @author Yiming Sun
  *
@@ -48,7 +46,8 @@ public interface VolumeReader {
     
     public String getVolumeID();
     public String getPairtreeCleanedVolumeID();
-    public PageReader nextPage() throws KeyNotFoundException;
+//    public PageReader nextPage() throws KeyNotFoundException;
+    public PageReader nextPage();
     public boolean hasMorePages();
     public void setPages(List<PageReader> pageReaders);
 
