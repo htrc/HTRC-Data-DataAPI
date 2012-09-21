@@ -31,10 +31,15 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.log4j.Logger;
+
+import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader.DataType;
@@ -48,25 +53,54 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
  *
  */
 public class AsyncVolumeRetriever implements VolumeRetriever {
+    private static final Logger log = Logger.getLogger(AsyncVolumeRetriever.class);
     
     protected final Object lock;
-    protected HashSet<String> outstandingVolumeIDsSet;
+    protected final AsyncJobManager asyncJobManager;
+    protected static int producerResumeThreshold = 0;
+    protected static int producerPauseThreshold = Integer.MAX_VALUE;
+    protected volatile static boolean initialized = false;
     protected List<VolumeReader> volumeReadersList;
     protected DataAPIException dataAPIException;
     protected DataType exceptionType;
-//    protected final int DEFAULT_LIST_SIZE = 500;
+    protected BlockingQueue<AsyncJob> asyncJobQueue;
+    protected boolean jobQueuePaused;
     
-    public AsyncVolumeRetriever() {
+    protected AsyncVolumeRetriever(AsyncJobManager asyncJobManager) {
         this.lock = new Object();
-        this.outstandingVolumeIDsSet = new HashSet<String>();
         this.volumeReadersList = new LinkedList<VolumeReader>();
         this.dataAPIException = null;
         this.exceptionType = null;
+        this.asyncJobQueue = null;
+        this.asyncJobManager = asyncJobManager;
+        this.jobQueuePaused = false;
     }
     
-    public void addOutstandingVolumeID(String volumeID) {
-        synchronized (lock) {
-            this.outstandingVolumeIDsSet.add(volumeID);
+    public static void init(ParameterContainer parameterContainer) {
+        if (!initialized) {
+            producerResumeThreshold = Integer.parseInt(parameterContainer.getParameter("producer.resume.threshold"));
+            producerPauseThreshold = Integer.parseInt(parameterContainer.getParameter("producer.pause.threshold"));
+            initialized = true;
+        }
+    }
+    
+    public static synchronized AsyncVolumeRetriever newInstance(AsyncJobManager asyncJobManager) {
+        AsyncVolumeRetriever newInstance = null;
+        if (initialized) {
+            newInstance = new AsyncVolumeRetriever(asyncJobManager);
+        }
+        return newInstance;
+    }
+    
+    public void setRetrievalIDs(List<? extends HTRCItemIdentifier> idList) {
+        asyncJobQueue = new LinkedBlockingQueue<AsyncJob>();
+        for (HTRCItemIdentifier id : idList) {
+            AsyncJob asyncJob = new AsyncJob(id, this);
+            boolean result = asyncJobQueue.offer(asyncJob);
+            if (!result) {
+                log.fatal("Failed to offer asyncJob to asyncJobQueue");
+                assert(!result);
+            }
         }
     }
     
@@ -74,7 +108,6 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
         DataType dataType = exceptionAwareVolumeReader.getDataType();
 
         synchronized (lock) {
-            this.outstandingVolumeIDsSet.remove(volumeID);
             switch (dataType) {
             case CONTENT:
                 this.volumeReadersList.add(exceptionAwareVolumeReader);
@@ -91,12 +124,26 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
                 break;
             }
 
+            throttleCheck();
+            
             lock.notify();
         }
     }
     
    
-    
+    private void throttleCheck() {
+        int backlogSize = volumeReadersList.size();
+        if (backlogSize >= producerPauseThreshold && !jobQueuePaused) {
+            asyncJobManager.skip(asyncJobQueue);
+            jobQueuePaused = true;
+            log.info("Producer paused on backlogSize: " + backlogSize);
+        } else if (backlogSize <= producerResumeThreshold && jobQueuePaused) {
+            asyncJobManager.unskip(asyncJobQueue);
+            jobQueuePaused = false;
+            log.info("Producer resumed on backlogSize: " + backlogSize);
+            
+        }
+    }
 
     /**
      * @see edu.indiana.d2i.htrc.access.VolumeRetriever#hasMoreVolumes()
@@ -105,13 +152,15 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
     public boolean hasMoreVolumes() {
         boolean result = false;
         synchronized (lock) {
-            if (!outstandingVolumeIDsSet.isEmpty()) {
+            if (!asyncJobQueue.isEmpty()) {
                 result = true;
             } else if (!volumeReadersList.isEmpty()) {
                 result = true;
             } else if (dataAPIException != null) {
                 result = true;
             }
+            
+            throttleCheck();
         }
         return result;
     }
@@ -132,7 +181,7 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
                if (!volumeReadersList.isEmpty()) {
                    volumeReader = volumeReadersList.remove(0);
                    block = false;
-               } else if (outstandingVolumeIDsSet.isEmpty() && dataAPIException != null) {
+               } else if (asyncJobQueue.isEmpty() && dataAPIException != null) {
                    try {
                        block = false;
                        switch (exceptionType) {
@@ -148,7 +197,7 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
                        exceptionType = null;
                    }
                } else {
-                   if (!outstandingVolumeIDsSet.isEmpty()) {
+                   if (!asyncJobQueue.isEmpty()) {
                        try {
                            lock.wait();
                        } catch (InterruptedException e) {
@@ -162,6 +211,10 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
            }
         }
         return volumeReader;
+    }
+    
+    public void submitJobs() {
+        asyncJobManager.submitJobs(asyncJobQueue);
     }
 
 }

@@ -46,6 +46,8 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
+import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
+import edu.indiana.d2i.htrc.access.async.StatusResource;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -74,6 +76,7 @@ public class HTRCDataAccessApplication extends Application {
         Set<Class<?>> hashSet = new HashSet<Class<?>>();
         hashSet.add(VolumeAccessResource.class);
         hashSet.add(PageAccessResource.class);
+        hashSet.add(StatusResource.class);
         return hashSet;
     }
 
@@ -93,6 +96,9 @@ public class HTRCDataAccessApplication extends Application {
         AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
         
         AsyncJobManager.init(parameterContainer, HectorResource.getSingletonInstance());
+        
+        AsyncVolumeRetriever.init(parameterContainer);
+        
         log.info("Application initialized");
     }
     

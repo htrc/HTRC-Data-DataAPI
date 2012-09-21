@@ -49,7 +49,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.async.AsyncJob;
 import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
 import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -107,16 +106,16 @@ public class PageAccessResource {
             if (pageIDs != null) {
                 List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
                 
-                AsyncVolumeRetriever asyncVolumeRetriever = new AsyncVolumeRetriever();
+                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+                
+                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
                 
                 for (HTRCItemIdentifier pageIdentifier : pageIDList) {
                     String volumeID = pageIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID, pageIdentifier.getPageSequences().toArray(new String[0]));
-                    asyncVolumeRetriever.addOutstandingVolumeID(volumeID);
                 }
                 
-
-                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+                asyncVolumeRetriever.setRetrievalIDs(pageIDList);
 
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_SEQUENCE : ZipTypeEnum.SEPARATE_PAGE;
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
@@ -125,11 +124,7 @@ public class PageAccessResource {
 
                 // adding jobs to the queue as the last step to ensure all other
                 // objects are properly created
-                for (HTRCItemIdentifier pageIdentifier : pageIDList) {
-                    AsyncJob asyncJob = new AsyncJob(pageIdentifier, asyncVolumeRetriever);
-                    asyncJobManager.addJob(asyncJob);
-                }
-
+                asyncVolumeRetriever.submitJobs();
             
             } else {
                 log.error("Required parameter pageIDs is null");

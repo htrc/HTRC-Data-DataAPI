@@ -31,6 +31,7 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,7 +43,6 @@ import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
-import edu.indiana.d2i.htrc.access.async.AsyncJobManager.TerminationJob;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
@@ -55,13 +55,14 @@ import edu.indiana.d2i.htrc.access.read.HectorResource;
 public class AsyncWorker implements Runnable {
     
     private static Logger log = Logger.getLogger(AsyncWorker.class);
-    protected final BlockingQueue<AsyncJob> queue;
+
+    protected final AsyncJobManager asyncJobManager;
     protected final HectorResource hectorResource;
     protected volatile boolean done;
     protected String id;
     
-    AsyncWorker(BlockingQueue<AsyncJob> queue, HectorResource hectorResource, String id) {
-        this.queue = queue;
+    AsyncWorker(AsyncJobManager asyncJobManager, HectorResource hectorResource, String id) {
+        this.asyncJobManager = asyncJobManager;
         this.hectorResource = hectorResource;
         this.done = false;
         this.id = id;
@@ -73,15 +74,9 @@ public class AsyncWorker implements Runnable {
     @Override
     public void run() {
         while (!done) {
-            try {
-                AsyncJob asyncJob = queue.take();
-                if (asyncJob != null) {
-                    if (!(asyncJob instanceof TerminationJob)) {
-                        processJob(asyncJob);
-                    }
-                }
-            } catch (InterruptedException e) {
-                log.error("InterruptedException", e);
+            AsyncJob job = asyncJobManager.getJob();
+            if (job != null) {
+                processJob(job);
             }
         }
         log.info("AsyncWorker " + id + " terminated");
@@ -94,7 +89,6 @@ public class AsyncWorker implements Runnable {
     protected void processJob(AsyncJob asyncJob) {
         HTRCItemIdentifier identifier = asyncJob.getIdentifier();
         String volumeID = identifier.getVolumeID();
-//        ContentHolder contentHolder = new ContentHolder(volumeID);
         ExceptionAwareVolumeReaderImpl exceptionAwareVolumeReaderImpl = new ExceptionAwareVolumeReaderImpl(identifier);
         try {
             VolumeInfo volumeInfo = hectorResource.getVolumeInfo(volumeID);
@@ -107,13 +101,6 @@ public class AsyncWorker implements Runnable {
             
             List<PageReader> pageReaderList = hectorResource.retrievePageContents(volumeID, pageSequences);
             exceptionAwareVolumeReaderImpl.setPages(pageReaderList);
-            
-//            for (PageReader pageReader : pageReaderList) {
-//                String pageSequence = pageReader.getPageSequence();
-//                String oageContent = pageReader.getPageContent();
-//                contentHolder.addPage(pageSequence, oageContent);
-//                
-//            }
             
             asyncJob.finished(exceptionAwareVolumeReaderImpl);
             
@@ -145,8 +132,5 @@ public class AsyncWorker implements Runnable {
             }
         }
     }
-    
-
-    
 }
 

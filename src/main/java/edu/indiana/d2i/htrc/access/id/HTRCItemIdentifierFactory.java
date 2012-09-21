@@ -66,12 +66,6 @@ public class HTRCItemIdentifierFactory {
         public static final String PN_MAX_TOTAL_PAGES_ALLOWED = "max.total.pages.allowed";
         public static final String PN_MAX_PAGES_PER_VOLUME_ALLOWED = "max.pages.per.volume.allowed";
         
-//        protected static final String ID_SEPARATOR = "|";
-//        protected static final char PAGE_SEQ_START_MARK = '[';
-//        protected static final char PAGE_SEQ_END_MARK = ']';
-//        protected static final String PAGE_SEQ_SEPARATOR = ",";
-//        protected static final char PAGE_SEQ_PADDING_CHAR = '0';
-        
         protected PolicyCheckerRegistry policyCheckerRegistry = new NullPolicyCheckerRegistry();
         
         public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;

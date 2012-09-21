@@ -40,6 +40,7 @@ public final class Constants {
     public static final String HTTP_HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     
     public static final String CONTENT_TYPE_APPLICATION_ZIP = "application/zip";
+    public static final String CONTENT_TYPE_APPLICATION_JSON = "application/json";
     public static final String CONTENT_TYPE_TEXT_XHTML = "text/xhtml";
     public static final String CONTENT_TYPE_TEXT_HTML = "text/html";
     public static final String FILENAME_VOLUMES_ZIP = "filename=\"volumes.zip\"";

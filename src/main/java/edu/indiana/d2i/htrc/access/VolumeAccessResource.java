@@ -49,7 +49,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.async.AsyncJob;
 import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
 import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -111,28 +110,27 @@ public class VolumeAccessResource {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
 
-                AsyncVolumeRetriever asyncVolumeRetriever = new AsyncVolumeRetriever();
+                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+
+                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
 
                 for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
                     String volumeID = volumeIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID);
-                    asyncVolumeRetriever.addOutstandingVolumeID(volumeID);
                 }
 
-                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+                asyncVolumeRetriever.setRetrievalIDs(volumeIDList);
+                
+
 
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.COMBINE_PAGE : ZipTypeEnum.SEPARATE_PAGE;
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
                 StreamingOutput streamingOutput = new VolumeZipStreamingOutput(asyncVolumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_VOLUMES_ZIP).build();
 
-
                 // add the jobs to the queue as the last step to ensure all other data objects are
                 // properly created before any job is finished
-                for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
-                    AsyncJob asyncJob = new AsyncJob(volumeIdentifier, asyncVolumeRetriever);
-                    asyncJobManager.addJob(asyncJob);
-                }
+                asyncVolumeRetriever.submitJobs();
                 
             } else {
                 log.error("Required parameter volumeIDs is null");

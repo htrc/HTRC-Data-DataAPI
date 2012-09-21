@@ -78,18 +78,18 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
             zipMaker.makeZipFile(output, volumeRetriever);
         } catch (KeyNotFoundException e) {
             log.error("KeyNotFoundException", e);
-            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
+//            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
             auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
-            WebApplicationException exception = new WebApplicationException(response);
-            
-            throw exception;
+//            WebApplicationException exception = new WebApplicationException(response);
+//            
+//            throw exception;
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
-            Response response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
+//            Response response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
             auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
-            WebApplicationException exception = new WebApplicationException(response);
-            
-            throw exception;
+//            WebApplicationException exception = new WebApplicationException(response);
+//            
+//            throw exception;
 //        } catch (HTimedOutException e) {
 //            log.error("HTimedOutException", e);
 //            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
@@ -99,18 +99,18 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
 //            throw exception;
         } catch (RepositoryException e) {
             log.error("RepositoryException", e);
-            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
+//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
             auditor.error("RepositoryException", "Cassandra Timed Out", e.getMessage());
-            WebApplicationException exception = new WebApplicationException(response);
-            
-            throw exception;
+//            WebApplicationException exception = new WebApplicationException(response);
+//            
+//            throw exception;
         } catch (DataAPIException e) {
             log.error("DataAPIException", e);
-            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
+//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
             auditor.error("DataAPIException", "Unspecified Error", e.getMessage());
-            WebApplicationException exception = new WebApplicationException(response);
-            
-            throw exception;
+//            WebApplicationException exception = new WebApplicationException(response);
+//            
+//            throw exception;
         }
     }
 
