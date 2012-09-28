@@ -58,6 +58,18 @@
       <param-value>2</param-value>
     </init-param>
     <init-param>
+      <param-name>max.pages.per.result.entry</param-name>
+      <param-value>200</param-value>
+    </init-param>
+    <init-param>
+      <param-name>max.async.fetch.entry.count</param-name>
+      <param-value>15</param-value>
+    </init-param>
+    <init-param>
+      <param-name>max.exceptions.to.report</param-name>
+      <param-value>100</param-value>
+    </init-param>
+    <init-param>
       <param-name>max.volumes.allowed</param-name>
       <param-value>0</param-value>
     </init-param>

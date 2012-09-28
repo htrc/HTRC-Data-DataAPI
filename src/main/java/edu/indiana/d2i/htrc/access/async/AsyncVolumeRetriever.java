@@ -43,6 +43,8 @@ import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader.DataType;
+import edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader.ExceptionContainer;
+import edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader.ExceptionType;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -59,27 +61,31 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
     protected final AsyncJobManager asyncJobManager;
     protected static int producerResumeThreshold = 0;
     protected static int producerPauseThreshold = Integer.MAX_VALUE;
+    protected static int maxExceptionsToReport = 100;
     protected volatile static boolean initialized = false;
-    protected List<VolumeReader> volumeReadersList;
-    protected DataAPIException dataAPIException;
+    protected List<ExceptionAwareVolumeReader> volumeReadersList;
+    protected List<ExceptionContainer> exceptionList;
     protected DataType exceptionType;
     protected BlockingQueue<AsyncJob> asyncJobQueue;
     protected boolean jobQueuePaused;
+    protected int outstandingJobCount;
     
     protected AsyncVolumeRetriever(AsyncJobManager asyncJobManager) {
         this.lock = new Object();
-        this.volumeReadersList = new LinkedList<VolumeReader>();
-        this.dataAPIException = null;
+        this.volumeReadersList = new LinkedList<ExceptionAwareVolumeReader>();
         this.exceptionType = null;
         this.asyncJobQueue = null;
         this.asyncJobManager = asyncJobManager;
         this.jobQueuePaused = false;
+        this.outstandingJobCount = 0;
+        this.exceptionList = new LinkedList<ExceptionContainer>();
     }
     
     public static void init(ParameterContainer parameterContainer) {
         if (!initialized) {
             producerResumeThreshold = Integer.parseInt(parameterContainer.getParameter("producer.resume.threshold"));
             producerPauseThreshold = Integer.parseInt(parameterContainer.getParameter("producer.pause.threshold"));
+            maxExceptionsToReport = Integer.parseInt(parameterContainer.getParameter("max.exceptions.to.report"));
             initialized = true;
         }
     }
@@ -104,35 +110,45 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
         }
     }
     
-    public void addResult(String volumeID, ExceptionAwareVolumeReader exceptionAwareVolumeReader) {
-        DataType dataType = exceptionAwareVolumeReader.getDataType();
+    void updateOutstandingJobCount(int jobCount) {
+        synchronized(lock) {
+            this.outstandingJobCount += jobCount;
+            throttleCheck();
+        }
+    }
+    
+    private void holdExceptions(List<ExceptionContainer> exceptions) {
+        int exceptionsToAdd = maxExceptionsToReport - exceptionList.size();
+        
+        while (exceptionsToAdd > 0 && !exceptions.isEmpty()) {
+            exceptionList.add(exceptions.remove(0));
+            exceptionsToAdd--;
+        }
+    }
+    
+    public void addResult(String volumeID, List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders) {
 
         synchronized (lock) {
-            switch (dataType) {
-            case CONTENT:
-                this.volumeReadersList.add(exceptionAwareVolumeReader);
-                break;
-            case EXCEPTION_KEY_NOT_FOUND:
-            case EXCEPTION_POLICY_VIOLATION:
-            case EXCEPTION_REPOSITORY:
-                // since exception can only be thrown once from VolumeRetriever, we are only storing at most 1 exception
-                // here, which is the earliest exception coming back.
-                if (this.dataAPIException == null) {
-                    this.exceptionType = dataType;
-                    this.dataAPIException = exceptionAwareVolumeReader.getException();
-                }
-                break;
+            for (ExceptionAwareVolumeReader reader : exceptionAwareVolumeReaders) {
+                this.volumeReadersList.add(reader);
+                List<ExceptionContainer> exceptions = reader.releaseExceptions();
+                holdExceptions(exceptions);
             }
 
             throttleCheck();
-            
+                
+            // notify any threads that are blocked on nextVolume();
             lock.notify();
         }
     }
     
    
     private void throttleCheck() {
-        int backlogSize = volumeReadersList.size();
+        int backlogSize = outstandingJobCount + volumeReadersList.size();
+        if (log.isDebugEnabled()) {
+            log.debug("backlogSize: " + backlogSize + " outstandingJobCount: " + outstandingJobCount + " list.size(): " + volumeReadersList.size());
+        }
+
         if (backlogSize >= producerPauseThreshold && !jobQueuePaused) {
             asyncJobManager.skip(asyncJobQueue);
             jobQueuePaused = true;
@@ -156,7 +172,9 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
                 result = true;
             } else if (!volumeReadersList.isEmpty()) {
                 result = true;
-            } else if (dataAPIException != null) {
+            } else if (outstandingJobCount > 0) {
+                result = true;
+            } else if (!exceptionList.isEmpty()) {
                 result = true;
             }
             
@@ -174,40 +192,45 @@ public class AsyncVolumeRetriever implements VolumeRetriever {
         // the following volumes will not be retrieved.  for the async, we must return all good results first before
         // throwing the exception, wihch means, even if we have an exception at hand, it cannot be thrown until
         // all outstanding volumes have come back.
-        VolumeReader volumeReader = null;
-        boolean block = true;
+        ExceptionAwareVolumeReader volumeReader = null;
+        boolean blocking = true;
         synchronized(lock) {
-           while (block) {
+           while (blocking) {
                if (!volumeReadersList.isEmpty()) {
                    volumeReader = volumeReadersList.remove(0);
-                   block = false;
-               } else if (asyncJobQueue.isEmpty() && dataAPIException != null) {
+                   DataType dataType = volumeReader.getDataType();
+                   if (DataType.SYNC_FETCH.equals(dataType)) {
+                       if (log.isDebugEnabled()) log.debug("sync fetch entry for " + volumeReader.getVolumeID());
+                       SynchronousFetchVolumeReaderImpl syncFetchVolumeReaderImpl = (SynchronousFetchVolumeReaderImpl)volumeReader;
+                       syncFetchVolumeReaderImpl.fetch();
+                       List<ExceptionContainer> exceptions = syncFetchVolumeReaderImpl.releaseExceptions();
+                       holdExceptions(exceptions);
+                   }
+                   blocking = false;
+               } else if ((!asyncJobQueue.isEmpty()) || outstandingJobCount > 0) {
+                   blocking = true;
                    try {
-                       block = false;
-                       switch (exceptionType) {
-                       case EXCEPTION_KEY_NOT_FOUND:
-                           throw (KeyNotFoundException)dataAPIException;
-                       case EXCEPTION_POLICY_VIOLATION:
-                           throw (PolicyViolationException)dataAPIException;
-                       case EXCEPTION_REPOSITORY:
-                           throw (RepositoryException)dataAPIException;
-                       }
-                   } finally {
-                       dataAPIException = null;
-                       exceptionType = null;
+                       lock.wait();
+                   } catch (InterruptedException e) {
+                       
+                   }
+               } else if (!exceptionList.isEmpty()) {
+                   ExceptionContainer exceptionContainer = exceptionList.remove(0);
+                   ExceptionType exceptionType = exceptionContainer.getExceptionType();
+                   DataAPIException exception = exceptionContainer.getException();
+                   
+                   switch(exceptionType) {
+                   case EXCEPTION_KEY_NOT_FOUND:
+                       throw (KeyNotFoundException)exception;
+                   case EXCEPTION_REPOSITORY:
+                       throw (RepositoryException)exception;
+                   case EXCEPTION_POLICY_VIOLATION:
+                       throw (PolicyViolationException)exception;
                    }
                } else {
-                   if (!asyncJobQueue.isEmpty()) {
-                       try {
-                           lock.wait();
-                       } catch (InterruptedException e) {
-                           
-                       }
-                   } else {
-                       block = false;
-                   }
-                       
+                   blocking = false;
                }
+               
            }
         }
         return volumeReader;

@@ -45,9 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
-import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
@@ -56,31 +54,31 @@ import edu.indiana.d2i.htrc.access.read.HectorResource;
  */
 public class AsyncJobManager {
     
-    protected static class TerminationJob extends AsyncJob {
-
-        /**
-         * @param identifier
-         * @param asyncVolumeRetriever
-         */
-        public TerminationJob() {
-            super(null, null);
-        }
-        
-        @Override
-        public HTRCItemIdentifier getIdentifier() {
-            return null;
-        }
-        
-        @Override
-        public void finished(ExceptionAwareVolumeReader exceptionAwareVolumeReader) {
-            
-        }
-        
-        @Override
-        public void failed(ExceptionAwareVolumeReader exceptionAwareVolumeReader, DataAPIException dataAPIException) {
-            
-        }
-    }
+//    protected static class TerminationJob extends AsyncJob {
+//
+//        /**
+//         * @param identifier
+//         * @param asyncVolumeRetriever
+//         */
+//        public TerminationJob() {
+//            super(null, null);
+//        }
+//        
+//        @Override
+//        public HTRCItemIdentifier getIdentifier() {
+//            return null;
+//        }
+//        
+//        @Override
+//        public void finished(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders) {
+//            
+//        }
+//        
+//        @Override
+//        public void failed(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders, DataAPIException dataAPIException) {
+//            
+//        }
+//    }
     
     protected static class TerminationBlockingQueue<T> implements BlockingQueue<T> {
 
@@ -288,6 +286,8 @@ public class AsyncJobManager {
     private static Logger log = Logger.getLogger(AsyncJobManager.class);
     
     public static final String PN_ASYNC_WORKER_COUNT = "async.worker.count";
+    public static final String PN_MAX_PAGES_PER_RESULT_ENTRY = "max.pages.per.result.entry";
+    public static final String PN_MAX_ASYNC_FETCH_ENTRY_COUNT = "max.async.fetch.entry.count";
 
     protected static AsyncJobManager instance;
     protected static volatile boolean initialized = false;
@@ -301,7 +301,7 @@ public class AsyncJobManager {
     protected final List<AsyncWorker> workerList;
     protected final List<Thread> workerThreadList;
     protected volatile boolean shutdown;
-    protected final TerminationJob TERMINATION_JOB = new TerminationJob();
+//    protected final TerminationJob TERMINATION_JOB = new TerminationJob();
     protected final TerminationBlockingQueue<AsyncJob> TERMINATION_QUEUE = new TerminationBlockingQueue<AsyncJob>();
     protected final WeakReference<BlockingQueue<AsyncJob>> TERMINATION_QUEUE_WEAK_REFERENCE = new WeakReference<BlockingQueue<AsyncJob>>(TERMINATION_QUEUE);
     
@@ -327,12 +327,14 @@ public class AsyncJobManager {
         this.weakJobQueueMap = new WeakHashMap<BlockingQueue<AsyncJob>, WeakReference<BlockingQueue<AsyncJob>>>();
         int workerCount = Integer.parseInt(parameterContainer.getParameter(PN_ASYNC_WORKER_COUNT));
         this.queueOfJobQueues = new LinkedBlockingQueue<WeakReference<BlockingQueue<AsyncJob>>>();
+        int maxPagesPerResult = Integer.parseInt(parameterContainer.getParameter(PN_MAX_PAGES_PER_RESULT_ENTRY));
+        int maxAsyncFetchEntryCount = Integer.parseInt(parameterContainer.getParameter(PN_ASYNC_WORKER_COUNT));
         
         workerList = new ArrayList<AsyncWorker>(workerCount);
         workerThreadList = new ArrayList<Thread>(workerCount);
         
         for (int i = 0; i < workerCount; i++) {
-            AsyncWorker worker = new AsyncWorker(this, hectorResource, "AsyncWorker-" + i);
+            AsyncWorker worker = new AsyncWorker(this, hectorResource, "AsyncWorker-" + i, maxPagesPerResult, maxAsyncFetchEntryCount);
             Thread thread = new Thread(worker, "AsyncWorker-" + i);
             thread.start();
             workerList.add(worker);

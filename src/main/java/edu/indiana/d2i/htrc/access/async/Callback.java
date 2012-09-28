@@ -31,6 +31,8 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
+import java.util.List;
+
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 
 
@@ -40,7 +42,8 @@ import edu.indiana.d2i.htrc.access.exception.DataAPIException;
  */
 public interface Callback {
     
-    public void finished(ExceptionAwareVolumeReader exceptionAwareVolumeReader);
-    public void failed(ExceptionAwareVolumeReader exceptionAwareVolumeReader, DataAPIException dataAPIException);
+    public void updateJobCount(int delta);
+    public void finished(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders);
+    public void failed(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders, DataAPIException dataAPIException);
 }
 

@@ -31,6 +31,8 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
@@ -60,20 +62,28 @@ public class AsyncJob implements Callback {
      * @see edu.indiana.d2i.htrc.access.async.Callback#finished(edu.indiana.d2i.htrc.access.async.ContentHolder)
      */
     @Override
-    public void finished(ExceptionAwareVolumeReader exceptionAwareVolumeReader) {
+    public void finished(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders) {
         String volumeID = identifier.getVolumeID();
         if (log.isDebugEnabled()) log.debug("Job finished for " + volumeID);
-        asyncVolumeRetriever.addResult(volumeID, exceptionAwareVolumeReader);
+        asyncVolumeRetriever.addResult(volumeID, exceptionAwareVolumeReaders);
     }
 
     /**
      * @see edu.indiana.d2i.htrc.access.async.Callback#failed(edu.indiana.d2i.htrc.access.async.ContentHolder, edu.indiana.d2i.htrc.access.HTRCItemIdentifier, java.lang.Exception)
      */
     @Override
-    public void failed(ExceptionAwareVolumeReader exceptionAwareVolumeReader, DataAPIException dataAPIException) {
+    public void failed(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders, DataAPIException dataAPIException) {
         String volumeID = identifier.getVolumeID();
         if (log.isDebugEnabled()) log.debug("Job failed for " + volumeID);
-        asyncVolumeRetriever.addResult(volumeID, exceptionAwareVolumeReader);
+        asyncVolumeRetriever.addResult(volumeID, exceptionAwareVolumeReaders);
+    }
+
+    /**
+     * @see edu.indiana.d2i.htrc.access.async.Callback#started(int)
+     */
+    @Override
+    public void updateJobCount(int entryCount) {
+        asyncVolumeRetriever.updateOutstandingJobCount(entryCount);
     }
 
 }

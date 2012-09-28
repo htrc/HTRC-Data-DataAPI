@@ -40,13 +40,14 @@ import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
  *
  */
 public class ExceptionalVolumeRetriever implements VolumeRetriever {
+    private boolean hasMoreVolumes = true;
 
     /**
      * @see edu.indiana.d2i.htrc.access.VolumeRetriever#hasMoreVolumes()
      */
     @Override
     public boolean hasMoreVolumes() {
-        return true;
+        return hasMoreVolumes;
     }
 
     /**
@@ -54,6 +55,7 @@ public class ExceptionalVolumeRetriever implements VolumeRetriever {
      */
     @Override
     public VolumeReader nextVolume() throws KeyNotFoundException {
+        hasMoreVolumes = false;
         throw new KeyNotFoundException("test.offending/key");
     }
 

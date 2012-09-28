@@ -31,12 +31,12 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
-import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl;
+import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl;
 
 /**
  * @author Yiming Sun
@@ -45,12 +45,12 @@ import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl;
 public class ExceptionAwareVolumeReaderImpl extends VolumeReaderImpl implements ExceptionAwareVolumeReader {
     
     protected DataType dataType;
-    protected DataAPIException exception;
+    protected List<ExceptionContainer> exceptions;
     
     public ExceptionAwareVolumeReaderImpl(HTRCItemIdentifier identifier) {
         super(identifier);
         this.dataType = DataType.CONTENT;
-        this.exception = null;
+        this.exceptions = new LinkedList<ExceptionContainer>();
     }
     
     /**
@@ -60,29 +60,22 @@ public class ExceptionAwareVolumeReaderImpl extends VolumeReaderImpl implements 
     public DataType getDataType() {
         return dataType;
     }
-    
-    public void setKeyNotFoundException(KeyNotFoundException knfe) {
-        this.exception = knfe;
-        this.dataType = DataType.EXCEPTION_KEY_NOT_FOUND;
-    }
-    
-    public void setPolicyViolationException(PolicyViolationException pve) {
-        this.exception = pve;
-        this.dataType = DataType.EXCEPTION_POLICY_VIOLATION;
-    }
-    
-    public void setRepositoryException(RepositoryException re) {
-        this.exception = re;
-        this.dataType = DataType.EXCEPTION_REPOSITORY;
-    }
 
+    public void addException(DataAPIException exception, ExceptionType exceptionType) {
+        ExceptionContainer exceptionContainer = new ExceptionContainer(exception, exceptionType);
+        exceptions.add(exceptionContainer);
+    }
+    
     /**
-     * @see edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader#getException()
+     * @see edu.indiana.d2i.htrc.access.async.ExceptionAwareVolumeReader#releaseExceptions()
      */
     @Override
-    public DataAPIException getException() {
-        return exception;
+    public List<ExceptionContainer> releaseExceptions() {
+        List<ExceptionContainer> exceptionContainers = exceptions;
+        exceptions = null;
+        return exceptionContainers;
     }
 
+    
 }
 

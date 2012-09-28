@@ -103,135 +103,94 @@ public class ZipMakerFactoryTest {
         Assert.assertArrayEquals(expected, actual.toByteArray());
     }
     
-    // This case tests that SeparatePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
-    @Test(expected = KeyNotFoundException.class)
-    public void testSeparatePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
-        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.SEPARATE_PAGE, new NullAuditor(null));
-        ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        
-        zipMaker.makeZipFile(actual, volumeRetriever);
-        
-    }
-    
-    // This case tests that CombinePageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
-    @Test(expected = KeyNotFoundException.class)
-    public void testCombinePageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
-        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.COMBINE_PAGE, new NullAuditor(null));
-        ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        
-        zipMaker.makeZipFile(actual, volumeRetriever);
-        
-    }
-
-    // This case tests that WordBagPageZipMaker should propagate a KeyNotFoundException that is raised within VolumeRetriever 
-    @Test(expected = KeyNotFoundException.class)
-    public void testWordBagPageZipMakerError() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
-        VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
-        ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_SEQUENCE, new NullAuditor(null));
-        ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        
-        zipMaker.makeZipFile(actual, volumeRetriever);
-        
-    }
-    
     // This case tests that SeparatePageZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
     @Test
-    public void testSeparatePageZipMakerErrorEntry() throws IOException {
-        
+    public void testSeparatePageZipMakerErrorEntry() throws IOException, DataAPIException {
+
         boolean hasErrorEntry = false;
-        
+
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.SEPARATE_PAGE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        try {
-            zipMaker.makeZipFile(actual, volumeRetriever);
-        } catch (DataAPIException e) {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
-            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-            ZipEntry zipEntry = null;
-            do {
-                zipEntry = zipInputStream.getNextEntry();
-                if (zipEntry != null) {
-                    String name = zipEntry.getName();
-                    zipInputStream.closeEntry();
-                    if ("ERROR.err".equals(name)) {
-                        hasErrorEntry = true;
-                    }
+
+        zipMaker.makeZipFile(actual, volumeRetriever);
+
+
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+        ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+        ZipEntry zipEntry = null;
+        do {
+            zipEntry = zipInputStream.getNextEntry();
+            if (zipEntry != null) {
+                String name = zipEntry.getName();
+                zipInputStream.closeEntry();
+                if ("ERROR.err".equals(name)) {
+                    hasErrorEntry = true;
                 }
-            } while (zipEntry != null);
-            zipInputStream.close();
-            
-            Assert.assertEquals(true, hasErrorEntry);
-        } 
+            }
+        } while (zipEntry != null);
+        zipInputStream.close();
+
+        Assert.assertEquals(true, hasErrorEntry);
     }
     
 
     
     // This case tests that CombinePageZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
     @Test
-    public void testCombinePageZipMakerErrorEntry() throws IOException {
+    public void testCombinePageZipMakerErrorEntry() throws IOException, DataAPIException {
         
         boolean hasErrorEntry = false;
-        
+
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.COMBINE_PAGE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        try {
-            zipMaker.makeZipFile(actual, volumeRetriever);
-        } catch (DataAPIException e) {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
-            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-            ZipEntry zipEntry = null;
-            do {
-                zipEntry = zipInputStream.getNextEntry();
-                if (zipEntry != null) {
-                    String name = zipEntry.getName();
-                    zipInputStream.closeEntry();
-                    if ("ERROR.err".equals(name)) {
-                        hasErrorEntry = true;
-                    }
+        zipMaker.makeZipFile(actual, volumeRetriever);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+        ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+        ZipEntry zipEntry = null;
+        do {
+            zipEntry = zipInputStream.getNextEntry();
+            if (zipEntry != null) {
+                String name = zipEntry.getName();
+                zipInputStream.closeEntry();
+                if ("ERROR.err".equals(name)) {
+                    hasErrorEntry = true;
                 }
-            } while (zipEntry != null);
-            zipInputStream.close();
-            
-            Assert.assertEquals(true, hasErrorEntry);
-        } 
+            }
+        } while (zipEntry != null);
+        zipInputStream.close();
+
+        Assert.assertEquals(true, hasErrorEntry);
     }
     
 
     // This case tests that WordBagZipMaker should add an ERROR.err entry to the zip file when VolumeRetriever throws an exception
     @Test
-    public void testWordSequenceZipMakerErrorEntry() throws IOException {
-        
+    public void testWordSequenceZipMakerErrorEntry() throws IOException, DataAPIException {
+
         boolean hasErrorEntry = false;
-        
+
         VolumeRetriever volumeRetriever = new ExceptionalVolumeRetriever();
         ZipMaker zipMaker = ZipMakerFactory.newInstance(ZipTypeEnum.WORD_SEQUENCE, new NullAuditor(null));
         ByteArrayOutputStream actual = new ByteArrayOutputStream();
-        try {
-            zipMaker.makeZipFile(actual, volumeRetriever);
-        } catch (DataAPIException e) {
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
-            ZipInputStream zipInputStream = new ZipInputStream(inputStream);
-            ZipEntry zipEntry = null;
-            do {
-                zipEntry = zipInputStream.getNextEntry();
-                if (zipEntry != null) {
-                    String name = zipEntry.getName();
-                    zipInputStream.closeEntry();
-                    if ("ERROR.err".equals(name)) {
-                        hasErrorEntry = true;
-                    }
+        zipMaker.makeZipFile(actual, volumeRetriever);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(actual.toByteArray());
+        ZipInputStream zipInputStream = new ZipInputStream(inputStream);
+        ZipEntry zipEntry = null;
+        do {
+            zipEntry = zipInputStream.getNextEntry();
+            if (zipEntry != null) {
+                String name = zipEntry.getName();
+                zipInputStream.closeEntry();
+                if ("ERROR.err".equals(name)) {
+                    hasErrorEntry = true;
                 }
-            } while (zipEntry != null);
-            zipInputStream.close();
-            
-            Assert.assertEquals(true, hasErrorEntry);
-        } 
-    }
+            }
+        } while (zipEntry != null);
+        zipInputStream.close();
 
-    
+        Assert.assertEquals(true, hasErrorEntry);
+    }
 }
 

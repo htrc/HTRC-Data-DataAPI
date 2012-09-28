@@ -45,7 +45,7 @@ import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
-import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl.PageReaderImpl;
+import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
 
 /**
  * @author Yiming Sun

@@ -32,8 +32,6 @@
 package edu.indiana.d2i.htrc.access.read;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import me.prettyprint.cassandra.model.ConfigurableConsistencyLevel;
@@ -58,12 +56,10 @@ import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
-import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.read.HectorResource.VolumeReaderImpl.PageReaderImpl;
-import gov.loc.repository.pairtree.Pairtree;
+import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
 
 /**
  * @author Yiming Sun
@@ -113,99 +109,99 @@ public abstract class HectorResource {
     }
 
     
-    public static class VolumeReaderImpl implements VolumeReader {
-        
-        public static class PageReaderImpl implements PageReader {
-
-            protected final String pageSequenceStr;
-            protected final String pageContents;
-
-            protected PageReaderImpl(String pageSequenceStr, String pageContents) {
-                this.pageSequenceStr = pageSequenceStr;
-                this.pageContents = pageContents;
-            }
-            /**
-             * @see edu.indiana.d2i.htrc.access.PageReader#getPageSequence()
-             */
-            @Override
-            public String getPageSequence() {
-                return pageSequenceStr;
-            }
-
-            /**
-             * @see edu.indiana.d2i.htrc.access.PageReader#getPageContent()
-             */
-            @Override
-            public String getPageContent() {
-                return pageContents;
-            }
-        }
-        
-        protected final String volumeID;
-        protected final String pairtreeCleanedVolumeID;
-        protected List<PageReader> pages;
-//        protected Iterator<PageReader> pageIterator;
-        
-        
-        public VolumeReaderImpl(HTRCItemIdentifier identifier) {
-            Pairtree pairtree = new Pairtree();
-            this.volumeID = identifier.getVolumeID();
-            this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));
-            this.pages = null;
-//            this.pageIterator = null;
-        }
-
-        public void setPages(List<PageReader> pages) {
-            this.pages = pages;
-//            this.pageIterator = pages.iterator();
-        }
-        
-        private String getPrefix(String volumeID) {
-            int indexOf = volumeID.indexOf('.');
-            return volumeID.substring(0, indexOf);
-        }
-        
-        private String getHeadlessVolumeID(String volumeID) {
-            int indexOf = volumeID.indexOf('.');
-            return volumeID.substring(indexOf + 1);
-        }
-        /**
-         * @see edu.indiana.d2i.htrc.access.VolumeReader#getVolumeID()
-         */
-        @Override
-        public String getVolumeID() {
-            return this.volumeID;
-        }
-
-        /**
-         * @see edu.indiana.d2i.htrc.access.VolumeReader#getPairtreeCleanedVolumeID()
-         */
-        @Override
-        public String getPairtreeCleanedVolumeID() {
-            return this.pairtreeCleanedVolumeID;
-        }
-
-        /**
-         * @see edu.indiana.d2i.htrc.access.VolumeReader#nextPage()
-         */
-        @Override
-        public PageReader nextPage() {
-            PageReader pageReader = null;
-            if (!pages.isEmpty()) {
-                pageReader = pages.remove(0);
-            } 
-            return pageReader;
-        }
-
-        /**
-         * @see edu.indiana.d2i.htrc.access.VolumeReader#hasMorePages()
-         */
-        @Override
-        public boolean hasMorePages() {
-            return !pages.isEmpty();
-        }
-
-    }
+//    public static class VolumeReaderImpl implements VolumeReader {
+//        
+//        public static class PageReaderImpl implements PageReader {
+//
+//            protected final String pageSequenceStr;
+//            protected final String pageContents;
+//
+//            protected PageReaderImpl(String pageSequenceStr, String pageContents) {
+//                this.pageSequenceStr = pageSequenceStr;
+//                this.pageContents = pageContents;
+//            }
+//            /**
+//             * @see edu.indiana.d2i.htrc.access.PageReader#getPageSequence()
+//             */
+//            @Override
+//            public String getPageSequence() {
+//                return pageSequenceStr;
+//            }
+//
+//            /**
+//             * @see edu.indiana.d2i.htrc.access.PageReader#getPageContent()
+//             */
+//            @Override
+//            public String getPageContent() {
+//                return pageContents;
+//            }
+//        }
+//        
+//        protected final String volumeID;
+//        protected final String pairtreeCleanedVolumeID;
+//        protected List<PageReader> pages;
+////        protected Iterator<PageReader> pageIterator;
+//        
+//        
+//        public VolumeReaderImpl(HTRCItemIdentifier identifier) {
+//            Pairtree pairtree = new Pairtree();
+//            this.volumeID = identifier.getVolumeID();
+//            this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));
+//            this.pages = null;
+////            this.pageIterator = null;
+//        }
+//
+//        public void setPages(List<PageReader> pages) {
+//            this.pages = pages;
+////            this.pageIterator = pages.iterator();
+//        }
+//        
+//        private String getPrefix(String volumeID) {
+//            int indexOf = volumeID.indexOf('.');
+//            return volumeID.substring(0, indexOf);
+//        }
+//        
+//        private String getHeadlessVolumeID(String volumeID) {
+//            int indexOf = volumeID.indexOf('.');
+//            return volumeID.substring(indexOf + 1);
+//        }
+//        /**
+//         * @see edu.indiana.d2i.htrc.access.VolumeReader#getVolumeID()
+//         */
+//        @Override
+//        public String getVolumeID() {
+//            return this.volumeID;
+//        }
+//
+//        /**
+//         * @see edu.indiana.d2i.htrc.access.VolumeReader#getPairtreeCleanedVolumeID()
+//         */
+//        @Override
+//        public String getPairtreeCleanedVolumeID() {
+//            return this.pairtreeCleanedVolumeID;
+//        }
+//
+//        /**
+//         * @see edu.indiana.d2i.htrc.access.VolumeReader#nextPage()
+//         */
+//        @Override
+//        public PageReader nextPage() {
+//            PageReader pageReader = null;
+//            if (!pages.isEmpty()) {
+//                pageReader = pages.remove(0);
+//            } 
+//            return pageReader;
+//        }
+//
+//        /**
+//         * @see edu.indiana.d2i.htrc.access.VolumeReader#hasMorePages()
+//         */
+//        @Override
+//        public boolean hasMorePages() {
+//            return !pages.isEmpty();
+//        }
+//
+//    }
 
     private static Logger log = Logger.getLogger(HectorResource.class);
     

@@ -31,6 +31,8 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
+import java.util.List;
+
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 
@@ -41,12 +43,34 @@ import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 public interface ExceptionAwareVolumeReader extends VolumeReader {
     public static enum DataType {
         CONTENT,
+        SYNC_FETCH;
+    }
+    
+    public static enum ExceptionType {
         EXCEPTION_KEY_NOT_FOUND,
         EXCEPTION_REPOSITORY,
         EXCEPTION_POLICY_VIOLATION;
     }
     
+    public static class ExceptionContainer {
+        private final DataAPIException exception;
+        private final ExceptionType exceptionType;
+        
+        ExceptionContainer(DataAPIException exception, ExceptionType exceptionType) {
+            this.exception = exception;
+            this.exceptionType = exceptionType;
+        }
+        
+        public DataAPIException getException() {
+            return exception;
+        }
+        
+        public ExceptionType getExceptionType() {
+            return exceptionType;
+        }
+        
+    }
     public DataType getDataType();
-    public DataAPIException getException();
+    public List<ExceptionContainer> releaseExceptions();
 }
 
