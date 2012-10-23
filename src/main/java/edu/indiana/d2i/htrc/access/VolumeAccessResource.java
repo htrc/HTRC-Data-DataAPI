@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2012 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,8 +49,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
-import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
+import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
@@ -109,28 +108,31 @@ public class VolumeAccessResource {
         try {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
+                
 
-                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
-
-                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
+//                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+//
+//                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
 
                 for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
                     String volumeID = volumeIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID);
                 }
 
-                asyncVolumeRetriever.setRetrievalIDs(volumeIDList);
+//                asyncVolumeRetriever.setRetrievalIDs(volumeIDList);
                 
 
+                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance();
+                volumeRetriever.setRetrievalIDs(volumeIDList);
 
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.COMBINE_PAGE : ZipTypeEnum.SEPARATE_PAGE;
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
-                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(asyncVolumeRetriever, zipMaker, auditor);
+                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_VOLUMES_ZIP).build();
 
                 // add the jobs to the queue as the last step to ensure all other data objects are
                 // properly created before any job is finished
-                asyncVolumeRetriever.submitJobs();
+//                asyncVolumeRetriever.submitJobs();
                 
             } else {
                 log.error("Required parameter volumeIDs is null");

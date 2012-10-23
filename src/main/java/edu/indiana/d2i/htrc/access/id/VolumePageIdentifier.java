@@ -31,9 +31,9 @@
  */
 package edu.indiana.d2i.htrc.access.id;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -54,9 +54,9 @@ public class VolumePageIdentifier extends VolumeIdentifier {
     @Override
     public List<String> getPageSequences() {
         
-        List<String> sortedList = new ArrayList<String>(pageSequenceSet);
+        List<String> sortedList = new LinkedList<String>(pageSequenceSet);
         Collections.<String>sort(sortedList);
-        return Collections.<String>unmodifiableList(sortedList);
+        return sortedList;
     }
     
     public void addPageSequence(String pageSequence) {

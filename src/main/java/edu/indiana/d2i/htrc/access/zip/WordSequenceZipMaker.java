@@ -84,19 +84,21 @@ public class WordSequenceZipMaker implements ZipMaker {
         while (volumeRetriever.hasMoreVolumes()) {
             try {
                 VolumeReader volumeReader = volumeRetriever.nextVolume();
-                String volumeID = volumeReader.getVolumeID();
-                if (!volumeID.equals(currentVolumeID)) {
-                    if (currentVolumeID != null) {
-                        auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
+                if (volumeReader != null) {
+                    String volumeID = volumeReader.getVolumeID();
+                    if (!volumeID.equals(currentVolumeID)) {
+                        if (currentVolumeID != null) {
+                            auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
+                        }
+                        currentVolumeID = volumeID;
+                        currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
                     }
-                    currentVolumeID = volumeID;
-                    currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
-                }
-                while(volumeReader.hasMorePages()) {
-                    PageReader pageReader = volumeReader.nextPage();
-                    String pageContent = pageReader.getPageContent();
-                    zipOutputStream.write(pageContent.getBytes());
-                    currentPageSequences.add(pageReader.getPageSequence());
+                    while(volumeReader.hasMorePages()) {
+                        PageReader pageReader = volumeReader.nextPage();
+                        String pageContent = pageReader.getPageContent();
+                        zipOutputStream.write(pageContent.getBytes());
+                        currentPageSequences.add(pageReader.getPageSequence());
+                    }
                 }
             } catch (KeyNotFoundException e) {
                 log.error("KeyNotFoundException", e);
@@ -123,58 +125,6 @@ public class WordSequenceZipMaker implements ZipMaker {
             ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, exceptionList);
         }
         zipOutputStream.close();
-        
-        
-//        try {
-//            ZipEntry zipEntry = new ZipEntry("wordseq.txt");
-//            zipOutputStream.putNextEntry(zipEntry);
-//            entryOpen = true;
-//            
-//            while (volumeRetriever.hasMoreVolumes()) {
-//                VolumeReader volumeReader = volumeRetriever.nextVolume();
-//                String volumeID = volumeReader.getVolumeID();
-//                if (!volumeID.equals(currentVolumeID)) {
-//                    if (currentVolumeID != null) {
-//                        auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
-//                    }
-//                    currentVolumeID = volumeID;
-//                    currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
-//                }
-//                while(volumeReader.hasMorePages()) {
-//                    PageReader pageReader = volumeReader.nextPage();
-//                    String pageContent = pageReader.getPageContent();
-//                    zipOutputStream.write(pageContent.getBytes());
-//                    currentPageSequences.add(pageReader.getPageSequence());
-//                }
-//            }
-//    
-//            zipOutputStream.closeEntry();
-//            entryOpen = false;
-//        } catch (KeyNotFoundException e) {
-//            log.error("KeyNotFoundException", e);
-//            log.info("Caught exception while making zip file, injecting ERROR.err entry");
-//            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
-//            throw e;
-//        } catch (PolicyViolationException e) {
-//            log.error("PolicyViolationException", e);
-//            log.info("Caught exception while making zip file, injecting ERROR.err entry");
-//            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
-//            throw e;
-//        } catch (RepositoryException e) {
-//            log.error("RepositoryException", e);
-//            log.info("Caught exception while making zip file, injecting ERROR.err entry");
-//            ZipMakerFactory.Helper.injectErrorEntry(zipOutputStream, entryOpen, e);
-//            throw e;
-//        } finally {
-//            if (currentVolumeID != null) {
-//                auditor.audit(ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
-//            }
-//            if (entryOpen) {
-//                zipOutputStream.closeEntry();
-//            }
-//            zipOutputStream.close();
-//        }
-//
     }
 
 }

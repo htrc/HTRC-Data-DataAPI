@@ -77,7 +77,10 @@ public class ZipMakerFactory {
             }
             outputStream.closeEntry();
         }
+        
     }
+    
+//    protected static WeakHashMap<ZipMaker, Void> zipMakerRegistry = new WeakHashMap<ZipMaker, Void>();
     
     public static enum ZipTypeEnum {
         SEPARATE_PAGE,
@@ -99,6 +102,9 @@ public class ZipMakerFactory {
             break;
         }
         
+//        synchronized(zipMakerRegistry) {
+//            zipMakerRegistry.put(zipMaker, null);
+//        }
         return zipMaker;
     }
 

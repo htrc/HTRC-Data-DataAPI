@@ -35,6 +35,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -127,7 +128,9 @@ public class HTRCItemIdentifierFactory {
             if (volumeIDMap.isEmpty()) {
                 throw new ParseException(identifiersString, 0);
             }
-            return Collections.<VolumeIdentifier>unmodifiableList(new ArrayList<VolumeIdentifier>(volumeIDMap.values()));
+            
+            List<VolumeIdentifier> list = new LinkedList<VolumeIdentifier>(volumeIDMap.values());
+            return list;
         }
     }
     
@@ -208,7 +211,9 @@ public class HTRCItemIdentifierFactory {
             if (pageIDMap.isEmpty()) {
                 throw new ParseException(identifiersString, 0);
             }
-            return Collections.<VolumePageIdentifier>unmodifiableList(new ArrayList<VolumePageIdentifier>(pageIDMap.values()));
+            
+            List<VolumePageIdentifier> list = new LinkedList<VolumePageIdentifier>(pageIDMap.values());
+            return list;
         }
         
     }

@@ -16,8 +16,8 @@
 #
 # -----------------------------------------------------------------
 #
-# Project: data-api-async-experimental
-# File:  Callback.java
+# Project: data-api
+# File:  ThrowableContainer.java
 # Description:  
 #
 # -----------------------------------------------------------------
@@ -31,19 +31,32 @@
  */
 package edu.indiana.d2i.htrc.access.async;
 
-import java.util.List;
-
-import edu.indiana.d2i.htrc.access.exception.DataAPIException;
-
-
 /**
  * @author Yiming Sun
  *
  */
-public interface Callback {
+public class ExceptionContainer {
+    public static enum ExceptionType {
+        EXCEPTION_KEY_NOT_FOUND,
+        EXCEPTION_REPOSITORY,
+        EXCEPTION_POLICY_VIOLATION;
+    }
     
-    public void updateJobCount(int delta);
-    public void finished(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders);
-    public void failed(List<ExceptionAwareVolumeReader> exceptionAwareVolumeReaders, DataAPIException dataAPIException);
+    private final Exception exception;
+    private final ExceptionType exceptionType;
+    
+    public ExceptionContainer(Exception exception, ExceptionType exceptionType) {
+        this.exception = exception;
+        this.exceptionType = exceptionType;
+    }
+    
+    public Exception getException() {
+        return exception;
+    }
+    
+    public ExceptionType getExceptionType() {
+        return exceptionType;
+    }
+
 }
 

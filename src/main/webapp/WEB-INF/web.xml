@@ -49,21 +49,25 @@
       <param-name>async.worker.count</param-name>
       <param-value>8</param-value>
     </init-param>
-    <init-param>
+    <!-- init-param>
       <param-name>producer.pause.threshold</param-name>
       <param-value>10</param-value>
     </init-param>
     <init-param>
       <param-name>producer.resume.threshold</param-name>
       <param-value>2</param-value>
-    </init-param>
+    </init-param -->
     <init-param>
-      <param-name>max.pages.per.result.entry</param-name>
+      <param-name>max.pages.per.retrieval</param-name>
       <param-value>200</param-value>
     </init-param>
     <init-param>
       <param-name>max.async.fetch.entry.count</param-name>
       <param-value>15</param-value>
+    </init-param>
+    <init-param>
+      <param-name>min.entry.count.trigger.dispatch</param-name>
+      <param-value>3</param-value>
     </init-param>
     <init-param>
       <param-name>max.exceptions.to.report</param-name>

@@ -49,8 +49,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
-import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
+import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
 import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
@@ -106,25 +105,28 @@ public class PageAccessResource {
             if (pageIDs != null) {
                 List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
                 
-                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
+//                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
                 
-                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
+//                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
                 
                 for (HTRCItemIdentifier pageIdentifier : pageIDList) {
                     String volumeID = pageIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID, pageIdentifier.getPageSequences().toArray(new String[0]));
                 }
                 
-                asyncVolumeRetriever.setRetrievalIDs(pageIDList);
+//                asyncVolumeRetriever.setRetrievalIDs(pageIDList);
 
+                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance();
+                volumeRetriever.setRetrievalIDs(pageIDList);
+                
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_SEQUENCE : ZipTypeEnum.SEPARATE_PAGE;
                 ZipMaker zipMaker = ZipMakerFactory.newInstance(zipMakerType, auditor);
-                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(asyncVolumeRetriever, zipMaker, auditor);
+                StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_PAGES_ZIP).build();
 
                 // adding jobs to the queue as the last step to ensure all other
                 // objects are properly created
-                asyncVolumeRetriever.submitJobs();
+//                asyncVolumeRetriever.submitJobs();
             
             } else {
                 log.error("Required parameter pageIDs is null");

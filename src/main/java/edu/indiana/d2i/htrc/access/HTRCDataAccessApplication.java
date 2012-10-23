@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2012 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,11 @@
 package edu.indiana.d2i.htrc.access;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -45,14 +49,14 @@ import javax.ws.rs.core.Context;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import edu.indiana.d2i.htrc.access.async.AsyncJobManager;
-import edu.indiana.d2i.htrc.access.async.AsyncVolumeRetriever;
-import edu.indiana.d2i.htrc.access.async.StatusResource;
+import edu.indiana.d2i.htrc.access.async.AsyncFetchManager;
+import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
+import edu.indiana.d2i.htrc.audit.Auditor;
 import edu.indiana.d2i.htrc.audit.AuditorFactory;
 
 /**
@@ -63,6 +67,8 @@ import edu.indiana.d2i.htrc.audit.AuditorFactory;
 public class HTRCDataAccessApplication extends Application {
     
     private static Logger log = Logger.getLogger(HTRCDataAccessApplication.class);
+    private Auditor auditor = null;
+    
     @Context private ServletConfig servletConfig;
     
     
@@ -71,12 +77,10 @@ public class HTRCDataAccessApplication extends Application {
      */
     @Override
     public Set<Class<?>> getClasses() {
-//        init();
         if (log.isDebugEnabled()) log.debug("@Override getClasses() called");
         Set<Class<?>> hashSet = new HashSet<Class<?>>();
         hashSet.add(VolumeAccessResource.class);
         hashSet.add(PageAccessResource.class);
-        hashSet.add(StatusResource.class);
         return hashSet;
     }
 
@@ -88,17 +92,20 @@ public class HTRCDataAccessApplication extends Application {
         loadParametersToContainer(servletConfig);
         
         ParameterContainer parameterContainer = ParameterContainerSingleton.getInstance();
+
+        AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
+        generateSystemAuditor();
+        
         
         loadPolicyCheckerRegistry(parameterContainer);
         
         HectorResource.initSingletonInstance(parameterContainer);
 
-        AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
+        AsyncFetchManager.init(parameterContainer, HectorResource.getSingletonInstance());
         
-        AsyncJobManager.init(parameterContainer, HectorResource.getSingletonInstance());
+        ThrottledVolumeRetrieverImpl.init(parameterContainer, HectorResource.getSingletonInstance(), AsyncFetchManager.getInstance());
         
-        AsyncVolumeRetriever.init(parameterContainer);
-        
+        auditor.log("SERVER_START");
         log.info("Application initialized");
     }
     
@@ -111,8 +118,12 @@ public class HTRCDataAccessApplication extends Application {
     @PreDestroy
     private void fin() {
         if (log.isDebugEnabled()) log.debug("@PreDestroy fin() called");
+        
         HectorResource.getSingletonInstance().shutdown();
-        AsyncJobManager.getInstance().shutdown();
+        AsyncFetchManager.getInstance().shutdown();
+
+        auditor.log("SERVER_SHUTDOWN");
+
     }
     
     private void loadParametersToContainer(ServletConfig servletConfig) {
@@ -132,6 +143,21 @@ public class HTRCDataAccessApplication extends Application {
         registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(parameterContainer));
         registry.registerPolicyChecker(MaxTotalPagesPolicyChecker.POLICY_NAME, new MaxTotalPagesPolicyChecker(parameterContainer));
         registry.registerPolicyChecker(MaxPagesPerVolumePolicyChecker.POLICY_NAME, new MaxPagesPerVolumePolicyChecker(parameterContainer));
+    }
+    
+    private void generateSystemAuditor() {
+        Map<String, List<String>> systemContextMap = new HashMap<String, List<String>>();
+        
+        List<String> userIDList = new LinkedList<String>();
+        userIDList.add("_SYSTEM_");
+        systemContextMap.put(Auditor.KEY_REMOTE_USER, userIDList);
+        
+        List<String> userIPList = new LinkedList<String>();
+        userIPList.add("0.0.0.0");
+        systemContextMap.put(Auditor.KEY_REMOTE_ADDR, userIPList);
+        
+        auditor = AuditorFactory.getAuditor(systemContextMap);
+        
     }
     
 }
