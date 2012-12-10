@@ -31,6 +31,7 @@
  */
 package edu.indiana.d2i.htrc.access.read;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,7 +64,7 @@ public class TestHectorResource extends HectorResource {
     /**
      * @param parameterContainer
      */
-    public TestHectorResource(final ParameterContainer parameterContainer) {
+    public TestHectorResource(final ParameterContainer parameterContainer) throws Exception {
         super(parameterContainer);
         volumeInfoMap = new HashMap<String, VolumeInfo>(VOLUME_IDS.length);
         pageReadersMap = new HashMap<String, Map<String, PageReader>>(VOLUME_IDS.length);
@@ -110,7 +111,7 @@ public class TestHectorResource extends HectorResource {
         return pageReaderList;
     }
     
-    protected void initializeFakeData() {
+    protected void initializeFakeData() throws Exception {
         
         for (int i = 0; i < VOLUME_IDS.length; i++) {
             BasicVolumeInfo volumeInfo = new BasicVolumeInfo(VOLUME_IDS[i]);
@@ -132,16 +133,17 @@ public class TestHectorResource extends HectorResource {
        
     }
     
-    protected PageReader generateFakePage(String volumeID, int page) {
-        String pageString = Integer.toString(page);
+    protected PageReader generateFakePage(String volumeID, int page) throws Exception{
         String pageSequenceString = HTRCItemIdentifierFactory.Parser.generatePageSequenceString(page);
         
-        StringBuilder contentsBuilder = new StringBuilder("Page contents for Volume ");
-        contentsBuilder.append(volumeID);
-        contentsBuilder.append(" Page ");
-        contentsBuilder.append(pageSequenceString);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write("Page contents for Volume ".getBytes("utf-8"));
+        outputStream.write(volumeID.getBytes("utf-8"));
+        outputStream.write(" Page ".getBytes("utf-8"));
+        outputStream.write(pageSequenceString.getBytes("utf-8"));
+        outputStream.close();
         
-        PageReader pageReader = new PageReaderImpl(pageSequenceString, contentsBuilder.toString());
+        PageReader pageReader = new PageReaderImpl(pageSequenceString, outputStream.toByteArray());
         
         return pageReader;
         

@@ -64,11 +64,11 @@ public class MakeZipUtility {
             while (nextVolume.hasMorePages()) {
                 PageReader nextPage = nextVolume.nextPage();
                 String pageSeq = nextPage.getPageSequence();
-                String pageContent = nextPage.getPageContent();
+                byte[] pageContent = nextPage.getPageContent();
                 
                 ZipEntry pageEntry = new ZipEntry(safeVolumeID + "/" + pageSeq + ".txt");
                 zipOutputStream.putNextEntry(pageEntry);
-                zipOutputStream.write(pageContent.getBytes());
+                zipOutputStream.write(pageContent);
                 zipOutputStream.closeEntry();
             }
         }
@@ -87,17 +87,12 @@ public class MakeZipUtility {
             String safeVolumeID = nextVolume.getPairtreeCleanedVolumeID();
             ZipEntry zipEntry = new ZipEntry(safeVolumeID + ".txt");
             zipOutputStream.putNextEntry(zipEntry);
-//            zipOutputStream.closeEntry();
             
             while (nextVolume.hasMorePages()) {
                 PageReader nextPage = nextVolume.nextPage();
-//                String pageSeq = nextPage.getPageSequence();
-                String pageContent = nextPage.getPageContent();
+                byte[] pageContent = nextPage.getPageContent();
                 
-//                ZipEntry pageEntry = new ZipEntry(safeVolumeID + "/" + pageSeq + ".txt");
-//                zipOutputStream.putNextEntry(pageEntry);
-                zipOutputStream.write(pageContent.getBytes());
-//                zipOutputStream.closeEntry();
+                zipOutputStream.write(pageContent);
             }
             zipOutputStream.closeEntry();
         }
@@ -115,20 +110,12 @@ public class MakeZipUtility {
 
         while (volumeRetriever.hasMoreVolumes()) {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
-//            String safeVolumeID = nextVolume.getPairtreeCleanedVolumeID();
-//            ZipEntry zipEntry = new ZipEntry(safeVolumeID + "/");
-//            zipOutputStream.putNextEntry(zipEntry);
-//            zipOutputStream.closeEntry();
-            
+
             while (nextVolume.hasMorePages()) {
                 PageReader nextPage = nextVolume.nextPage();
-//                String pageSeq = nextPage.getPageSequence();
-                String pageContent = nextPage.getPageContent();
+                byte[] pageContent = nextPage.getPageContent();
                 
-//                ZipEntry pageEntry = new ZipEntry(safeVolumeID + "/" + pageSeq + ".txt");
-//                zipOutputStream.putNextEntry(pageEntry);
-                zipOutputStream.write(pageContent.getBytes());
-//                zipOutputStream.closeEntry();
+                zipOutputStream.write(pageContent);
             }
         }
         zipOutputStream.closeEntry();

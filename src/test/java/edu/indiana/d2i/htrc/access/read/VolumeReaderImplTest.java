@@ -80,19 +80,19 @@ public class VolumeReaderImplTest {
 
     // This case tests that PageReader properly outputs the data it holds
     @Test
-    public void testPageReaderImpl() throws KeyNotFoundException {
+    public void testPageReaderImpl() throws KeyNotFoundException, Exception {
         List<PageReader> pageReaders = new ArrayList<PageReader>();
         String[] expectedPageSequences = new String[5];
-        String[] expectedPageContents = new String[5];
+        byte[][] expectedPageContents = new byte[5][];
         
         String[] actualPageSequences = new String[5];
-        String[] actualPageContents = new String[5];
+        byte[][] actualPageContents = new byte[5][];
         
         
         for (int i = 1; i <= 5; i++) {
             
             String pageSequence = HTRCItemIdentifierFactory.Parser.generatePageSequenceString(i);
-            String pageContents = "Page " + i;
+            byte[] pageContents = ("Page " + i).getBytes("utf-8");
             expectedPageSequences[i - 1] = pageSequence;
             expectedPageContents[i - 1] = pageContents;
             PageReader pageReader = new PageReaderImpl(pageSequence, pageContents);

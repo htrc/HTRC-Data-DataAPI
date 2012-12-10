@@ -41,7 +41,7 @@ public interface VolumeReader {
     
     public static interface PageReader {
         public String getPageSequence();
-        public String getPageContent();
+        public byte[] getPageContent();
     }
     
     public String getVolumeID();

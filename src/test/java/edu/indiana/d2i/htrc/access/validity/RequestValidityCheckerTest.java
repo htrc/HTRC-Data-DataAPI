@@ -69,15 +69,15 @@ public class RequestValidityCheckerTest {
     
     
     @BeforeClass
-    public static void setup() {
+    public static void setup() throws Exception {
         setupWithDefaultLimits();
     }
     
-    private static void setupWithDefaultLimits() {
+    private static void setupWithDefaultLimits() throws Exception {
         setupWithLimits("3", "10", "5");
     }
     
-    private static void setupWithLimits(String maxVolumes, String maxTotalPages, String maxPagesPerVolume) {
+    private static void setupWithLimits(String maxVolumes, String maxTotalPages, String maxPagesPerVolume) throws Exception {
         parameterContainer = new TestParameterContainer();
         parameterContainer.setParameter(HectorResource.PN_CASSANDRA_NODE_COUNT, "1");
         parameterContainer.setParameter(HectorResource.PN_CASSANDRA_NODE_NAME_ + "1", "127.0.0.1");
@@ -159,7 +159,7 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyVioationException should be raised when number of volumeIDs requested exceeds max volume limit of 3
     // This case modifies the default limits setting so other limits won't trigger the exceptions
     @Test(expected = PolicyViolationException.class)
-    public void testMaxVolumesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public void testMaxVolumesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException, Exception {
         VolumeIdentifier[] volumeIDs = new VolumeIdentifier[] {new VolumeIdentifier(TestHectorResource.VOLUME_IDS[2]), 
                                                                new VolumeIdentifier(TestHectorResource.VOLUME_IDS[0]),
                                                                new VolumeIdentifier(TestHectorResource.VOLUME_IDS[3]),
@@ -301,7 +301,7 @@ public class RequestValidityCheckerTest {
     // This case tests that by disabling all limits there should not be any violations for VolumeIDs
     // This case modifies the default limits settings
     @Test
-    public void testVolumesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public void testVolumesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException, Exception {
         
         boolean testPassed = false;
 
@@ -331,7 +331,7 @@ public class RequestValidityCheckerTest {
     // This case tests that by disabling all limits there should not be any violations for VolumePageIDs
     // This case modifies the default limits settings
     @Test
-    public void testPagesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public void testPagesNoViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException, Exception {
         
         boolean testPassed = false;
         

@@ -60,7 +60,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that SeparatePageZipMaker properly generates a zip file with each volume as a directory, and each page belonging to the volume a separate text file under the directory
     @Test
-    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
+    public void testSeparatePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException, Exception {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getSeparatePageZipAsByteArray(volumeRetriever);
         
@@ -75,7 +75,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that CombinePageZipMaker properly generates a zip file with all pages of each volume concatenated into a single text file for that volume
     @Test
-    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
+    public void testCombinePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException, Exception {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getCombinePageZipByteArray(volumeRetriever);
         
@@ -90,7 +90,7 @@ public class ZipMakerFactoryTest {
     
     // This case tests that WordBagPageZipMaker properly generates a zip file with all pages from all volumes concatenated into a single "bag of words" text file
     @Test
-    public void testWordSequencePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException {
+    public void testWordSequencePageZipMaker() throws IOException, KeyNotFoundException, PolicyViolationException, RepositoryException, DataAPIException, Exception {
         VolumeRetriever volumeRetriever = new TestVolumeRetriever();
         byte[] expected = MakeZipUtility.getWordSequenceZipByteArray(volumeRetriever);
         

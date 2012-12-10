@@ -52,7 +52,7 @@ public class TestVolumeRetriever implements VolumeRetriever {
     private List<VolumeReader> volumeReaders = null;
     private Iterator<VolumeReader> volumeReaderIterator = null;
     
-    public TestVolumeRetriever() {
+    public TestVolumeRetriever() throws Exception {
         volumeReaders = new ArrayList<VolumeReader>();
 
         volumeReaders.add(generateFakeVolumeReader(1, 4));
@@ -62,7 +62,7 @@ public class TestVolumeRetriever implements VolumeRetriever {
         volumeReaderIterator = volumeReaders.iterator();
     }
     
-    protected VolumeReader generateFakeVolumeReader(int volumeIDIndex, int maxPageSequence) {
+    protected VolumeReader generateFakeVolumeReader(int volumeIDIndex, int maxPageSequence) throws Exception {
         VolumePageIdentifier pageId = new VolumePageIdentifier("test.volume/id/" + volumeIDIndex);
         List<PageReader> pageReaders = new ArrayList<PageReader>();
         
@@ -70,7 +70,7 @@ public class TestVolumeRetriever implements VolumeRetriever {
             String pageSequenceString = HTRCItemIdentifierFactory.Parser.generatePageSequenceString(i);
             pageId.addPageSequence(pageSequenceString);
             
-            PageReader pageReader = new PageReaderImpl(pageSequenceString, "the content of page " + i + " for volume " + pageId.getVolumeID());
+            PageReader pageReader = new PageReaderImpl(pageSequenceString, ("the content of page " + i + " for volume " + pageId.getVolumeID()).getBytes("utf-8"));
             pageReaders.add(pageReader);
         }
         

@@ -95,8 +95,8 @@ public class WordSequenceZipMaker implements ZipMaker {
                     }
                     while(volumeReader.hasMorePages()) {
                         PageReader pageReader = volumeReader.nextPage();
-                        String pageContent = pageReader.getPageContent();
-                        zipOutputStream.write(pageContent.getBytes());
+                        byte[] pageContent = pageReader.getPageContent();
+                        zipOutputStream.write(pageContent);
                         currentPageSequences.add(pageReader.getPageSequence());
                     }
                 }

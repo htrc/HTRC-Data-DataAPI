@@ -113,7 +113,8 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
                         ZipEntry pageContentsEntry = new ZipEntry(volumeIDDirName + pageSequence + ".txt");
                         zipOutputStream.putNextEntry(pageContentsEntry);
                         entryOpen = true;
-                        zipOutputStream.write(pageReader.getPageContent().getBytes());
+                        byte[] pageContent = pageReader.getPageContent();
+                        zipOutputStream.write(pageContent);
                         zipOutputStream.closeEntry();
                         entryOpen = false;
                         currentPageSequences.add(pageSequence);

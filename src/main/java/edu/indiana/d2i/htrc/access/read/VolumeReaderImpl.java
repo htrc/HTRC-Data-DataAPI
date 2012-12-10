@@ -46,9 +46,9 @@ public class VolumeReaderImpl implements VolumeReader {
     public static class PageReaderImpl implements PageReader {
 
         protected final String pageSequenceStr;
-        protected final String pageContents;
+        protected final byte[] pageContents;
 
-        protected PageReaderImpl(String pageSequenceStr, String pageContents) {
+        protected PageReaderImpl(String pageSequenceStr, byte[] pageContents) {
             this.pageSequenceStr = pageSequenceStr;
             this.pageContents = pageContents;
         }
@@ -64,7 +64,7 @@ public class VolumeReaderImpl implements VolumeReader {
          * @see edu.indiana.d2i.htrc.access.PageReader#getPageContent()
          */
         @Override
-        public String getPageContent() {
+        public byte[] getPageContent() {
             return pageContents;
         }
     }

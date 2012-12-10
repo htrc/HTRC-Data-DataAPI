@@ -190,9 +190,9 @@ public abstract class HectorResource {
         keyspace = HFactory.createKeyspace(cassandraKeyspaceName, cluster, configurableConsistencyLevel);
         if (log.isDebugEnabled()) log.debug("Hector Keyspace object created");
         
-        this.stringSerializer = new StringSerializer();
-        this.integerSerializer = new IntegerSerializer();
-        this.bytesArraySerializer = new BytesArraySerializer();
+        this.stringSerializer = StringSerializer.get();
+        this.integerSerializer = IntegerSerializer.get();
+        this.bytesArraySerializer = BytesArraySerializer.get();
         
         this.maxAttempts = Integer.valueOf(parameterContainer.getParameter(PN_HECTOR_ACCESS_MAX_ATTEMPTS));
         this.initFailDelay = Long.valueOf(parameterContainer.getParameter(PN_HECTOR_ACCESS_FAIL_INIT_DELAY));
@@ -305,7 +305,7 @@ public abstract class HectorResource {
             columnNames[i] += CN_CONTENTS_SUFFIX;
         }
 
-        SliceQuery<String, String, String> sliceQuery = HFactory.createSliceQuery(keyspace, stringSerializer, stringSerializer, stringSerializer);
+        SliceQuery<String, String, byte[]> sliceQuery = HFactory.createSliceQuery(keyspace, stringSerializer, stringSerializer, bytesArraySerializer);
         
         sliceQuery.setColumnFamily(parameterContainer.getParameter(PN_VOLUME_CONTENT_CF_NAME));
         sliceQuery.setKey(volumeID);
@@ -315,15 +315,15 @@ public abstract class HectorResource {
             
             try {
         
-                QueryResult<ColumnSlice<String, String>> queryResult = sliceQuery.execute();
+                QueryResult<ColumnSlice<String, byte[]>> queryResult = sliceQuery.execute();
                 success = true;
                 if (queryResult != null) {
-                    ColumnSlice<String, String> columnSlice = queryResult.get();
+                    ColumnSlice<String, byte[]> columnSlice = queryResult.get();
                     if (columnSlice != null) {
-                        List<HColumn<String, String>> columns = columnSlice.getColumns();
+                        List<HColumn<String, byte[]>> columns = columnSlice.getColumns();
                         if (columns != null && !columns.isEmpty()) {
                             int index = 0;
-                            for (HColumn<String, String> column : columns) {
+                            for (HColumn<String, byte[]> column : columns) {
                                 String name = column.getName();
                                 if (name.equals(columnNames[index])) {
                                     PageReader pageReader = new PageReaderImpl(pageSequences.get(index), column.getValue());

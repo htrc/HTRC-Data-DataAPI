@@ -113,9 +113,9 @@ public class CombinePageVolumeZipMaker implements ZipMaker {
                     
                     while (volumeReader.hasMorePages()) {
                         PageReader pageReader = volumeReader.nextPage();
-                        String pageContent = pageReader.getPageContent();
+                        byte[] pageContent = pageReader.getPageContent();
     
-                        zipOutputStream.write(pageContent.getBytes());
+                        zipOutputStream.write(pageContent);
                         
                         currentPageSequences.add(pageReader.getPageSequence());
                     }
