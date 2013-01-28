@@ -27,11 +27,11 @@ hector.access.fail.max.delay  - maximum amount of time (in milliseconds) Hector 
 
 async.worker.count - number of asynchronous worker threads to deploy
 
-max.pages.per.retrieval - maximum number of pages that each async worker may retrieve as a single fetch.  This is because each volume may contain a different number of pages, and this parameter breaks down the workload of volume retrieval into a more balanced and proportional workload
+max.pages.per.retrieval - maximum number of pages that each async worker may retrieve as a single fetch.  Each volume contains a different number of pages, and to make the workload more balanced, a volume retrieval is broken into a set of fetches each containing upto a equal number of pages specified by this parameter, so that the workload of retrieving a volume is proportional to the number of pages it contains
 
-max.async.fetch.entry.count - maxmum number of fetches to be loaded into the queue for async workers.  This prevents a large workload to monopolize the queue
+max.async.fetch.entry.count - maximum number of fetches to be loaded into the async queue.  This prevents a large workload from monopolizing the queue.
 
-min.entry.count.trigger.dispatch - minimum number of entries in the queue to trigger more fetches to be loaded into the queue.  This is a threshold to load more work into the async queue (if there is more work).
+min.entry.count.trigger.dispatch - minimum number of entries in the queue to trigger more fetches to be loaded into the queue.  This is a threshold to load more fetches into the async queue (if there are more fetches).
 
 max.exceptions.to.report - maximum number of exceptions to report back to the requesting client. Use 0 to set  unlimited.
 
