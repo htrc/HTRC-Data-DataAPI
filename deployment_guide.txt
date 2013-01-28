@@ -27,10 +27,18 @@ hector.access.fail.max.delay  - maximum amount of time (in milliseconds) Hector 
 
 async.worker.count - number of asynchronous worker threads to deploy
 
-max.volumes.allowed  - maximum number volumes a client can retrieve in one request.  Use 0 to set unlimited.  This is entirely based on the number of unique volumeIDs in the request.
+max.pages.per.retrieval - maximum number of pages that each async worker may retrieve as a single fetch.  This is because each volume may contain a different number of pages, and this parameter breaks down the workload of volume retrieval into a more balanced and proportional workload
 
-max.total.pages.allowed  - maximum number of pages a client can retrieve in one request.  Use 0 to set unlimited.  This is the total number of pages tallied from all volumes.
+max.async.fetch.entry.count - maxmum number of fetches to be loaded into the queue for async workers.  This prevents a large workload to monopolize the queue
 
-max.pages.per.volume.allowed  - maximum number of pages from each individual volume a client can retrieve in one request.  Use 0 to set unlimited.
+min.entry.count.trigger.dispatch - minimum number of entries in the queue to trigger more fetches to be loaded into the queue.  This is a threshold to load more work into the async queue (if there is more work).
+
+max.exceptions.to.report - maximum number of exceptions to report back to the requesting client. Use 0 to set  unlimited.
+
+max.volumes.allowed  - maximum number volumes a client can retrieve in one request.  Use 0 to set unlimited.  This is entirely based on the number of unique volumeIDs in the request. Deprecated
+
+max.total.pages.allowed  - maximum number of pages a client can retrieve in one request.  Use 0 to set unlimited.  This is the total number of pages tallied from all volumes. Deprecated
+
+max.pages.per.volume.allowed  - maximum number of pages from each individual volume a client can retrieve in one request.  Use 0 to set unlimited. Deprecated
 
 audit.class  - specifies which auditor implementation to use. Must be the fully qualified class name of a class that extends Auditor.  Currently there are two: edu.indiana.d2i.htrc.access.audit.NullAuditor and edu.indiana.d2i.htrc.access.audit.Log4jAuditor.  The first one is a dummy that does nothing.  The second one uses log4j to write audit files.
