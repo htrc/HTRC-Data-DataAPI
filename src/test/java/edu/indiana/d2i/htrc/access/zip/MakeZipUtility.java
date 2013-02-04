@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -38,7 +38,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
@@ -57,18 +57,29 @@ public class MakeZipUtility {
         while (volumeRetriever.hasMoreVolumes()) {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
             String safeVolumeID = nextVolume.getPairtreeCleanedVolumeID();
-            ZipEntry zipEntry = new ZipEntry(safeVolumeID + "/");
-            zipOutputStream.putNextEntry(zipEntry);
-            zipOutputStream.closeEntry();
+//            ZipEntry zipEntry = new ZipEntry(safeVolumeID + "/");
+//            zipOutputStream.putNextEntry(zipEntry);
+//            zipOutputStream.closeEntry();
             
             while (nextVolume.hasMorePages()) {
-                PageReader nextPage = nextVolume.nextPage();
-                String pageSeq = nextPage.getPageSequence();
-                byte[] pageContent = nextPage.getPageContent();
+                ContentReader nextPage = nextVolume.nextPage();
+                String pageSeq = nextPage.getContentName();
+                byte[] pageContent = nextPage.getContent();
                 
                 ZipEntry pageEntry = new ZipEntry(safeVolumeID + "/" + pageSeq + ".txt");
                 zipOutputStream.putNextEntry(pageEntry);
                 zipOutputStream.write(pageContent);
+                zipOutputStream.closeEntry();
+            }
+            
+            while (nextVolume.hasMoreMetadata()) {
+                ContentReader nextMetadata = nextVolume.nextMetadata();
+                byte[] content = nextMetadata.getContent();
+                String metsFilename = ZipMakerFactory.Helper.getEntryFullnameFromMetadataName(nextMetadata.getContentName());
+                
+                ZipEntry metadataEntry = new ZipEntry(safeVolumeID + "/" + metsFilename);
+                zipOutputStream.putNextEntry(metadataEntry);
+                zipOutputStream.write(content);
                 zipOutputStream.closeEntry();
             }
         }
@@ -89,12 +100,22 @@ public class MakeZipUtility {
             zipOutputStream.putNextEntry(zipEntry);
             
             while (nextVolume.hasMorePages()) {
-                PageReader nextPage = nextVolume.nextPage();
-                byte[] pageContent = nextPage.getPageContent();
+                ContentReader nextPage = nextVolume.nextPage();
+                byte[] pageContent = nextPage.getContent();
                 
                 zipOutputStream.write(pageContent);
             }
             zipOutputStream.closeEntry();
+            
+            while (nextVolume.hasMoreMetadata()) {
+                ContentReader nextMetadata = nextVolume.nextMetadata();
+                String suffix = ZipMakerFactory.Helper.getEntrySuffixFromMetadataName(nextMetadata.getContentName());
+                String entryName = nextVolume.getPairtreeCleanedVolumeID() + suffix;
+                zipEntry = new ZipEntry(entryName);
+                zipOutputStream.putNextEntry(zipEntry);
+                zipOutputStream.write(nextMetadata.getContent());
+                zipOutputStream.closeEntry();
+            }
         }
         zipOutputStream.close();
         return expectedOutputStream.toByteArray();
@@ -112,8 +133,8 @@ public class MakeZipUtility {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
 
             while (nextVolume.hasMorePages()) {
-                PageReader nextPage = nextVolume.nextPage();
-                byte[] pageContent = nextPage.getPageContent();
+                ContentReader nextPage = nextVolume.nextPage();
+                byte[] pageContent = nextPage.getContent();
                 
                 zipOutputStream.write(pageContent);
             }

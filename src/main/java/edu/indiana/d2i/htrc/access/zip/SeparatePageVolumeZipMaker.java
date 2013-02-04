@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
@@ -79,7 +79,7 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
 
-        ZipEntry zipEntry = null;
+//        ZipEntry zipEntry = null;
         String volumeIDDirName = null;
         
         List<Exception> exceptionList = new LinkedList<Exception>();
@@ -99,25 +99,42 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
                         currentVolumeID = volumeID;
                         currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
     
-                        zipEntry = new ZipEntry(volumeIDDirName);
-                        zipOutputStream.putNextEntry(zipEntry);
-                        entryOpen = true;
-                        zipOutputStream.closeEntry();
-                        entryOpen = false;
+//                        zipEntry = new ZipEntry(volumeIDDirName);
+//                        zipOutputStream.putNextEntry(zipEntry);
+//                        entryOpen = true;
+//                        zipOutputStream.closeEntry();
+//                        entryOpen = false;
     
                     }
                     
                     while (volumeReader.hasMorePages()) {
-                        PageReader pageReader = volumeReader.nextPage();
-                        String pageSequence = pageReader.getPageSequence();
+                        ContentReader pageReader = volumeReader.nextPage();
+                        String pageSequence = pageReader.getContentName();
                         ZipEntry pageContentsEntry = new ZipEntry(volumeIDDirName + pageSequence + ".txt");
                         zipOutputStream.putNextEntry(pageContentsEntry);
                         entryOpen = true;
-                        byte[] pageContent = pageReader.getPageContent();
+                        byte[] pageContent = pageReader.getContent();
                         zipOutputStream.write(pageContent);
                         zipOutputStream.closeEntry();
                         entryOpen = false;
                         currentPageSequences.add(pageSequence);
+                    }
+                    
+                    while (volumeReader.hasMoreMetadata()) {
+                        ContentReader metadataReader = volumeReader.nextMetadata();
+                        String metadataEntryName = ZipMakerFactory.Helper.getEntryFullnameFromMetadataName(metadataReader.getContentName());
+                        if (metadataEntryName != null) {
+                            ZipEntry metadataEntry = new ZipEntry(volumeIDDirName + metadataEntryName);
+                            zipOutputStream.putNextEntry(metadataEntry);
+                            entryOpen = true;
+                            byte[] metadataContent = metadataReader.getContent();
+                            zipOutputStream.write(metadataContent);
+                            zipOutputStream.closeEntry();
+                            entryOpen = false;
+                            currentPageSequences.add(metadataReader.getContentName());
+                        } else {
+                            throw new NullPointerException("Unmapped metadata to entry name: " + metadataReader.getContentName());
+                        }
                     }
                 }
             } catch (KeyNotFoundException e) {
@@ -129,6 +146,8 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
             } catch (RepositoryException e) {
                 log.error("RepositoryException", e);
                 exceptionList.add(e);
+            } catch (NullPointerException e) {
+                log.fatal("unmapped metadata", e);
             }
         }
         

@@ -33,11 +33,14 @@ package edu.indiana.d2i.htrc.access.zip;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import edu.indiana.d2i.htrc.access.ZipMaker;
+import edu.indiana.d2i.htrc.access.read.HectorResource;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
@@ -47,7 +50,18 @@ import edu.indiana.d2i.htrc.audit.Auditor;
 public class ZipMakerFactory {
     
     protected static class Helper {
+        
         protected static final String ERROR_ENTRY_HEADING = "Caught the following errors while generating the ZIP file.  This ZIP file is likely to be incomplete and missing some entries." + System.getProperty("line.separator");
+        protected static final Map<String, String> metadataSuffixMap = new HashMap<String, String>();
+        protected static final Map<String, String> metadataEntryMap = new HashMap<String, String>();
+        protected static final String METS_ENTRY_SUFFIX = ".mets.xml";
+        protected static final String METS_ENTRY_FILENAME = "mets.xml";
+        
+        static {
+            metadataSuffixMap.put(HectorResource.CN_VOLUME_METS, METS_ENTRY_SUFFIX);
+            metadataEntryMap.put(HectorResource.CN_VOLUME_METS, METS_ENTRY_FILENAME);
+        }
+        
         
         protected static void injectErrorEntry(ZipOutputStream outputStream, boolean entryOpen, Exception e) throws IOException {
             if (entryOpen) {
@@ -76,6 +90,14 @@ public class ZipMakerFactory {
                 printStream.println();
             }
             outputStream.closeEntry();
+        }
+        
+        protected static String getEntrySuffixFromMetadataName(String metadataName) {
+            return metadataSuffixMap.get(metadataName);
+        }
+        
+        protected static String getEntryFullnameFromMetadataName(String metadataName) {
+            return metadataEntryMap.get(metadataName);
         }
         
     }

@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
@@ -94,10 +94,10 @@ public class WordSequenceZipMaker implements ZipMaker {
                         currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
                     }
                     while(volumeReader.hasMorePages()) {
-                        PageReader pageReader = volumeReader.nextPage();
-                        byte[] pageContent = pageReader.getPageContent();
+                        ContentReader pageReader = volumeReader.nextPage();
+                        byte[] pageContent = pageReader.getContent();
                         zipOutputStream.write(pageContent);
-                        currentPageSequences.add(pageReader.getPageSequence());
+                        currentPageSequences.add(pageReader.getContentName());
                     }
                 }
             } catch (KeyNotFoundException e) {

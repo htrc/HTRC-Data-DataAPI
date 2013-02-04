@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  VolumeAccessResource.java
-# Description:  
+# Description: This class handles requests for volume resources
 #
 # -----------------------------------------------------------------
 # 
@@ -51,9 +51,9 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.IDTypeEnum;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.IDTypeEnum;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
@@ -62,6 +62,8 @@ import edu.indiana.d2i.htrc.audit.Auditor;
 import edu.indiana.d2i.htrc.audit.AuditorFactory;
 
 /**
+ * This class handles requests for volume resources
+ * 
  * @author Yiming Sun
  *
  */
@@ -69,25 +71,46 @@ import edu.indiana.d2i.htrc.audit.AuditorFactory;
 @Path("/volumes")
 public class VolumeAccessResource {
     
-//    @Context ServletContext sc;
-    
     private static Logger log = Logger.getLogger(VolumeAccessResource.class);
-    
+
+    /**
+     * Wrapper method to allow requests made via HTTP Get
+     * 
+     * @param volumeIDs a single String container raw IDs of requested pages
+     * @param concatenate parameter to specify whether the pages of each request volume to be concatenated into a single file or as separate text files.
+     * @param retrieveMETS parameter to specify if METS metadata should also be returned.
+     * @param version parameter to specify a specific version of data API to use. Just a place holder for now.
+     * @param httpHeaders an HttpHeaders object
+     * @param httpServletRequest an HttpServletRequest object
+     * @return a Response object
+     */
     @GET
     public Response getResourceGet(@QueryParam("volumeIDs") String volumeIDs,
                                    @QueryParam("concat") boolean concatenate,
+                                   @QueryParam("mets") boolean retrieveMETS,
                                    @QueryParam("version") int version,
                                    @Context HttpHeaders httpHeaders,
                                    @Context HttpServletRequest httpServletRequest) {
         
-        return getResourcePost(volumeIDs, concatenate, version, httpHeaders, httpServletRequest);
+        return getResourcePost(volumeIDs, concatenate, retrieveMETS, version, httpHeaders, httpServletRequest);
     }
         
-    
+    /**
+     * Method to handle HTTP Post requests for volume resources
+     * 
+     * @param volumeIDs a single String containing raw IDs of the requested volumes
+     * @param concatenate parameter to specify whether the pages of each request volume to be concatenated into a single file or as spearate text files.
+     * @param retrieveMETS parameter to specify if METS metadata should also be returned.
+     * @param version parameter to specify a specific version of data API to use. Just a place holder for now.
+     * @param httpHeaders an HttpHeaders object
+     * @param httpServletRequest an HttpServletRequest object
+     * @return a Response object
+     */
     @POST
     @Consumes("application/x-www-form-urlencoded")
     public Response getResourcePost(@FormParam("volumeIDs") String volumeIDs, 
                                 @FormParam("concat") boolean concatenate,
+                                @FormParam("mets") boolean retrieveMETS,
                                 @FormParam("version") int version,
                                 @Context HttpHeaders httpHeaders,
                                 @Context HttpServletRequest httpServletRequest) {
@@ -95,6 +118,7 @@ public class VolumeAccessResource {
         if (log.isDebugEnabled()) {
             log.debug("volumeIDs = " + volumeIDs);
             log.debug("concatenate = " + concatenate);
+            log.debug("mets = " + retrieveMETS);
             log.debug("version = " + version);
         }
                 
@@ -103,23 +127,17 @@ public class VolumeAccessResource {
         ContextExtractor contextExtractor = new ContextExtractor(httpServletRequest, httpHeaders);
         Auditor auditor = AuditorFactory.getAuditor(contextExtractor.getContextMap());
         
-        Parser parser = HTRCItemIdentifierFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
+        Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
+        parser.setRetrieveMETS(retrieveMETS);
         
         try {
             if (volumeIDs != null) {
                 List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
                 
-
-//                AsyncJobManager asyncJobManager = AsyncJobManager.getInstance();
-//
-//                AsyncVolumeRetriever asyncVolumeRetriever = AsyncVolumeRetriever.newInstance(asyncJobManager);
-
                 for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
                     String volumeID = volumeIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID);
                 }
-
-//                asyncVolumeRetriever.setRetrievalIDs(volumeIDList);
                 
 
                 ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance();
@@ -130,10 +148,6 @@ public class VolumeAccessResource {
                 StreamingOutput streamingOutput = new VolumeZipStreamingOutput(volumeRetriever, zipMaker, auditor);
                 response = Response.ok(streamingOutput).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_APPLICATION_ZIP).header(Constants.HTTP_HEADER_CONTENT_DISPOSITION, Constants.FILENAME_VOLUMES_ZIP).build();
 
-                // add the jobs to the queue as the last step to ensure all other data objects are
-                // properly created before any job is finished
-//                asyncVolumeRetriever.submitJobs();
-                
             } else {
                 log.error("Required parameter volumeIDs is null");
                 response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter volumeIDs</p>").build();

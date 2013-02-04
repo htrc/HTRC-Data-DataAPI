@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.id.VolumePageIdentifier;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
@@ -70,8 +70,8 @@ public class AsyncFetchManager {
         
     }
     
-    public Future<VolumeReader> submit(VolumePageIdentifier volumePageIdentifier) {
-        CallableVolumeFetcher callableVolumeFetcher = new CallableVolumeFetcher(volumePageIdentifier, hectorResource);
+    public Future<VolumeReader> submit(HTRCItemIdentifier itemIdentifier) {
+        CallableVolumeFetcher callableVolumeFetcher = new CallableVolumeFetcher(itemIdentifier, hectorResource);
         Future<VolumeReader> future = executorService.submit(callableVolumeFetcher);
         return future;
     }

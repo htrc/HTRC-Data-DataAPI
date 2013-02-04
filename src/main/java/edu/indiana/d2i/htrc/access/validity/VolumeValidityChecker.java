@@ -45,7 +45,7 @@ import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -96,12 +96,12 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
             maxVolumesPolicyChecker.check(volumeCount, volumeID);
 
             perVolumePageCount = volumeInfo.getPageCount();
-            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + Constants.PAGE_SEQ_END_MARK);
+            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + IdentifierParserFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + Constants.PAGE_SEQ_END_MARK);
             
             totalPageCount += perVolumePageCount;
             
             int delta = maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount + 1;
-            String message = (delta > 0) ? volumeID + Constants.PAGE_SEQ_START_MARK + HTRCItemIdentifierFactory.Parser.generatePageSequenceString(delta) + Constants.PAGE_SEQ_END_MARK : volumeID;
+            String message = (delta > 0) ? volumeID + Constants.PAGE_SEQ_START_MARK + IdentifierParserFactory.Parser.generatePageSequenceString(delta) + Constants.PAGE_SEQ_END_MARK : volumeID;
             
             maxTotalPagesPolicyChecker.check(totalPageCount, message);
             

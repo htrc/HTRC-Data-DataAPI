@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -37,9 +37,9 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
-import edu.indiana.d2i.htrc.access.id.VolumePageIdentifier;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl;
 
@@ -52,11 +52,11 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
 
     private static final Logger log = Logger.getLogger(CallableVolumeFetcher.class);
     
-    private final WeakReference<VolumePageIdentifier> idWeakReference;
+    private final WeakReference<HTRCItemIdentifier> idWeakReference;
     private final HectorResource hectorResource;
     
-    public CallableVolumeFetcher(VolumePageIdentifier volumePageIdentifier, HectorResource hectorResource) {
-        this.idWeakReference = new WeakReference<VolumePageIdentifier>(volumePageIdentifier);
+    public CallableVolumeFetcher(HTRCItemIdentifier itemIdentifier, HectorResource hectorResource) {
+        this.idWeakReference = new WeakReference<HTRCItemIdentifier>(itemIdentifier);
         this.hectorResource = hectorResource;
         
     }
@@ -66,15 +66,24 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
      */
     @Override
     public VolumeReader call() throws Exception {
-        VolumePageIdentifier volumePageIdentifier = idWeakReference.get();
+        HTRCItemIdentifier itemIdentifier = idWeakReference.get();
         VolumeReaderImpl volumeReaderImpl = null;
-        if (volumePageIdentifier != null) {
-            volumeReaderImpl = new VolumeReaderImpl(volumePageIdentifier);
-            String volumeID = volumePageIdentifier.getVolumeID();
-            List<String> pageSequences = volumePageIdentifier.getPageSequences();
+        if (itemIdentifier != null) {
+            volumeReaderImpl = new VolumeReaderImpl(itemIdentifier);
+            String volumeID = itemIdentifier.getVolumeID();
             
-            List<PageReader> pageContents = hectorResource.retrievePageContents(volumeID, pageSequences);
-            volumeReaderImpl.setPages(pageContents);
+            List<String> pageSequences = itemIdentifier.getPageSequences();
+            if (pageSequences != null) {
+                List<ContentReader> pageContents = hectorResource.retrievePageContents(volumeID, pageSequences);
+                volumeReaderImpl.setPages(pageContents);
+            }
+            
+            
+            List<String> metadataNames = itemIdentifier.getMetadataNames();
+            if (metadataNames != null) {
+                List<ContentReader> metadataContents = hectorResource.retrieveMetadata(volumeID, metadataNames);
+                volumeReaderImpl.setMetadata(metadataContents);
+            }
         } else {
             if (log.isDebugEnabled()) log.debug("An identifier went away");
         }

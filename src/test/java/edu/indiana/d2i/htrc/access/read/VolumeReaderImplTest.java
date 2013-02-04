@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -38,11 +38,11 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
-import edu.indiana.d2i.htrc.access.id.VolumeIdentifier;
-import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
+import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.ContentReaderImpl;
 
 /**
  * @author Yiming Sun
@@ -56,7 +56,7 @@ public class VolumeReaderImplTest {
         String volumeID = "loc.ark:/13960/t9q23z43f";
         String expectedCleandVolumeID = "loc.ark+=13960=t9q23z43f";
         
-        VolumeIdentifier volumeIdentifier = new VolumeIdentifier(volumeID);
+        IdentifierImpl volumeIdentifier = new IdentifierImpl(volumeID);
         VolumeReaderImpl volumeReaderImpl = new VolumeReaderImpl(volumeIdentifier);
         
         String actualCleanedVolumeID = volumeReaderImpl.getPairtreeCleanedVolumeID();
@@ -70,7 +70,7 @@ public class VolumeReaderImplTest {
         String volumeID = "miun.ajj3079.0001.001";
         String expectedCleandVolumeID = "miun.ajj3079,0001,001";
         
-        VolumeIdentifier volumeIdentifier = new VolumeIdentifier(volumeID);
+        IdentifierImpl volumeIdentifier = new IdentifierImpl(volumeID);
         VolumeReaderImpl volumeReaderImpl = new VolumeReaderImpl(volumeIdentifier);
         
         String actualCleanedVolumeID = volumeReaderImpl.getPairtreeCleanedVolumeID();
@@ -78,36 +78,37 @@ public class VolumeReaderImplTest {
         Assert.assertEquals(expectedCleandVolumeID, actualCleanedVolumeID);
     }
 
-    // This case tests that PageReader properly outputs the data it holds
+    // This case tests that page ContentReader properly outputs the page data it holds
     @Test
-    public void testPageReaderImpl() throws KeyNotFoundException, Exception {
-        List<PageReader> pageReaders = new ArrayList<PageReader>();
-        String[] expectedPageSequences = new String[5];
-        byte[][] expectedPageContents = new byte[5][];
+    public void testPageContentReaderImpl() throws KeyNotFoundException, Exception {
+        final int PAGE_COUNT = 5;
         
-        String[] actualPageSequences = new String[5];
-        byte[][] actualPageContents = new byte[5][];
+        List<ContentReader> pageReaders = new ArrayList<ContentReader>();
+        String[] expectedPageSequences = new String[PAGE_COUNT];
+        byte[][] expectedPageContents = new byte[PAGE_COUNT][];
         
+        String[] actualPageSequences = new String[PAGE_COUNT];
+        byte[][] actualPageContents = new byte[PAGE_COUNT][];
         
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 1; i <= PAGE_COUNT; i++) {
             
-            String pageSequence = HTRCItemIdentifierFactory.Parser.generatePageSequenceString(i);
+            String pageSequence = IdentifierParserFactory.Parser.generatePageSequenceString(i);
             byte[] pageContents = ("Page " + i).getBytes("utf-8");
             expectedPageSequences[i - 1] = pageSequence;
             expectedPageContents[i - 1] = pageContents;
-            PageReader pageReader = new PageReaderImpl(pageSequence, pageContents);
+            ContentReader pageReader = new ContentReaderImpl(pageSequence, pageContents);
             pageReaders.add(pageReader);
         }
         
-        VolumeIdentifier id = new VolumeIdentifier("test.volume/reader");
+        IdentifierImpl id = new IdentifierImpl("test.volume/reader");
         VolumeReader volumeReader = new VolumeReaderImpl(id);
         volumeReader.setPages(pageReaders);
         
         int index =  0;
         while (volumeReader.hasMorePages()) {
-            PageReader nextPage = volumeReader.nextPage();
-            actualPageSequences[index] = nextPage.getPageSequence();
-            actualPageContents[index] = nextPage.getPageContent();
+            ContentReader nextPage = volumeReader.nextPage();
+            actualPageSequences[index] = nextPage.getContentName();
+            actualPageContents[index] = nextPage.getContent();
             
             index++;
         }
@@ -115,5 +116,45 @@ public class VolumeReaderImplTest {
         Assert.assertArrayEquals(expectedPageSequences, actualPageSequences);
         Assert.assertArrayEquals(expectedPageContents, actualPageContents);
         
+    }
+    
+    // This case tests that metadata ContentReader properly outputs the metadata it holds
+    @Test
+    public void testMetadataContentReaderImpl() throws KeyNotFoundException, Exception {
+        final int METADATA_COUNT = 1;
+        
+        TestVolumeRetriever volRetriever = new TestVolumeRetriever();
+        
+        List<ContentReader> metadataReaders = new ArrayList<ContentReader>();
+        String[] expectedMetadataNames = new String[METADATA_COUNT];
+        byte[][] expectedMetadataContents = new byte[METADATA_COUNT][];
+        
+        String[] actualMetadataNames = new String[METADATA_COUNT];
+        byte[][] actualMetadataContents = new byte[METADATA_COUNT][];
+        
+        IdentifierImpl id = new IdentifierImpl("test.volume/reader");
+        String metsString = volRetriever.generateFakeMETSString(id.getVolumeID());
+        
+        for (int i = 0; i < METADATA_COUNT; i++) {
+            byte[] metadataContents = metsString.getBytes("utf-8");
+            expectedMetadataNames[i] = HectorResource.CN_VOLUME_METS;
+            expectedMetadataContents[i] = metadataContents;
+            ContentReader metadataReader = new ContentReaderImpl(HectorResource.CN_VOLUME_METS, metadataContents);
+            metadataReaders.add(metadataReader);
+        }
+        
+        VolumeReader volumeReader = new VolumeReaderImpl(id);
+        volumeReader.setMetadata(metadataReaders);
+        
+        int index = 0;
+        while (volumeReader.hasMoreMetadata()) {
+            ContentReader nextMetadata = volumeReader.nextMetadata();
+            actualMetadataNames[index] = nextMetadata.getContentName();
+            actualMetadataContents[index] = nextMetadata.getContent();
+            index++;
+        }
+        
+        Assert.assertArrayEquals(expectedMetadataNames, actualMetadataNames);
+        Assert.assertArrayEquals(expectedMetadataContents, actualMetadataContents);
     }
 }

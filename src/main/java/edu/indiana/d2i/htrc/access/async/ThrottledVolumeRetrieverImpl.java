@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -50,8 +50,8 @@ import edu.indiana.d2i.htrc.access.async.ExceptionContainer.ExceptionType;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory;
-import edu.indiana.d2i.htrc.access.id.VolumePageIdentifier;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
@@ -77,7 +77,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     
     
     protected List<? extends HTRCItemIdentifier> identifierList = null;
-    protected List<VolumePageIdentifier> workingList = null;
+    protected List<IdentifierImpl> workingList = null;
     protected List<Future<VolumeReader>> resultList = null;
     protected List<ExceptionContainer> exceptionList = null;
 
@@ -87,7 +87,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     // of the dropped client; without this map, the only reference to the VolumePageIdentifier
     // would be the WeakReference and it can get GC'ed before the CallableVolumeFetch is even
     // executed.
-    protected Map<Future<VolumeReader>, VolumePageIdentifier> resultToIDMap = null;
+    protected Map<Future<VolumeReader>, IdentifierImpl> resultToIDMap = null;
     
     
     
@@ -107,10 +107,10 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     }
     
     protected ThrottledVolumeRetrieverImpl() {
-        this.workingList = new LinkedList<VolumePageIdentifier>();
+        this.workingList = new LinkedList<IdentifierImpl>();
         this.resultList = new LinkedList<Future<VolumeReader>>();
         this.exceptionList = new LinkedList<ExceptionContainer>();
-        this.resultToIDMap = new HashMap<Future<VolumeReader>, VolumePageIdentifier>();
+        this.resultToIDMap = new HashMap<Future<VolumeReader>, IdentifierImpl>();
     }
     
     public void setRetrievalIDs(List<? extends HTRCItemIdentifier> identifiers) {
@@ -127,10 +127,10 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         boolean done = false;
         while (availableSlots > 0 && !done) {
             if (!workingList.isEmpty()) {
-                VolumePageIdentifier volumePageIdentifier = workingList.remove(0);
-                Future<VolumeReader> future = asyncFetchManager.submit(volumePageIdentifier);
+                IdentifierImpl identifierImpl = workingList.remove(0);
+                Future<VolumeReader> future = asyncFetchManager.submit(identifierImpl);
                 resultList.add(future);
-                resultToIDMap.put(future, volumePageIdentifier);
+                resultToIDMap.put(future, identifierImpl);
                 availableSlots--;
                 jobDispatched++;
                 if (log.isDebugEnabled()) log.debug("workingList not empty, availableSlots: " + availableSlots + " jobDispatched: " + jobDispatched);
@@ -154,9 +154,15 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
                 }
                 
                 if (pageSequences != null) {
-                    List<VolumePageIdentifier> workingIDList = breakdownPageSequences(volumeID, pageSequences);
+                    List<IdentifierImpl> workingIDList = breakdownPageSequences(volumeID, pageSequences);
                     workingList.addAll(workingIDList);
-                } 
+                }
+                
+                List<String> metadataNames = identifier.getMetadataNames();
+                if (metadataNames != null) {
+                    List<IdentifierImpl> metadataList = breakdownMetadataNames(volumeID, metadataNames);
+                    workingList.addAll(metadataList);
+                }
             } else {
                 if (log.isDebugEnabled()) log.debug("no more work to dispatch");
                 done = true;
@@ -166,31 +172,40 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         return jobDispatched;
     }
     
-    protected List<VolumePageIdentifier> breakdownPageSequences(String volumeID, List<String> pageSequences) {
-        List<VolumePageIdentifier> identifiers = new LinkedList<VolumePageIdentifier>();
+    protected List<IdentifierImpl> breakdownPageSequences(String volumeID, List<String> pageSequences) {
+        List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
 
         int size = pageSequences.size();
         int fullBatchCount = (size / MAX_PAGES_PER_RETRIEVAL);
 
         for (int i = 0; i < fullBatchCount; i++) {
-            VolumePageIdentifier volumePageIdentifier = new VolumePageIdentifier(volumeID);
+            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
             for (int j = 0; j < MAX_PAGES_PER_RETRIEVAL; j++) {
-                volumePageIdentifier.addPageSequence(pageSequences.remove(0));
+                identifierImpl.addPageSequence(pageSequences.remove(0));
             }
-            identifiers.add(volumePageIdentifier);
+            identifiers.add(identifierImpl);
         }
         
         int remainingCount = size % MAX_PAGES_PER_RETRIEVAL;
         
         if (remainingCount > 0) {
-            VolumePageIdentifier volumePageIdentifier = new VolumePageIdentifier(volumeID);
+            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
             for (int i = 0; i < remainingCount; i++) {
-                volumePageIdentifier.addPageSequence(pageSequences.remove(0));
+                identifierImpl.addPageSequence(pageSequences.remove(0));
             }
             
-            identifiers.add(volumePageIdentifier);
+            identifiers.add(identifierImpl);
         }
         
+        return identifiers;
+    }
+    
+    protected List<IdentifierImpl> breakdownMetadataNames(String volumeID, List<String> metadataNames) {
+        List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
+        for (String metadataName : metadataNames) {
+            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
+            identifierImpl.addMetadataName(metadataName);
+        }
         return identifiers;
     }
     
@@ -264,7 +279,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     protected List<String> generatePageSequenceList(int pageCount) {
         List<String> pageSequences = new ArrayList<String>();
         for (int i = 1; i < pageCount; i++) {
-            String pageSequence = HTRCItemIdentifierFactory.Parser.generatePageSequenceString(i);
+            String pageSequence = IdentifierParserFactory.Parser.generatePageSequenceString(i);
             pageSequences.add(pageSequence);
         }
         return pageSequences;

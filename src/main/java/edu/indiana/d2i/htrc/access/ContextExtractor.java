@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  ContextExtractor.java
-# Description:  
+# Description: This class extracts client information from HTTP request headers
 #
 # -----------------------------------------------------------------
 # 
@@ -47,6 +47,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.log4j.Logger;
 
 /**
+ * This class extracts client information from HTTP request headers
+ * 
  * @author Yiming Sun
  *
  */
@@ -56,6 +58,12 @@ public class ContextExtractor {
     
     protected final Map<String, List<String>> contextMap; 
     
+    /**
+     * Constructor
+     * 
+     * @param httpServletRequest HTTP Servlet Request object
+     * @param httpHeaders HTTP request headers
+     */
     public ContextExtractor(HttpServletRequest httpServletRequest, HttpHeaders httpHeaders) {
         contextMap = new HashMap<String, List<String>>();
         extractFromRequest(contextMap, httpServletRequest);
@@ -66,6 +74,12 @@ public class ContextExtractor {
         }
     }
     
+    /**
+     * Get values of a specific context key as a list of Strings
+     * 
+     * @param key context key
+     * @return context values as a list of strings
+     */
     public List<String> getContext(String key) {
         List<String> list = null;
         List<String> list2 = contextMap.get(key.toLowerCase());
@@ -75,11 +89,22 @@ public class ContextExtractor {
         return list;
     }
     
+    /**
+     * Get all context information as a Map
+     * 
+     * @return a map containing all context keys and values
+     */
     public Map<String, List<String>> getContextMap() {
         return this.contextMap;
     }
     
-    
+
+    /**
+     * Extract context information from HTTP Servlet request object and put the information into a Map
+     * 
+     * @param map a Map object to hold extracted context information
+     * @param httpServletRequest an HTTP Servlet request
+     */
     protected void extractFromRequest(Map<String, List<String>> map, HttpServletRequest httpServletRequest) {
         String remoteAddr = httpServletRequest.getRemoteAddr();
         putIntoMap(map, "remoteaddr", remoteAddr);
@@ -103,6 +128,13 @@ public class ContextExtractor {
         
     }
     
+    /**
+     * Utility method to put name-value pair into a Map
+     * 
+     * @param map a Map object to hold the name-value pair
+     * @param name name of the name-value pair
+     * @param value value of the name-value pair
+     */
     protected void putIntoMap(Map<String, List<String>> map, String name, String value) {
         if (name != null && value != null) {
             if (!"".equals(name) && !"".equals(value)) {
@@ -117,6 +149,12 @@ public class ContextExtractor {
     }
     
     
+    /**
+     * Extract context information from HTTP Request headers and put the information into a map
+     * 
+     * @param map a Map object to hold extracted context information
+     * @param httpHeaders an HTTP Request headers object
+     */
     protected void extractFromHeaders(Map<String, List<String>> map, HttpHeaders httpHeaders) {
         if (httpHeaders != null) {
             MultivaluedMap<String, String> requestHeaders = httpHeaders.getRequestHeaders();
@@ -147,6 +185,11 @@ public class ContextExtractor {
         }        
     }
     
+    /**
+     * Extract context information from the headers of an HTTP Servlet request object and put the information into a map
+     * @param map a Map object to hold extracted context information
+     * @param httpServletRequest an HTTP Servlet request object
+     */
     // the warning is due to raw Enumeration type returned from HttpServletRequest.getHeaderNames()
     @SuppressWarnings("unchecked")
     protected void extractHeadersFromRequest(Map<String, List<String>> map, HttpServletRequest httpServletRequest) {
@@ -168,6 +211,12 @@ public class ContextExtractor {
         }
     }
 
+    /**
+     * Converts comma-separated values in a single String into a List of Strings
+     * 
+     * @param value comma-separated values as a single String
+     * @return a List of Strings containing individual values
+     */
     protected List<String> decomposeValueToList(String value) {
         List<String> list = new ArrayList<String>();
         

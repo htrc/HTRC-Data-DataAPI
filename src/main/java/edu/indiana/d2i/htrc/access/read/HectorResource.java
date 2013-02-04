@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -56,10 +56,10 @@ import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.PageReaderImpl;
+import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.ContentReaderImpl;
 
 /**
  * @author Yiming Sun
@@ -130,6 +130,8 @@ public abstract class HectorResource {
     public static final String CN_VOLUME_COPYRIGHT = "volume.copyright";
     
     public static final String CN_CONTENTS_SUFFIX = ".contents";
+    
+    public static final String CN_VOLUME_METS = "volume.METS";
 
     private final ParameterContainer parameterContainer;
     
@@ -291,20 +293,29 @@ public abstract class HectorResource {
     }
     
     
+    public List<ContentReader> retrievePageContents(String volumeID, List<String> pageSequences) throws KeyNotFoundException, RepositoryException {
+        return retrieveColumnContent(volumeID, pageSequences, true);
+    }
     
-    public List<PageReader> retrievePageContents(String volumeID, List<String> pageSequences) throws KeyNotFoundException, RepositoryException {
-        List<PageReader> pageReaders = new ArrayList<PageReader>();
+    public List<ContentReader> retrieveMetadata(String volumeID, List<String> metadataNames) throws KeyNotFoundException, RepositoryException {
+        return retrieveColumnContent(volumeID, metadataNames, false);
+    }
+    
+    protected List<ContentReader> retrieveColumnContent(String volumeID, List<String> columnNameList, boolean isPageSequence) throws KeyNotFoundException, RepositoryException {
+        List<ContentReader> contentReaders = new ArrayList<ContentReader>(columnNameList.size());
         
         boolean success = false;
         int attemptsLeft = maxAttempts;
         long failDelay = initFailDelay;
 
-        String[] columnNames = pageSequences.toArray(new String[0]);
+        String[] columnNames = columnNameList.toArray(new String[0]);
         
-        for (int i = 0; i < columnNames.length; i++) {
-            columnNames[i] += CN_CONTENTS_SUFFIX;
+        if (isPageSequence) {
+            for (int i = 0; i < columnNames.length; i++) {
+                columnNames[i] += CN_CONTENTS_SUFFIX;
+            }
         }
-
+        
         SliceQuery<String, String, byte[]> sliceQuery = HFactory.createSliceQuery(keyspace, stringSerializer, stringSerializer, bytesArraySerializer);
         
         sliceQuery.setColumnFamily(parameterContainer.getParameter(PN_VOLUME_CONTENT_CF_NAME));
@@ -326,18 +337,18 @@ public abstract class HectorResource {
                             for (HColumn<String, byte[]> column : columns) {
                                 String name = column.getName();
                                 if (name.equals(columnNames[index])) {
-                                    PageReader pageReader = new PageReaderImpl(pageSequences.get(index), column.getValue());
-                                    pageReaders.add(pageReader);
+                                    ContentReader contentReader = new ContentReaderImpl(columnNameList.get(index), column.getValue());
+                                    contentReaders.add(contentReader);
                                     index++;
                                 } else {
                                     log.error("Column names mismatch. Expected " + columnNames[index] + " Actual: " + name);
-                                    throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(index) + Constants.PAGE_SEQ_END_MARK);
+                                    throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + columnNameList.get(index) + Constants.PAGE_SEQ_END_MARK);
                                 }
                             }
                             
                             if (index < columnNames.length) {
                                 log.error("Column count mismatch. Expected " + columnNames.length + " Actual: " + index);
-                                throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + pageSequences.get(index) + Constants.PAGE_SEQ_END_MARK);
+                                throw new KeyNotFoundException(volumeID + Constants.PAGE_SEQ_START_MARK + columnNameList.get(index) + Constants.PAGE_SEQ_END_MARK);
                             }
                         } else {
                             log.error("List<HColumn<>> is null or isEmpty for volume: " + volumeID);
@@ -371,7 +382,7 @@ public abstract class HectorResource {
         
         } while (!success && attemptsLeft > 0);
         
-        return pageReaders;
+        return contentReaders;
         
     }
     

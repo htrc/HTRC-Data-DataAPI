@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,8 +32,6 @@
 package edu.indiana.d2i.htrc.access.id;
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -50,12 +48,13 @@ import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
+import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
  * @author Yiming Sun
  *
  */
-public class HTRCItemIdentifierFactory {
+public class IdentifierParserFactory {
     
     public static abstract class Parser {
         
@@ -68,12 +67,21 @@ public class HTRCItemIdentifierFactory {
         public static final String PN_MAX_PAGES_PER_VOLUME_ALLOWED = "max.pages.per.volume.allowed";
         
         protected PolicyCheckerRegistry policyCheckerRegistry = new NullPolicyCheckerRegistry();
+        protected boolean retrieveMETS = false;
         
         public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;
         
         
         public void setPolicyCheckerRegistry(PolicyCheckerRegistry policyCheckerRegistry) {
             this.policyCheckerRegistry = policyCheckerRegistry;
+        }
+        
+        public void setRetrieveMETS(boolean retrieveMETS) {
+            this.retrieveMETS = retrieveMETS;
+        }
+        
+        public boolean isRetrieveMETS() {
+            return this.retrieveMETS;
         }
         
         public static String generatePageSequenceString(int pageSequence) {
@@ -98,12 +106,12 @@ public class HTRCItemIdentifierFactory {
     static class VolumeIDsParser extends Parser {
         private static final Logger log = Logger.getLogger(VolumeIDsParser.class);
         /**
-         * @see edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser#parse(java.lang.String)
+         * @see edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<VolumeIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
+        public List<IdentifierImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
             
-            Map<String, VolumeIdentifier> volumeIDMap = new HashMap<String, VolumeIdentifier>();
+            Map<String, IdentifierImpl> volumeIDMap = new HashMap<String, IdentifierImpl>();
 
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
@@ -113,11 +121,13 @@ public class HTRCItemIdentifierFactory {
                     Matcher matcher = VOLUME_ID_PATTERN.matcher(token);
                     if (matcher.matches()) {
                         if (log.isDebugEnabled()) Log.debug("volume ID: " + token);
-                        VolumeIdentifier volumeIdentifier = volumeIDMap.get(token);
-                        if (volumeIdentifier == null) {
-                            volumeIdentifier = new VolumeIdentifier(token);
-                            volumeIDMap.put(token, volumeIdentifier);
-    
+                        IdentifierImpl identifierImpl = volumeIDMap.get(token);
+                        if (identifierImpl == null) {
+                            identifierImpl = new IdentifierImpl(token);
+                            if (isRetrieveMETS()) {
+                                identifierImpl.addMetadataName(HectorResource.CN_VOLUME_METS);
+                            }
+                            volumeIDMap.put(token, identifierImpl);
                         }
                     } else {
                         throw new ParseException(token, 0);
@@ -129,7 +139,7 @@ public class HTRCItemIdentifierFactory {
                 throw new ParseException(identifiersString, 0);
             }
             
-            List<VolumeIdentifier> list = new LinkedList<VolumeIdentifier>(volumeIDMap.values());
+            List<IdentifierImpl> list = new LinkedList<IdentifierImpl>(volumeIDMap.values());
             return list;
         }
     }
@@ -141,12 +151,12 @@ public class HTRCItemIdentifierFactory {
         static final int MIN_VOLUME_ID_LENGTH = 4;
         
         /**
-         * @see edu.indiana.d2i.htrc.access.id.HTRCItemIdentifierFactory.Parser#parse(java.lang.String)
+         * @see edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<VolumePageIdentifier> parse(String identifiersString) throws ParseException, PolicyViolationException {
+        public List<IdentifierImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
 
-            Map<String, VolumePageIdentifier> pageIDMap = new HashMap<String, VolumePageIdentifier>();
+            Map<String, IdentifierImpl> pageIDMap = new HashMap<String, IdentifierImpl>();
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
@@ -165,10 +175,13 @@ public class HTRCItemIdentifierFactory {
                             Matcher matcher = VOLUME_ID_PATTERN.matcher(volumeID);
                             if (matcher.matches()) {
                                 if (log.isDebugEnabled()) log.debug("volume ID: " + volumeID);
-                                VolumePageIdentifier volumePageIdentifier = pageIDMap.get(volumeID);
-                                if (volumePageIdentifier == null) {
-                                    volumePageIdentifier = new VolumePageIdentifier(volumeID);
-                                    pageIDMap.put(volumeID, volumePageIdentifier);
+                                IdentifierImpl identifierImpl = pageIDMap.get(volumeID);
+                                if (identifierImpl == null) {
+                                    identifierImpl = new IdentifierImpl(volumeID);
+                                    if (isRetrieveMETS()) {
+                                        identifierImpl.addMetadataName(HectorResource.CN_VOLUME_METS);
+                                    }
+                                    pageIDMap.put(volumeID, identifierImpl);
                                 }
     
                                 String pageSeqRaw = rawUnit.substring(lastIndex + 1, length - 1).trim();
@@ -180,7 +193,7 @@ public class HTRCItemIdentifierFactory {
                                         try {
                                             int pageSeqInt = Integer.valueOf(pageSeqStr);
                                             String pageSequence = generatePageSequenceString(pageSeqInt);
-                                            volumePageIdentifier.addPageSequence(pageSequence);
+                                            identifierImpl.addPageSequence(pageSequence);
                                             hasPageSequence = true;
                                         } catch (NumberFormatException e) {
                                             log.error("NumberFormatException while parsing page sequence", e);
@@ -212,33 +225,33 @@ public class HTRCItemIdentifierFactory {
                 throw new ParseException(identifiersString, 0);
             }
             
-            List<VolumePageIdentifier> list = new LinkedList<VolumePageIdentifier>(pageIDMap.values());
+            List<IdentifierImpl> list = new LinkedList<IdentifierImpl>(pageIDMap.values());
             return list;
         }
         
     }
     
     public static enum IDTypeEnum {
-        VOLUME_ID(new VolumeIDsParser()),
-        PAGE_ID(new PageIDsParser());
-        
-        final Parser parser;
-        IDTypeEnum(Parser parser) {
-            this.parser = parser;
-        }
-        
-        private Parser getParser(PolicyCheckerRegistry policyCheckerRegistry) {
-            if (policyCheckerRegistry == null) {
-                parser.setPolicyCheckerRegistry(new NullPolicyCheckerRegistry());
-            } else {
-                parser.setPolicyCheckerRegistry(policyCheckerRegistry);
-            }
-            return parser;
-        }
+        VOLUME_ID,
+        PAGE_ID;
     }
     
     public static Parser getParser(IDTypeEnum type, PolicyCheckerRegistry policyCheckerRegistry) {
-        Parser parser = type.getParser(policyCheckerRegistry);
+        Parser parser = null;
+        PolicyCheckerRegistry registry = (policyCheckerRegistry == null) ? new NullPolicyCheckerRegistry() : policyCheckerRegistry;
+        
+        switch (type) {
+        case VOLUME_ID:
+        {
+            parser = new VolumeIDsParser();
+        } 
+        break;
+        case PAGE_ID:
+        {
+            parser = new PageIDsParser();
+        }
+        }
+        parser.setPolicyCheckerRegistry(registry);
         return parser;
     }
 

@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2012 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.VolumeReader;
-import edu.indiana.d2i.htrc.access.VolumeReader.PageReader;
+import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.ZipMaker;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
@@ -112,12 +112,32 @@ public class CombinePageVolumeZipMaker implements ZipMaker {
                     }
                     
                     while (volumeReader.hasMorePages()) {
-                        PageReader pageReader = volumeReader.nextPage();
-                        byte[] pageContent = pageReader.getPageContent();
+                        ContentReader pageReader = volumeReader.nextPage();
+                        byte[] pageContent = pageReader.getContent();
     
                         zipOutputStream.write(pageContent);
                         
-                        currentPageSequences.add(pageReader.getPageSequence());
+                        currentPageSequences.add(pageReader.getContentName());
+                    }
+                    
+                    zipOutputStream.closeEntry();
+                    entryOpen = false;
+
+                    while (volumeReader.hasMoreMetadata()) {
+                        ContentReader metadataReader = volumeReader.nextMetadata();
+                        String suffix = ZipMakerFactory.Helper.getEntrySuffixFromMetadataName(metadataReader.getContentName());
+                        if (suffix != null) {
+                            String entryName = volumeReader.getPairtreeCleanedVolumeID() + suffix; 
+                            zipEntry = new ZipEntry(entryName);
+                            zipOutputStream.putNextEntry(zipEntry);
+                            entryOpen = true;
+                            zipOutputStream.write(metadataReader.getContent());
+                            currentPageSequences.add(metadataReader.getContentName());
+                            zipOutputStream.closeEntry();
+                            entryOpen = false;
+                        } else {
+                            throw new NullPointerException("Unmapped metadata to suffix: " + metadataReader.getContentName());
+                        }
                     }
                 }
             } catch (KeyNotFoundException e) {
@@ -129,7 +149,9 @@ public class CombinePageVolumeZipMaker implements ZipMaker {
             } catch (RepositoryException e) {
                 log.error("RepositoryException", e);
                 exceptionList.add(e);
-            } 
+            } catch (NullPointerException e) {
+                log.fatal("Unmapped metadata", e);
+            }
         }
 
         if (currentVolumeID != null) {
