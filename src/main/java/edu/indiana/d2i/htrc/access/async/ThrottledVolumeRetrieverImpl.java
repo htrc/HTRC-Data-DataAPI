@@ -240,6 +240,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         for (String metadataName : metadataNames) {
             IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
             identifierImpl.addMetadataName(metadataName);
+            identifiers.add(identifierImpl);
         }
         return identifiers;
     }

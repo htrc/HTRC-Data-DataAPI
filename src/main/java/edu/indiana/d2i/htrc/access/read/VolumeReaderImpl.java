@@ -97,6 +97,7 @@ public class VolumeReaderImpl implements VolumeReader {
         this.volumeID = identifier.getVolumeID();
         this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));
         this.pages = null;
+        this.metadata = null;
     }
 
     /**
