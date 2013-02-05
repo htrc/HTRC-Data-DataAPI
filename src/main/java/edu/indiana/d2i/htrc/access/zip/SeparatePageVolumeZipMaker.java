@@ -10,7 +10,7 @@
 #
 # Unless required by applicable law or areed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,10 @@
 #
 # Project: data-api
 # File:  SeparatePageVolumeZipMaker.java
-# Description:  
+# Description:  This implementation of the ZipMaker interface creates one ZipEntry for each page from each volume as a text file, and the name of each text file starts with the Pairtree cleaned
+# volumeID as a virtual directory, and followed by the 8-digit zero-padded page sequence number and the ".txt" extension.  Metadata entries are also created as individual ZipEntry objects with the
+# Pairtree cleaned volumeID as a virtual directory, but the filename of each metadata entry depends on the metadata type, e.g. a METS xml would become mets.xml.  It may also create a special entry
+# ERROR.err to record any errors occurred during the asynchronous fetch process.
 #
 # -----------------------------------------------------------------
 # 
@@ -52,6 +55,11 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
+ * This implementation of the ZipMaker interface creates one ZipEntry for each page from each volume as a text file, and the name of each text file starts with the Pairtree cleaned volumeID as a
+ * virtual directory, and followed by the 8-digit zero-padded page sequence number and the ".txt" extension.  Metadata entries are also created as individual ZipEntry objects with the Pairtree
+ * cleaned volumeID as a virtual directory, but the filename of each metadata entry depends on the metadata type, e.g. a METS xml would become mets.xml.  It may also create a special entry ERROR.err
+ * to record any errors occurred during the asynchronous fetch process.
+ * 
  * @author Yiming Sun
  *
  */
@@ -79,7 +87,6 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
         zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
 
-//        ZipEntry zipEntry = null;
         String volumeIDDirName = null;
         
         List<Exception> exceptionList = new LinkedList<Exception>();
@@ -98,13 +105,6 @@ public class SeparatePageVolumeZipMaker implements ZipMaker {
                         }
                         currentVolumeID = volumeID;
                         currentPageSequences = new ArrayList<String>(DEFAULT_PAGE_SEQUENCE_ARRAY_SIZE);
-    
-//                        zipEntry = new ZipEntry(volumeIDDirName);
-//                        zipOutputStream.putNextEntry(zipEntry);
-//                        entryOpen = true;
-//                        zipOutputStream.closeEntry();
-//                        entryOpen = false;
-    
                     }
                     
                     while (volumeReader.hasMorePages()) {

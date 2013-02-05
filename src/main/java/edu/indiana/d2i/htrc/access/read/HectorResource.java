@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  HectorResource.java
-# Description:  
+# Description:  This abstract class implements methods for communications and operations with Cassandra via Hector
 #
 # -----------------------------------------------------------------
 # 
@@ -62,31 +62,57 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.ContentReaderImpl;
 
 /**
+ * This abstract class implements methods for communications and operations with Cassandra via Hector
+ * 
  * @author Yiming Sun
  *
  */
 public abstract class HectorResource {
+    
+    /**
+     * This enum is for the copyright of each volume 
+     * @author Yiming Sun
+     *
+     */
     public static enum CopyrightEnum {
         PUBLIC_DOMAIN,
         IN_COPYRIGHT;
     }
     
     
+    /**
+     * This class extends the VolumeInfo class
+     * 
+     * @author Yiming Sun
+     *
+     */
     public static class BasicVolumeInfo extends VolumeInfo {
 
         protected int pageCount;
         protected CopyrightEnum copyright;
-        
+       
+        /**
+         * Constructor
+         * @param volumeID volumeID of the volume
+         */
         protected BasicVolumeInfo(String volumeID) {
             super(volumeID);
             this.pageCount = -1;
             this.copyright = null;
         }
         
+        /**
+         * Method for setting page count of the volume
+         * @param pageCount number of pages in the volume
+         */
         protected void setPageCount(int pageCount) {
             this.pageCount = pageCount;
         }
         
+        /**
+         * Method for setting copyright of the volume
+         * @param copyright copyright of the volume
+         */
         protected void setCopyright(CopyrightEnum copyright) {
             this.copyright = copyright;
         }
@@ -148,6 +174,10 @@ public abstract class HectorResource {
     
 
 
+    /**
+     * Constructor
+     * @param parameterContainer a ParameterContainer object
+     */
     public HectorResource(final ParameterContainer parameterContainer) {
 
         this.parameterContainer = parameterContainer;
@@ -202,15 +232,29 @@ public abstract class HectorResource {
 
     }
     
-    
+    /**
+     * Method to get the Cluster object
+     * @return a Cluster object
+     */
     public Cluster getCluster() {
         return cluster;
     }
     
+    /**
+     * Method to get the Keyspace object
+     * @return a Keyspace object
+     */
     public Keyspace getKeyspace() {
         return keyspace;
     }
     
+    /**
+     * Method to get some basic metadata of a given volume
+     * @param volumeID volumeID of the volume whose metadata is to be retrieved
+     * @return a VolumeInfo object holding basic metadata of the given volume
+     * @throws KeyNotFoundException thrown if the specified volumeID does not exist
+     * @throws RepositoryException thrown if the backend repository failed
+     */
     public VolumeInfo getVolumeInfo(String volumeID) throws KeyNotFoundException, RepositoryException {
         VolumeInfo volumeInfo = null;
         
@@ -292,7 +336,14 @@ public abstract class HectorResource {
         
     }
     
-    
+    /**
+     * Method to retrieve the content of a given volumeID and a List of page sequence numbers
+     * @param volumeID volumeID of the volume to be retrieved
+     * @param pageSequences a List of String objects representing the specific page sequence numbers to be retrieved
+     * @return a List of ContentReader objects holding the content
+     * @throws KeyNotFoundException thrown if the volumeID or any page sequence numbers do not exist
+     * @throws RepositoryException thrown if the backend repository failed
+     */
     public List<ContentReader> retrievePageContents(String volumeID, List<String> pageSequences) throws KeyNotFoundException, RepositoryException {
         return retrieveColumnContent(volumeID, pageSequences, true);
     }
@@ -386,12 +437,10 @@ public abstract class HectorResource {
         
     }
     
-    public VolumeReaderImpl createVolumeReader(HTRCItemIdentifier identifier) {
-        VolumeReaderImpl volumeReaderImpl = new VolumeReaderImpl(identifier);
-        return volumeReaderImpl;
-    }
-    
-    
+    /**
+     * Method used to initialized the singleton instance of the HectorResource object
+     * @param parameterContainer a ParameterContainer object
+     */
     public static synchronized void initSingletonInstance(ParameterContainer parameterContainer) {
         if (!initialized) {
             class HectorResourceSubClass extends HectorResource {
@@ -404,11 +453,18 @@ public abstract class HectorResource {
         }
     }
 
+    /**
+     * Method to get the singleton instance of the HectorResource object
+     * @return the single instance of the HectorResource object
+     */
     public static HectorResource getSingletonInstance() {
         assert(initialized);
         return singletonInstance;
     }
     
+    /**
+     * Method to dispose of resources used by this class
+     */
     public void shutdown() {
         cluster.getConnectionManager().shutdown();
         log.info("HectorResource shutdown");

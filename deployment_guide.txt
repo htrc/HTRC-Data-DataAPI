@@ -33,7 +33,7 @@ max.async.fetch.entry.count - maximum number of fetches to be loaded into the as
 
 min.entry.count.trigger.dispatch - minimum number of entries in the queue to trigger more fetches to be loaded into the queue.  This is a threshold to load more fetches into the async queue (if there are more fetches).
 
-max.exceptions.to.report - maximum number of exceptions to report back to the requesting client. Use 0 to set  unlimited.
+max.exceptions.to.report - maximum number of exceptions to report back to the requesting client. Use 0 to set unlimited.
 
 max.volumes.allowed  - maximum number volumes a client can retrieve in one request.  Use 0 to set unlimited.  This is entirely based on the number of unique volumeIDs in the request. Deprecated
 

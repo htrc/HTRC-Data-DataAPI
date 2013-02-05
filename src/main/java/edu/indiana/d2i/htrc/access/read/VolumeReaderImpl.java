@@ -10,7 +10,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  VolumeReaderImpl.java
-# Description:  
+# Description:  This class is an implementation of the VolumeReader interface
 #
 # -----------------------------------------------------------------
 # 
@@ -38,16 +38,29 @@ import edu.indiana.d2i.htrc.access.VolumeReader;
 import gov.loc.repository.pairtree.Pairtree;
 
 /**
+ * This class is an implementation of the VolumeReader interface
+ * 
  * @author Yiming Sun
  *
  */
 public class VolumeReaderImpl implements VolumeReader {
 
+    /**
+     * This class is an implementation of the ContentReader interface
+     * @author Yiming Sun
+     *
+     */
     public static class ContentReaderImpl implements ContentReader {
 
         protected final String contentName;
         protected final byte[] content;
 
+        /**
+         * Constructor
+         * 
+         * @param contentName name of the content, which can be the name of a metadata entry, or the page sequence number of a page
+         * @param content the content
+         */
         protected ContentReaderImpl(String contentName, byte[] content) {
             this.contentName = contentName;
             this.content = content;
@@ -75,6 +88,10 @@ public class VolumeReaderImpl implements VolumeReader {
     protected List<ContentReader> metadata;
 
 
+    /**
+     * Constructor
+     * @param identifier an HTRCItemIdentifier object the VolumeReader is associated with
+     */
     public VolumeReaderImpl(HTRCItemIdentifier identifier) {
         Pairtree pairtree = new Pairtree();
         this.volumeID = identifier.getVolumeID();
@@ -82,19 +99,37 @@ public class VolumeReaderImpl implements VolumeReader {
         this.pages = null;
     }
 
+    /**
+     * Method to set a List of ContentReader objects holding page content
+     * @see edu.indiana.d2i.htrc.access.VolumeReader#setPages(java.util.List)
+     */
     public void setPages(List<ContentReader> pages) {
         this.pages = pages;
     }
     
+    /**
+     * Method to set a List of ContentReader objects holding metadata entry content
+     * @see edu.indiana.d2i.htrc.access.VolumeReader#setMetadata(java.util.List)
+     */
     public void setMetadata(List<ContentReader> metadata) {
         this.metadata = metadata;
     }
 
+    /**
+     * Method to return the prefix portion of the volumeID
+     * @param volumeID volumeID
+     * @return the prefix portion of the volumeID
+     */
     private String getPrefix(String volumeID) {
         int indexOf = volumeID.indexOf('.');
         return volumeID.substring(0, indexOf);
     }
 
+    /**
+     * Method to return the local portion of the volumeID, i.e. the volumeID sans the prefix
+     * @param volumeID volumeID
+     * @return the local portion of the volumeID
+     */
     private String getHeadlessVolumeID(String volumeID) {
         int indexOf = volumeID.indexOf('.');
         return volumeID.substring(indexOf + 1);

@@ -17,8 +17,8 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  HTRCItemIdentifierFactory.java
-# Description:  
+# File:  IdentifierParserFactory.java
+# Description:  This is a factory class of identifier parsers
 #
 # -----------------------------------------------------------------
 # 
@@ -51,11 +51,19 @@ import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
+ * This is a factory class of identifier parsers
+ * 
  * @author Yiming Sun
  *
  */
 public class IdentifierParserFactory {
     
+    /**
+     * This is an abstract Parser class
+     * 
+     * @author Yiming Sun
+     *
+     */
     public static abstract class Parser {
         
         protected static final String VOLUME_ID_PATTERN_STRING = ".+\\..+";
@@ -69,32 +77,49 @@ public class IdentifierParserFactory {
         protected PolicyCheckerRegistry policyCheckerRegistry = new NullPolicyCheckerRegistry();
         protected boolean retrieveMETS = false;
         
+        /**
+         * Abstract method to perform the parsing
+         * @param string a String object containing a list of IDs to be parsed
+         * @return a List of HTRCItemIdentifier objects that are created from the parsing
+         * @throws ParseException thrown if the list of IDs contain malformed tokens
+         * @throws PolicyViolationException if the list of IDs violate any policies
+         */
         public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;
         
-        
+       
+        /**
+         * Method to set the PolicyCheckerRegistry
+         * @param policyCheckerRegistry a PolicyCheckerRegistry object
+         */
         public void setPolicyCheckerRegistry(PolicyCheckerRegistry policyCheckerRegistry) {
             this.policyCheckerRegistry = policyCheckerRegistry;
         }
         
+        /**
+         * Method to set the flag indicating if METS metadata should be retrieved
+         * @param retrieveMETS a boolean flag to indicate if METS metadata should be retrieved
+         */
         public void setRetrieveMETS(boolean retrieveMETS) {
             this.retrieveMETS = retrieveMETS;
         }
         
+        /**
+         * Method to check the boolean flag on whether METS metadata should be retrieved
+         * @return <code>true</code> if METS metadata is to be retrieved, <code>false</code> otherwise
+         */
         public boolean isRetrieveMETS() {
             return this.retrieveMETS;
         }
         
+        /**
+         * Utility method for generating a page sequence number string
+         * @param pageSequence an integer page sequence number
+         * @return generated page sequence number as a String
+         */
         public static String generatePageSequenceString(int pageSequence) {
             if (pageSequence > 0) {
-                String sequenceString = Integer.toString(pageSequence);
-                StringBuilder builder = new StringBuilder();
-                int padLength = PAGE_SEQUENCE_LENGTH - sequenceString.length();
-                
-                for (int i = 0; i < padLength; i++) {
-                    builder.append(Constants.PAGE_SEQ_PADDING_CHAR);
-                }
-                builder.append(sequenceString);
-                return builder.toString();
+                String sequenceString = String.format("%08d", pageSequence);
+                return sequenceString;
             } else {
                 throw new IllegalArgumentException("Page sequence must be positive");
             }
@@ -103,6 +128,12 @@ public class IdentifierParserFactory {
     }
     
 
+    /**
+     * This class is a Parser for parsing volumeID list
+     * 
+     * @author Yiming Sun
+     *
+     */
     static class VolumeIDsParser extends Parser {
         private static final Logger log = Logger.getLogger(VolumeIDsParser.class);
         /**
@@ -144,6 +175,11 @@ public class IdentifierParserFactory {
         }
     }
     
+    /**
+     * This class is a Parser for parsing pageID list
+     * @author Yiming Sun
+     *
+     */
     static class PageIDsParser extends Parser {
 
         private static Logger log = Logger.getLogger(PageIDsParser.class);
@@ -231,11 +267,23 @@ public class IdentifierParserFactory {
         
     }
     
+    /**
+     * This enum indicates the type of an ID
+     * @author Yiming Sun
+     *
+     */
     public static enum IDTypeEnum {
         VOLUME_ID,
         PAGE_ID;
     }
     
+    /**
+     * Factory method to return an appropriate Parser
+     * 
+     * @param type the type of IDs to be parsed
+     * @param policyCheckerRegistry a PolicyCheckerRegistry object
+     * @return an appropriate Parser for the type
+     */
     public static Parser getParser(IDTypeEnum type, PolicyCheckerRegistry policyCheckerRegistry) {
         Parser parser = null;
         PolicyCheckerRegistry registry = (policyCheckerRegistry == null) ? new NullPolicyCheckerRegistry() : policyCheckerRegistry;
@@ -255,9 +303,5 @@ public class IdentifierParserFactory {
         return parser;
     }
 
-    public static void main(String[] args) {
-        Matcher m = Parser.VOLUME_ID_PATTERN.matcher("a.$aa");
-        System.out.println(m.matches());
-    }
 }
 

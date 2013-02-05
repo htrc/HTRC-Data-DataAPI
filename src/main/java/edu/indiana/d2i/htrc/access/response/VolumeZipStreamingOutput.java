@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,17 +8,17 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  SeparatePageVolumeZipStreamingOutput.java
-# Description:  
+# File:  VolumeZipStreamingOutput.java
+# Description:  This class is an implementation of the StreamOutput class that can output the data as a zip output stream using the given ZipMaker object
 #
 # -----------------------------------------------------------------
 # 
@@ -48,6 +48,8 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
+ * This class is an implementation of the StreamOutput class that can output the data as a zip output stream using the given ZipMaker object
+ * 
  * @author Yiming Sun
  *
  */
@@ -58,7 +60,13 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
     private VolumeRetriever volumeRetriever = null;
     private ZipMaker zipMaker = null;
     private Auditor auditor = null;
-    
+   
+    /**
+     * Constructor
+     * @param volumeRetriever a VolumeRetriever object holding the volume content to be output to the stream
+     * @param zipMaker a ZipMaker object
+     * @param auditor an Auditor object
+     */
     public VolumeZipStreamingOutput(VolumeRetriever volumeRetriever, ZipMaker zipMaker, Auditor auditor) {
         this.volumeRetriever = volumeRetriever;
         this.zipMaker = zipMaker;
@@ -75,39 +83,16 @@ public class VolumeZipStreamingOutput implements StreamingOutput {
             zipMaker.makeZipFile(output, volumeRetriever);
         } catch (KeyNotFoundException e) {
             log.error("KeyNotFoundException", e);
-//            Response response = Response.status(Status.NOT_FOUND).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Key not found. " + e.getMessage() + "</p>").build();
             auditor.error("KeyNotFoundException", "Key Not Found", e.getMessage());
-//            WebApplicationException exception = new WebApplicationException(response);
-//            
-//            throw exception;
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
-//            Response response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
             auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
-//            WebApplicationException exception = new WebApplicationException(response);
-//            
-//            throw exception;
-//        } catch (HTimedOutException e) {
-//            log.error("HTimedOutException", e);
-//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
-//            auditor.error("HTimedOutException", "Cassandra Timed Out", e.getMessage());
-//            WebApplicationException exception = new WebApplicationException(response);
-//            
-//            throw exception;
         } catch (RepositoryException e) {
             log.error("RepositoryException", e);
-//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Server too busy.</p>").build();
             auditor.error("RepositoryException", "Cassandra Timed Out", e.getMessage());
-//            WebApplicationException exception = new WebApplicationException(response);
-//            
-//            throw exception;
         } catch (DataAPIException e) {
             log.error("DataAPIException", e);
-//            Response response = Response.status(Status.INTERNAL_SERVER_ERROR).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Internal server error.</p>").build();
             auditor.error("DataAPIException", "Unspecified Error", e.getMessage());
-//            WebApplicationException exception = new WebApplicationException(response);
-//            
-//            throw exception;
         }
     }
 

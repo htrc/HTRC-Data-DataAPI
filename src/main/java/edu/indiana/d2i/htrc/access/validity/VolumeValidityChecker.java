@@ -1,6 +1,6 @@
 /*
 #
-# Copyright 2007 The Trustees of Indiana University
+# Copyright 2013 The Trustees of Indiana University
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  VolumeValidityChecker.java
-# Description:  
+# Description:  This class implements the RequestValidityChecker class to check the validity of volumeIDs in the request
 #
 # -----------------------------------------------------------------
 # 
@@ -52,8 +52,11 @@ import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
+ * This class implements the RequestValidityChecker class to check the validity of volumeIDs in the request.  It is deprecated because it is no longer needed with asynchronous fetch
+ * 
  * @author Yiming Sun
  *
+ * @deprecated
  */
 public class VolumeValidityChecker implements RequestValidityChecker  {
 
@@ -67,6 +70,12 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
     protected int totalPageCount;
     protected int perVolumePageCount;
     
+    /**
+     * Constructor
+     * @param hectorResource a HectorResource object
+     * @param parameterContainer a ParameterContainer object
+     * @param policyCheckerRegistry a PolicyCheckerRegistry
+     */
     public VolumeValidityChecker(HectorResource hectorResource, ParameterContainer parameterContainer, PolicyCheckerRegistry policyCheckerRegistry) {
         this.hectorResource = hectorResource;
         this.parameterContainer = parameterContainer;
@@ -79,6 +88,7 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
         perVolumePageCount = 0;
 
     }
+    
     /**
      * @see edu.indiana.d2i.htrc.access.RequestValidityChecker#validateRequest(java.util.List)
      */

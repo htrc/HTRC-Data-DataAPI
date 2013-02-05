@@ -10,7 +10,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  ThrottledVolumeRetriever.java
-# Description:  
+# Description:  This class is an implementation of the VolumeRetriever interface, and it throttles the retrieval of volumes to achieve evenly distributed workloads
 #
 # -----------------------------------------------------------------
 # 
@@ -55,6 +55,8 @@ import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 
 /**
+ * This class is an implementation of the VolumeRetriever interface, and it throttles the retrieval of volumes to achieve evenly distributed workloads
+ * 
  * @author Yiming Sun
  *
  */
@@ -90,7 +92,12 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     protected Map<Future<VolumeReader>, IdentifierImpl> resultToIDMap = null;
     
     
-    
+    /**
+     * Method to initialize this class
+     * @param parameterContainer an ParameterContainer object
+     * @param hectorResource an HectorResource object
+     * @param asyncFetchManager an AsyncFetchManager object
+     */
     public static void init(ParameterContainer parameterContainer, HectorResource hectorResource, AsyncFetchManager asyncFetchManager) {
         MAX_ASYNC_FETCH_ENTRY_COUNT = Integer.parseInt(parameterContainer.getParameter(PN_MAX_ASYNC_FETCH_ENTRY_COUNT));
         MAX_EXCEPTIONS_TO_REPORT = Integer.parseInt(parameterContainer.getParameter(PN_MAX_EXCEPTIONS_TO_REPORT));
@@ -101,11 +108,18 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         ThrottledVolumeRetrieverImpl.asyncFetchManager = asyncFetchManager;
     }
     
+    /**
+     * Factory method to create an new instance of this class
+     * @return a new instance of ThrottledVolumeRetrieverImpl object
+     */
     public static ThrottledVolumeRetrieverImpl newInstance() {
         ThrottledVolumeRetrieverImpl instance = new ThrottledVolumeRetrieverImpl();
         return instance;
     }
     
+    /**
+     * Constructor. Used internally by the factory method
+     */
     protected ThrottledVolumeRetrieverImpl() {
         this.workingList = new LinkedList<IdentifierImpl>();
         this.resultList = new LinkedList<Future<VolumeReader>>();
@@ -113,11 +127,20 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         this.resultToIDMap = new HashMap<Future<VolumeReader>, IdentifierImpl>();
     }
     
+    /**
+     * Method for setting a List of HTRCItemIdentifier objects for retrieval
+     * @param identifiers a List of HTRCItemIdentifier objects for retrieval
+     */
     public void setRetrievalIDs(List<? extends HTRCItemIdentifier> identifiers) {
         this.identifierList = identifiers;
         dispatchWork();
     }
     
+    /**
+     * Method that breaks down the workload into a number of jobs and dispatches them to the asynchronous fetch mechanism
+     * 
+     * @return the number of jobs dispatched
+     */
     protected int dispatchWork() {
         int availableSlots = MAX_ASYNC_FETCH_ENTRY_COUNT - resultList.size();
         int jobDispatched = 0;
@@ -172,6 +195,12 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         return jobDispatched;
     }
     
+    /**
+     * Method that breaks down the total number of pages to be retrieved for a given volumeID into a number of smaller batches
+     * @param volumeID volumeID of the volume or pages to be retrieved
+     * @param pageSequences a List of page sequence numbers to be retrieved
+     * @return a List of IdentifierImpl objects containing the broken-down workloads
+     */
     protected List<IdentifierImpl> breakdownPageSequences(String volumeID, List<String> pageSequences) {
         List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
 
@@ -200,6 +229,12 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         return identifiers;
     }
     
+    /**
+     * Method that breaks down the total number of metadata entries to be retrieved for a given volumeID into a number of smaller batches
+     * @param volumeID volumeID of the volume whose metadata to be retrieved
+     * @param metadataNames a List of metadata entry names to be retrieved
+     * @return a List of IdentifierImpl objects containing the broken-down workloads
+     */
     protected List<IdentifierImpl> breakdownMetadataNames(String volumeID, List<String> metadataNames) {
         List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
         for (String metadataName : metadataNames) {
@@ -276,6 +311,11 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         return volumeReader;
     }
     
+    /**
+     * Method to generate page sequence number strings based on the page count of the volume
+     * @param pageCount number of pages in the volume
+     * @return a List of String objects containing the page sequence numbers
+     */
     protected List<String> generatePageSequenceList(int pageCount) {
         List<String> pageSequences = new ArrayList<String>();
         for (int i = 1; i < pageCount; i++) {
@@ -285,6 +325,10 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         return pageSequences;
     }
 
+    /**
+     * Method that holds Exception objects into ExceptionContainer objects and adds them to a List, so that the asynchronous fetch process can carry on and the Exceptions can later be sent to the client 
+     * @param exception an Exception object to be held and later sent to the client
+     */
     protected void enlistException(Exception exception) {
         if (exceptionList.size() < MAX_EXCEPTIONS_TO_REPORT) {
             if (exception instanceof KeyNotFoundException) {

@@ -17,8 +17,8 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  HectorManager.java
-# Description:  
+# File:  VolumeRetriever.java
+# Description:  Interface definition for retrieving volumes
 #
 # -----------------------------------------------------------------
 # 
@@ -36,12 +36,27 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 
 /**
+ * Interface definition for retrieving volumes
+ * 
  * @author Yiming Sun
  *
  */
 public interface VolumeRetriever {
 
+    /**
+     * Method for checking if there are more volumes
+     * @return <code>true</code> if there are more volumes, <code>false</code> otherwise
+     */
     public boolean hasMoreVolumes();
+    
+    
+    /**
+     * Method to get the next volume
+     * @return a VolumeReader object for the next volume
+     * @throws KeyNotFoundException thrown if the volumeID does not exist
+     * @throws PolicyViolationException thrown if the retrieval of the volume violates any policies
+     * @throws RepositoryException thrown if error occurs at the backend repository
+     */
     public VolumeReader nextVolume() throws KeyNotFoundException, PolicyViolationException, RepositoryException;
     
 }

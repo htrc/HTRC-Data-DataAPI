@@ -1,4 +1,4 @@
 volumeIDs are separated by pipe "|",  e.g.   aaa.abcde|bbb.bcdef
 
-pageIDs: each pageID consists of a volumeID followed by a list of pageSequences.  The list of pageSequences is enclosed in a pair of angle brackets "<>" and pageSequences in a list are separated by comma ",".  pageIDs are also separated by pipe "|"  e.g.  aaa.abcde<1,2,4>|bbb.bcdef<5>
+pageIDs: each pageID consists of a volumeID followed by a list of pageSequences.  The list of pageSequences is enclosed in a pair of angle brackets "[]" and pageSequences in a list are separated by comma ",".  pageIDs are also separated by pipe "|"  e.g.  aaa.abcde[1,2,4]|bbb.bcdef[5]
  

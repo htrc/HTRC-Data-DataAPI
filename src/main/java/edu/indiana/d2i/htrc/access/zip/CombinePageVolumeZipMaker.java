@@ -8,9 +8,9 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,12 +18,13 @@
 #
 # Project: data-api
 # File:  CombinePageVolumeZipMaker.java
-# Description:  
+# Description:  This implementation of the ZipMaker interface creates one ZipEntry for each volume by concatenating all pages of a volume into a single text file in the page order.  The name of each
+# text file is the Pairtree cleaned volumeID with ".txt" extension.  Metadata entries such as METS xml files are created as additional individual ZipEntry objects that also use the Pairtree cleaned
+# volumeID as the names but with different extensions.  It may also create a special entry ERROR.err to record any errors occurred during the asynchronous fetch process. 
 #
 # -----------------------------------------------------------------
 # 
 */
-
 
 
 /**
@@ -52,6 +53,10 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
+ * This implementation of the ZipMaker interface creates one ZipEntry for each volume by concatenating all pages of a volume into a single text file in the page order.  The name of each text file is
+ * the Pairtree cleaned volumeID with ".txt" extension.  Metadata entries such as METS xml files are created as additional individual ZipEntry objects that also use the Pairtree cleaned volumeID as
+ * the names but with different extensions.  It may also create a special entry ERROR.err to record any errors occurred during the asynchronous fetch process. 
+ * 
  * @author Yiming Sun
  *
  */

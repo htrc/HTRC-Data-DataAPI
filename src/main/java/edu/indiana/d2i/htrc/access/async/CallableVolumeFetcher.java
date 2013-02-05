@@ -10,7 +10,7 @@
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  CallableFetch.java
-# Description:  
+# Description:  This class implements the Callable interface and performs asynchronous fetch of data
 #
 # -----------------------------------------------------------------
 # 
@@ -45,6 +45,8 @@ import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl;
 
 
 /**
+ * This class implements the Callable interface and performs asynchronous fetch of data
+ * 
  * @author Yiming Sun
  *
  */
@@ -55,6 +57,12 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
     private final WeakReference<HTRCItemIdentifier> idWeakReference;
     private final HectorResource hectorResource;
     
+    /**
+     * Constructor
+     * 
+     * @param itemIdentifier an HTRCItemIdentifier object as the identifier of the item to be fetched
+     * @param hectorResource an HectorResource object for communication with Cassandra
+     */
     public CallableVolumeFetcher(HTRCItemIdentifier itemIdentifier, HectorResource hectorResource) {
         this.idWeakReference = new WeakReference<HTRCItemIdentifier>(itemIdentifier);
         this.hectorResource = hectorResource;

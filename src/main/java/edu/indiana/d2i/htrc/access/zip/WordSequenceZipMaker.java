@@ -8,17 +8,18 @@
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or areed to in writing, software
+# Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either expressed or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  WordBagZipMaker.java
-# Description:  
+# File:  WordSequenceZipMaker.java
+# Description:  This implementation of the ZipMaker interface concatenates all pages from all volumes into a single ZipEntry text file named "wordseq.txt".  No metadata entries will be created in the
+# zip.  However, it may also create a special entry ERROR.err to record any errors occurred during the asynchronous fetch process.
 #
 # -----------------------------------------------------------------
 # 
@@ -51,6 +52,13 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
+/**
+ * This implementation of the ZipMaker interface concatenates all pages from all volumes into a single ZipEntry text file named "wordseq.txt".  No metadata entries will be created in the zip.  
+ * However, it may also create a special entry ERROR.err to record any errors occurred during the asynchronous fetch process.
+ * 
+ * @author Yiming Sun
+ *
+ */
 public class WordSequenceZipMaker implements ZipMaker {
     
     private static Logger log = Logger.getLogger(WordSequenceZipMaker.class);
