@@ -125,10 +125,11 @@ public class CombinePageVolumeZipMaker implements ZipMaker {
                         currentPageSequences.add(pageReader.getContentName());
                     }
                     
-                    zipOutputStream.closeEntry();
-                    entryOpen = false;
-
                     while (volumeReader.hasMoreMetadata()) {
+                        if (entryOpen) {
+                            zipOutputStream.closeEntry();
+                            entryOpen = false;
+                        }
                         ContentReader metadataReader = volumeReader.nextMetadata();
                         String suffix = ZipMakerFactory.Helper.getEntrySuffixFromMetadataName(metadataReader.getContentName());
                         if (suffix != null) {
