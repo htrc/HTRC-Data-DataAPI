@@ -129,7 +129,7 @@ public class PageAccessResource {
         Auditor auditor = AuditorFactory.getAuditor(contextExtractor.getContextMap());
         
         Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, PolicyCheckerRegistryImpl.getInstance());
-        
+        parser.setRetrieveMETS(retrieveMETS);
         try {
 
             if (concatenate && retrieveMETS) {
