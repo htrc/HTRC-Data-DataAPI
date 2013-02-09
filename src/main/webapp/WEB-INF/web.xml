@@ -19,7 +19,7 @@
     </init-param>
     <init-param>
       <param-name>cassandra.node.name.1</param-name>
-      <param-value>coffeetree.cs.indiana.edu</param-value>
+      <param-value>htrc.cassandra.node</param-value>
     </init-param>
     <init-param>
       <param-name>cassandra.cluster.name</param-name>
@@ -27,7 +27,7 @@
     </init-param>
     <init-param>
       <param-name>cassandra.keyspace.name</param-name>
-      <param-value>Yimdata</param-value>
+      <param-value>TestCorpus</param-value>
     </init-param>
     <init-param>
       <param-name>volume.content.cf.name</param-name>
@@ -49,14 +49,6 @@
       <param-name>async.worker.count</param-name>
       <param-value>8</param-value>
     </init-param>
-    <!-- init-param>
-      <param-name>producer.pause.threshold</param-name>
-      <param-value>10</param-value>
-    </init-param>
-    <init-param>
-      <param-name>producer.resume.threshold</param-name>
-      <param-value>2</param-value>
-    </init-param -->
     <init-param>
       <param-name>max.pages.per.retrieval</param-name>
       <param-value>200</param-value>
@@ -99,6 +91,28 @@
   <filter>
     <filter-name>oauth2-filter</filter-name>
     <filter-class>edu.indiana.d2i.htrc.oauth2.filter.OAuth2Filter</filter-class>
+    <init-param>
+      <param-name>oauth2.provider.url</param-name>
+      <param-value>http://htrc.oauth2:65535/oauth2endpoints/token</param-value>
+    </init-param>
+    <init-param>
+      <param-name>oauth2.provider.user</param-name>
+      <param-value>userx</param-value>
+    </init-param>
+    <init-param>
+      <param-name>oauth2.provider.password</param-name>
+      <param-value>passwordx</param-value>
+    </init-param>
+    <init-param>
+      <param-name>javax.net.ssl.trustStore</param-name>
+      <param-value>/path/to/trust/store.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>javax.net.ssl.trustStorePassword</param-name>
+      <param-value>password-4-jks</param-value>
+    </init-param>
+
+
     <init-param>
       <param-name>ds.name</param-name>
       <param-value>jdbc/oauthStore</param-value>
