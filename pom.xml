@@ -17,15 +17,26 @@
     </repository>
     
     <repository>
-      <id>archiva.bitternut.cs.indiana.edu</id>
-      <name>Archiva Repository on bitternut</name>
+      <id>bitternut.internal.archiva</id>
+      <name>Archiva Internal Repository on bitternut</name>
       <url>http://bitternut.cs.indiana.edu:10090/archiva/repository/internal</url>
     </repository>
 
     <repository>
-      <id>archiva.bitternut.cs.indiana.edu/snapshots</id>
-      <name>Archiva Repository snapshots on bitternut</name>
+      <id>bitternut.snapshots.archiva</id>
+      <name>Archiva Snapshots Repository on bitternut</name>
       <url>http://bitternut.cs.indiana.edu:10090/archiva/repository/snapshots</url>
+    </repository>
+    
+    <repository>
+      <id>htrc.archiva.internal</id>
+      <name>HTRC Archiva Internal Repository</name>
+      <url>http://htrc.illinois.edu:8080/archiva/repository/internal</url>
+    </repository>
+    <repository>
+      <id>htrc.archiva.snapshots</id>
+      <name>HTRC Archiva Snapshots Repository</name>
+      <url>http://htrc.illinois.edu:8080/archiva/repository/snapshots</url>
     </repository>
   </repositories>
   
@@ -80,7 +91,7 @@
     <dependency>
       <groupId>edu.indiana.d2i.htrc</groupId>
       <artifactId>htrc-auditor</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.1</version>
     </dependency>
     
     <dependency>
@@ -107,8 +118,16 @@
       </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.0-beta-7</version>
+        <version>2.4</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-svnexe</artifactId>
+            <version>1.8.1</version>
+          </dependency>
+        </dependencies>
         <configuration>
+          <useReleaseProfile>false</useReleaseProfile>
           <tagBase>svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags</tagBase>
         </configuration>
       </plugin>
