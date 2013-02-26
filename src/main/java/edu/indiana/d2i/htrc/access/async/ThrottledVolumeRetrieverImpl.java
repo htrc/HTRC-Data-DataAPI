@@ -174,10 +174,10 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
                         pageSequences = generatePageSequenceList(pageCount);
                     } catch (RepositoryException re) {
                         log.error("RepositoryException while getVolumeInfo", re);
-                        enlistException(re);
+                        enlistException(re, auditor);
                     } catch (KeyNotFoundException knfe) {
                         log.error("KeyNotFoundException while getVolumeInfo", knfe);
-                        enlistException(knfe);
+                        enlistException(knfe, auditor);
                     }
                 }
                 
