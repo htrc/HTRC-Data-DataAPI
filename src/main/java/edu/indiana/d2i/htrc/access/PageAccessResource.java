@@ -148,7 +148,7 @@ public class PageAccessResource {
                     auditor.audit("REQUESTED", volumeID, pageIdentifier.getPageSequences().toArray(new String[0]));
                 }
 
-                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance();
+                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance(auditor);
                 volumeRetriever.setRetrievalIDs(pageIDList);
                 
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.WORD_SEQUENCE : ZipTypeEnum.SEPARATE_PAGE;
@@ -158,20 +158,20 @@ public class PageAccessResource {
             
             } else {
                 log.error("Required parameter pageIDs is null");
-                response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter pageIDs</p>").build();
+                response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Missing required parameter pageIDs").build();
                 auditor.error("Missing Parameter", "Parameter pageIDs required", "");
             }
         } catch (ParseException e) {
             log.error("ParseException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Page ID list. Offending token: " + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Malformed Page ID list. Offending token: " + e.getMessage()).build();
             auditor.error("ParseException", "Malformed Page ID List", e.getMessage());
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Request too greedy. " + e.getMessage()).build();
             auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
         } catch (ParameterConflictException e) {
             log.error("ParameterConflictException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>" + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity(e.getMessage()).build();
             auditor.error("ParameterConflictException", "Conflicting Parameters", e.getMessage());
         }
         

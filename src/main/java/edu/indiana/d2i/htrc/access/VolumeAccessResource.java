@@ -140,7 +140,7 @@ public class VolumeAccessResource {
                 }
                 
 
-                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance();
+                ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance(auditor);
                 volumeRetriever.setRetrievalIDs(volumeIDList);
 
                 ZipTypeEnum zipMakerType = concatenate ? ZipTypeEnum.COMBINE_PAGE : ZipTypeEnum.SEPARATE_PAGE;
@@ -150,19 +150,19 @@ public class VolumeAccessResource {
 
             } else {
                 log.error("Required parameter volumeIDs is null");
-                response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Missing required parameter volumeIDs</p>").build();
+                response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Missing required parameter volumeIDs").build();
                 auditor.error("Missing Parameter", "Parameter volumeIDs required", "");
 
             }
             
         } catch (ParseException e) {
             log.error("ParseException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Malformed Volume ID list. Offending token: " + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Malformed Volume ID list. Offending token: " + e.getMessage()).build();
             auditor.error("ParseException", "Malformed Volume ID List", e.getMessage());
             
         } catch (PolicyViolationException e) {
             log.error("PolicyViolationException", e);
-            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_HTML).entity("<p>Request too greedy. " + e.getMessage() + "</p>").build();
+            response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Request too greedy. " + e.getMessage()).build();
             auditor.error("PolicyViolationException", "Request Too Greedy", e.getMessage());
         }
         

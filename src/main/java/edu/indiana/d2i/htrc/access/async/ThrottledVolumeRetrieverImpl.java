@@ -50,9 +50,10 @@ import edu.indiana.d2i.htrc.access.async.ExceptionContainer.ExceptionType;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
 import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
+import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
+import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
  * This class is an implementation of the VolumeRetriever interface, and it throttles the retrieval of volumes to achieve evenly distributed workloads
@@ -82,6 +83,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     protected List<IdentifierImpl> workingList = null;
     protected List<Future<VolumeReader>> resultList = null;
     protected List<ExceptionContainer> exceptionList = null;
+    protected final Auditor auditor;
 
     // This map is needed to hold on to the VolumePageIdentifier object until it has been
     // processed. This is because the CallableVolumeFetcher uses a WeakReference to hold on
@@ -110,17 +112,20 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     
     /**
      * Factory method to create an new instance of this class
+     * @param auditor an Auditor object
      * @return a new instance of ThrottledVolumeRetrieverImpl object
      */
-    public static ThrottledVolumeRetrieverImpl newInstance() {
-        ThrottledVolumeRetrieverImpl instance = new ThrottledVolumeRetrieverImpl();
+    public static ThrottledVolumeRetrieverImpl newInstance(Auditor auditor) {
+        ThrottledVolumeRetrieverImpl instance = new ThrottledVolumeRetrieverImpl(auditor);
         return instance;
     }
     
     /**
      * Constructor. Used internally by the factory method
+     * @param auditor an Auditor object
      */
-    protected ThrottledVolumeRetrieverImpl() {
+    protected ThrottledVolumeRetrieverImpl(Auditor auditor) {
+        this.auditor = auditor;
         this.workingList = new LinkedList<IdentifierImpl>();
         this.resultList = new LinkedList<Future<VolumeReader>>();
         this.exceptionList = new LinkedList<ExceptionContainer>();
@@ -276,7 +281,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
                     log.error("future.get() caused exception", ee);
                     Throwable throwable = ee.getCause();
                     if (throwable instanceof Exception) {
-                        enlistException((Exception)throwable);
+                        enlistException((Exception)throwable, auditor);
                     }
                 } finally {
                     resultToIDMap.remove(future);
@@ -329,18 +334,22 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     /**
      * Method that holds Exception objects into ExceptionContainer objects and adds them to a List, so that the asynchronous fetch process can carry on and the Exceptions can later be sent to the client 
      * @param exception an Exception object to be held and later sent to the client
+     * @param auditor an Auditor object
      */
-    protected void enlistException(Exception exception) {
+    protected void enlistException(Exception exception, Auditor auditor) {
         if (exceptionList.size() < MAX_EXCEPTIONS_TO_REPORT) {
             if (exception instanceof KeyNotFoundException) {
                 ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_KEY_NOT_FOUND);
                 exceptionList.add(exceptionContainer);
+                auditor.error("KeyNotFoundException", "Key Not Found", exception.getMessage());
             } else if (exception instanceof RepositoryException) {
                 ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_REPOSITORY);
                 exceptionList.add(exceptionContainer);
+                auditor.error("RepositoryException", "Cassandra Timed Out", exception.getMessage());
             } else if (exception instanceof PolicyViolationException) {
                 ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_POLICY_VIOLATION);
                 exceptionList.add(exceptionContainer);
+                auditor.error("PolicyViolationException", "Request Too Greedy", exception.getMessage());
             }
         }
     }
