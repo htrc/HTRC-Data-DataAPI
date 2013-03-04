@@ -33,9 +33,11 @@ package edu.indiana.d2i.htrc.access.async;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -93,6 +95,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     // executed.
     protected Map<Future<VolumeReader>, IdentifierImpl> resultToIDMap = null;
     
+    protected Set<String> exceptionSet = new HashSet<String>();
     
     /**
      * Method to initialize this class
@@ -338,18 +341,21 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
      */
     protected void enlistException(Exception exception, Auditor auditor) {
         if (exceptionList.size() < MAX_EXCEPTIONS_TO_REPORT) {
-            if (exception instanceof KeyNotFoundException) {
-                ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_KEY_NOT_FOUND);
-                exceptionList.add(exceptionContainer);
-                auditor.error("KeyNotFoundException", "Key Not Found", exception.getMessage());
-            } else if (exception instanceof RepositoryException) {
-                ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_REPOSITORY);
-                exceptionList.add(exceptionContainer);
-                auditor.error("RepositoryException", "Cassandra Timed Out", exception.getMessage());
-            } else if (exception instanceof PolicyViolationException) {
-                ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_POLICY_VIOLATION);
-                exceptionList.add(exceptionContainer);
-                auditor.error("PolicyViolationException", "Request Too Greedy", exception.getMessage());
+            if (!exceptionSet.contains(exception.getMessage())) {
+                exceptionSet.add(exception.getLocalizedMessage());
+                if (exception instanceof KeyNotFoundException) {
+                    ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_KEY_NOT_FOUND);
+                    exceptionList.add(exceptionContainer);
+                    auditor.error("KeyNotFoundException", "Key Not Found", exception.getMessage());
+                } else if (exception instanceof RepositoryException) {
+                    ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_REPOSITORY);
+                    exceptionList.add(exceptionContainer);
+                    auditor.error("RepositoryException", "Cassandra Timed Out", exception.getMessage());
+                } else if (exception instanceof PolicyViolationException) {
+                    ExceptionContainer exceptionContainer = new ExceptionContainer(exception, ExceptionType.EXCEPTION_POLICY_VIOLATION);
+                    exceptionList.add(exceptionContainer);
+                    auditor.error("PolicyViolationException", "Request Too Greedy", exception.getMessage());
+                }
             }
         }
     }
