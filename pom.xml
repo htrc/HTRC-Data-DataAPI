@@ -5,30 +5,59 @@
   <artifactId>data-api</artifactId>
   <packaging>war</packaging>
   <version>1.0.0-SNAPSHOT</version>
-  <name>data-api Maven Webapp</name>
-  <url>http://maven.apache.org</url>
-  
+  <name>HTRC Data API Maven Webapp</name>
+  <url>http://wiki.htrc.illinois.edu/display/DEV/HTRC-Data-DataAPI</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <public.svn.root>svn://svn.code.sf.net/p/htrc/code</public.svn.root>
+    <developer.svn.root>svn+ssh://svn.code.sf.net/p/htrc/code</developer.svn.root>
+    <fisheye.svn.root>http://fisheye.htrc.illinois.edu/changelog</fisheye.svn.root>
+  </properties>
+
   <repositories>
     <repository>
       <id>htrc.archiva.internal</id>
       <name>HTRC Archiva Internal Repository</name>
       <url>http://htrc.illinois.edu:8080/archiva/repository/internal</url>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
     </repository>
     <repository>
       <id>htrc.archiva.snapshots</id>
       <name>HTRC Archiva Snapshots Repository</name>
       <url>http://htrc.illinois.edu:8080/archiva/repository/snapshots</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
     </repository>
     <repository>
       <id>maven2-repository.java.net</id>
       <name>Java.net Repository for Maven</name>
       <url>http://download.java.net/maven/2</url>
       <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>daily</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
     </repository>
 
   </repositories>
-  
-  
+
+
   <distributionManagement>
     <repository>
       <id>htrc.archiva.internal</id>
@@ -42,12 +71,14 @@
     </snapshotRepository>
 
   </distributionManagement>
-  
+
   <scm>
-    <developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/trunk</developerConnection>
+    <connection>scm:svn:${public.svn.root}/HTRC-Data-DataAPI/trunk</connection>
+    <developerConnection>scm:svn:${developer.svn.root}/HTRC-Data-DataAPI/trunk</developerConnection>
+    <url>${fisheye.svn.root}/HTRC-Data-DataAPI/trunk</url>
   </scm>
-  
-  
+
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -55,7 +86,7 @@
       <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>com.sun.jersey</groupId>
       <artifactId>jersey-server</artifactId>
@@ -66,55 +97,55 @@
       <artifactId>jersey-servlet</artifactId>
       <version>1.12</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.hectorclient</groupId>
       <artifactId>hector-core</artifactId>
       <version>1.1-1</version>
     </dependency>
-    
+
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>servlet-api</artifactId>
       <version>2.5</version>
       <scope>provided</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>gov.loc.repository</groupId>
       <artifactId>pairtree</artifactId>
       <version>1.1.1</version>
     </dependency>
-    
+
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.16</version>
     </dependency>
-    
+
     <dependency>
       <groupId>edu.indiana.d2i.htrc</groupId>
       <artifactId>htrc-auditor</artifactId>
       <version>0.0.2</version>
     </dependency>
-    
+
     <dependency>
       <groupId>edu.indiana.d2i.htrc.oauth2</groupId>
       <artifactId>oauth2-servletfilter</artifactId>
       <version>1.0-SNAPSHOT</version>
     </dependency>
-    
-    
+
+
   </dependencies>
-  
-  
-  
+
+
+
   <build>
     <finalName>data-api</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.2</version>
+        <version>3.0</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -132,7 +163,7 @@
         </dependencies>
         <configuration>
           <useReleaseProfile>false</useReleaseProfile>
-          <tagBase>svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags</tagBase>
+          <tagBase>${developer.svn.root}/HTRC-Data-DataAPI/tags</tagBase>
         </configuration>
       </plugin>
       <plugin>
@@ -149,4 +180,21 @@
       </plugin>
     </plugins>
   </build>
+
+
+  <organization>
+    <name>HathiTrust Research Center</name>
+    <url>http://www.hathitrust.org/htrc</url>
+  </organization>
+
+  <!-- Environment Settings -->
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.htrc.illinois.edu/browse/DATAAPI</url>
+  </issueManagement>
+
+  <ciManagement>
+    <system>bamboo</system>
+    <url>http://bamboo.htrc.illinois.edu/browse/DATAAPI</url>
+  </ciManagement>
 </project>
