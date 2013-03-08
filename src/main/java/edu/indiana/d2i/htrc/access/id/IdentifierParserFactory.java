@@ -41,7 +41,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.mortbay.log.Log;
 
 import edu.indiana.d2i.htrc.access.Constants;
 import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
@@ -148,10 +147,10 @@ public class IdentifierParserFactory {
             while (tokenizer.hasMoreTokens()) {
                 String token = tokenizer.nextToken().trim();
                 if (!"".equals(token)) {
-                    if (log.isDebugEnabled()) Log.debug("unverified volume ID: " + token);
+                    if (log.isDebugEnabled()) log.debug("unverified volume ID: " + token);
                     Matcher matcher = VOLUME_ID_PATTERN.matcher(token);
                     if (matcher.matches()) {
-                        if (log.isDebugEnabled()) Log.debug("volume ID: " + token);
+                        if (log.isDebugEnabled()) log.debug("volume ID: " + token);
                         IdentifierImpl identifierImpl = volumeIDMap.get(token);
                         if (identifierImpl == null) {
                             identifierImpl = new IdentifierImpl(token);
