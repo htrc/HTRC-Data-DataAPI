@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.indiana.d2i.htrc.access</groupId>
   <artifactId>data-api</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>HTRC Data API Maven Webapp</name>
   <url>http://wiki.htrc.illinois.edu/display/DEV/HTRC-Data-DataAPI</url>
 
@@ -73,9 +72,9 @@
   </distributionManagement>
 
   <scm>
-    <connection>scm:svn:${public.svn.root}/HTRC-Data-DataAPI/trunk</connection>
-    <developerConnection>scm:svn:${developer.svn.root}/HTRC-Data-DataAPI/trunk</developerConnection>
-    <url>${fisheye.svn.root}/HTRC-Data-DataAPI/trunk</url>
+    <connection>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</connection>
+    <developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</developerConnection>
+    <url>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</url>
   </scm>
 
 
