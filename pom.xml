@@ -3,7 +3,7 @@
   <groupId>edu.indiana.d2i.htrc.access</groupId>
   <artifactId>data-api</artifactId>
   <packaging>war</packaging>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <name>HTRC Data API Maven Webapp</name>
   <url>http://wiki.htrc.illinois.edu/display/DEV/HTRC-Data-DataAPI</url>
 
@@ -72,9 +72,9 @@
   </distributionManagement>
 
   <scm>
-    <connection>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</connection>
-    <developerConnection>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</developerConnection>
-    <url>scm:svn:svn+ssh://svn.code.sf.net/p/htrc/code/HTRC-Data-DataAPI/tags/release-1.0.0</url>
+    <connection>scm:svn:${public.svn.root}/HTRC-Data-DataAPI/trunk</connection>
+    <developerConnection>scm:svn:${developer.svn.root}/HTRC-Data-DataAPI/trunk</developerConnection>
+    <url>${fisheye.svn.root}/HTRC-Data-DataAPI/trunk</url>
   </scm>
 
 
