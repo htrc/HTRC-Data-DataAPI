@@ -17,8 +17,8 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  RequestValidityChecker.java
-# Description: This is an interface for checking the validity of requests
+# File:  ExceptionTokenPackage.java
+# Description:  
 #
 # -----------------------------------------------------------------
 # 
@@ -29,31 +29,37 @@
 /**
  * 
  */
-package edu.indiana.d2i.htrc.access;
+package edu.indiana.d2i.htrc.access.tokencount;
 
 import java.util.List;
-import java.util.Map;
 
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 
 /**
- * This is an interface for checking the validity of requests.  It is deprecated because with
- * asynchronous retrieval, the data API no longer performs a validity check up-front, which can be slow.
- * 
  * @author Yiming Sun
- * 
+ *
  */
-@Deprecated
-public interface RequestValidityChecker {
+public class ExceptionTokenPackage implements TokenPackage {
     
-    /**
-     * Method to validate a request, and throws DataAPIException if the request is not valid
-     * 
-     * @param idList a List of HTRCItemIdentifiers requested by client
-     * @return a Map containing some basic metadata information on the requested items, if all items are valid
-     * @throws DataAPIException thrown if one or more items are invalid (if they do not exist)
-     */
-    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends RequestedItemCoordinates> idList) throws DataAPIException;
+    protected final DataAPIException exception;
+    ExceptionTokenPackage(DataAPIException dataAPIException) {
+        this.exception = dataAPIException;
+    }
 
+    /**
+     * @see edu.indiana.d2i.htrc.access.tokencount.TokenPackage#getContentIdentifier()
+     */
+    @Override
+    public ContentIdentifier getContentIdentifier() {
+        return null;
+    }
+
+    /**
+     * @see edu.indiana.d2i.htrc.access.tokencount.TokenPackage#getTokenList()
+     */
+    @Override
+    public List<String> getTokenList() throws DataAPIException {
+        throw exception;
+    }
 }
 

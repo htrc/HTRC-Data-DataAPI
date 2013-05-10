@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.Constants;
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
@@ -55,7 +55,7 @@ import edu.indiana.d2i.htrc.access.read.HectorResource;
  * @author Yiming Sun
  *
  */
-public class IdentifierParserFactory {
+public class ItemCoordinatesParserFactory {
     
     /**
      * This is an abstract Parser class
@@ -83,7 +83,7 @@ public class IdentifierParserFactory {
          * @throws ParseException thrown if the list of IDs contain malformed tokens
          * @throws PolicyViolationException if the list of IDs violate any policies
          */
-        public abstract List<? extends HTRCItemIdentifier> parse(String string) throws ParseException, PolicyViolationException;
+        public abstract List<? extends RequestedItemCoordinates> parse(String string) throws ParseException, PolicyViolationException;
         
        
         /**
@@ -136,12 +136,12 @@ public class IdentifierParserFactory {
     static class VolumeIDsParser extends Parser {
         private static final Logger log = Logger.getLogger(VolumeIDsParser.class);
         /**
-         * @see edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser#parse(java.lang.String)
+         * @see edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<IdentifierImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
+        public List<ItemCoordinatesImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
             
-            Map<String, IdentifierImpl> volumeIDMap = new HashMap<String, IdentifierImpl>();
+            Map<String, ItemCoordinatesImpl> volumeIDMap = new HashMap<String, ItemCoordinatesImpl>();
 
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
@@ -151,9 +151,9 @@ public class IdentifierParserFactory {
                     Matcher matcher = VOLUME_ID_PATTERN.matcher(token);
                     if (matcher.matches()) {
                         if (log.isDebugEnabled()) log.debug("volume ID: " + token);
-                        IdentifierImpl identifierImpl = volumeIDMap.get(token);
+                        ItemCoordinatesImpl identifierImpl = volumeIDMap.get(token);
                         if (identifierImpl == null) {
-                            identifierImpl = new IdentifierImpl(token);
+                            identifierImpl = new ItemCoordinatesImpl(token);
                             if (isRetrieveMETS()) {
                                 identifierImpl.addMetadataName(HectorResource.CN_VOLUME_METS);
                             }
@@ -169,7 +169,7 @@ public class IdentifierParserFactory {
                 throw new ParseException(identifiersString, 0);
             }
             
-            List<IdentifierImpl> list = new LinkedList<IdentifierImpl>(volumeIDMap.values());
+            List<ItemCoordinatesImpl> list = new LinkedList<ItemCoordinatesImpl>(volumeIDMap.values());
             return list;
         }
     }
@@ -186,12 +186,12 @@ public class IdentifierParserFactory {
         static final int MIN_VOLUME_ID_LENGTH = 4;
         
         /**
-         * @see edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser#parse(java.lang.String)
+         * @see edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser#parse(java.lang.String)
          */
         @Override
-        public List<IdentifierImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
+        public List<ItemCoordinatesImpl> parse(String identifiersString) throws ParseException, PolicyViolationException {
 
-            Map<String, IdentifierImpl> pageIDMap = new HashMap<String, IdentifierImpl>();
+            Map<String, ItemCoordinatesImpl> pageIDMap = new HashMap<String, ItemCoordinatesImpl>();
             StringTokenizer tokenizer = new StringTokenizer(identifiersString, Constants.ID_SEPARATOR);
             while (tokenizer.hasMoreTokens()) {
                 String rawUnit = tokenizer.nextToken().trim();
@@ -210,9 +210,9 @@ public class IdentifierParserFactory {
                             Matcher matcher = VOLUME_ID_PATTERN.matcher(volumeID);
                             if (matcher.matches()) {
                                 if (log.isDebugEnabled()) log.debug("volume ID: " + volumeID);
-                                IdentifierImpl identifierImpl = pageIDMap.get(volumeID);
+                                ItemCoordinatesImpl identifierImpl = pageIDMap.get(volumeID);
                                 if (identifierImpl == null) {
-                                    identifierImpl = new IdentifierImpl(volumeID);
+                                    identifierImpl = new ItemCoordinatesImpl(volumeID);
                                     if (isRetrieveMETS()) {
                                         identifierImpl.addMetadataName(HectorResource.CN_VOLUME_METS);
                                     }
@@ -260,7 +260,7 @@ public class IdentifierParserFactory {
                 throw new ParseException(identifiersString, 0);
             }
             
-            List<IdentifierImpl> list = new LinkedList<IdentifierImpl>(pageIDMap.values());
+            List<ItemCoordinatesImpl> list = new LinkedList<ItemCoordinatesImpl>(pageIDMap.values());
             return list;
         }
         

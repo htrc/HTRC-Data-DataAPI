@@ -17,8 +17,8 @@
 # -----------------------------------------------------------------
 #
 # Project: data-api
-# File:  HTRCItemIdentifier.java
-# Description: This is an interface for HathiTrust Research Center item identifier
+# File:  RequestedItemCoordinates.java
+# Description: This is an interface for HathiTrust Research Center requested item coordinates
 #
 # -----------------------------------------------------------------
 # 
@@ -34,12 +34,12 @@ package edu.indiana.d2i.htrc.access;
 import java.util.List;
 
 /**
- * This is an interface for HathiTrust Research Center item identifier
+ * This is an interface for HathiTrust Research Center requested item coordinates
  * 
  * @author Yiming Sun
  *
  */
-public interface HTRCItemIdentifier {
+public interface RequestedItemCoordinates {
     
     /**
      * Method to get volume ID portion of the item identifier

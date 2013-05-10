@@ -33,7 +33,7 @@ package edu.indiana.d2i.htrc.access.read;
 
 import java.util.List;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import gov.loc.repository.pairtree.Pairtree;
 
@@ -92,7 +92,7 @@ public class VolumeReaderImpl implements VolumeReader {
      * Constructor
      * @param identifier an HTRCItemIdentifier object the VolumeReader is associated with
      */
-    public VolumeReaderImpl(HTRCItemIdentifier identifier) {
+    public VolumeReaderImpl(RequestedItemCoordinates identifier) {
         Pairtree pairtree = new Pairtree();
         this.volumeID = identifier.getVolumeID();
         this.pairtreeCleanedVolumeID = getPrefix(volumeID) + "." + pairtree.cleanId(getHeadlessVolumeID(volumeID));

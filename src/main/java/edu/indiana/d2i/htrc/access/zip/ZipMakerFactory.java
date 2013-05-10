@@ -56,7 +56,7 @@ public class ZipMakerFactory {
      * @author Yiming Sun
      *
      */
-    protected static class Helper {
+    public static class Helper {
         
         protected static final String ERROR_ENTRY_HEADING = "Caught the following errors while generating the ZIP file.  This ZIP file is likely to be incomplete and missing some entries." + System.getProperty("line.separator");
         protected static final Map<String, String> metadataSuffixMap = new HashMap<String, String>();
@@ -78,7 +78,7 @@ public class ZipMakerFactory {
          * @param exceptionList a List of Exception objects to be written to the ERROR.err entry
          * @throws IOException thrown if output to the ZipOutputStream object failed
          */
-        protected static void injectErrorEntry(ZipOutputStream outputStream, boolean entryOpen, List<Exception> exceptionList) throws IOException {
+        public static void injectErrorEntry(ZipOutputStream outputStream, boolean entryOpen, List<Exception> exceptionList) throws IOException {
             if (entryOpen) {
                 outputStream.closeEntry();
             }

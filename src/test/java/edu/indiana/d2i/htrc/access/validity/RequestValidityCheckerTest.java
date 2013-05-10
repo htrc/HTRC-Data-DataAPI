@@ -44,7 +44,7 @@ import edu.indiana.d2i.htrc.access.TestParameterContainer;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesImpl;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -102,10 +102,10 @@ public class RequestValidityCheckerTest {
     // This case tests that a KeyNotFoundException should be raised when a non-existing volumeID is requested.
     @Test(expected = KeyNotFoundException.class)
     public void testInvalidVolumeID1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl[] volumeIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]),
-                                                           new IdentifierImpl(NON_EXISTING_VOLUME_ID),
-                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[3])};
-        List<IdentifierImpl> idList = Arrays.asList(volumeIDs);
+        ItemCoordinatesImpl[] volumeIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]),
+                                                           new ItemCoordinatesImpl(NON_EXISTING_VOLUME_ID),
+                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3])};
+        List<ItemCoordinatesImpl> idList = Arrays.asList(volumeIDs);
         VolumeValidityChecker checker = new VolumeValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
         checker.validateRequest(idList);
     }
@@ -113,19 +113,19 @@ public class RequestValidityCheckerTest {
     // This case tests that a KeyNotFoundException should be raised when a non-existing pageSequence of an existing volumeID is requested.
     @Test(expected = KeyNotFoundException.class)
     public void testInvalidPageID1()  throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl pageID1 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]);
+        ItemCoordinatesImpl pageID1 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
         pageID1.addPageSequence("00000001");
         
 
-        IdentifierImpl pageID2 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[3]);
+        ItemCoordinatesImpl pageID2 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3]);
         pageID2.addPageSequence("00000003");
         pageID2.addPageSequence("00000001");
         pageID2.addPageSequence("00000004");
         pageID2.addPageSequence("00000005");
         
-        List<IdentifierImpl> idList = new ArrayList<IdentifierImpl>(2);
+        List<ItemCoordinatesImpl> idList = new ArrayList<ItemCoordinatesImpl>(2);
         idList.add(pageID1);
         idList.add(pageID2);
         
@@ -137,18 +137,18 @@ public class RequestValidityCheckerTest {
     // This case tests that a KeyNotFoundException should be raised when a non-existing volumeID is requested
     @Test(expected = KeyNotFoundException.class)
     public void testInvalidPageID2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl pageID1 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]);
+        ItemCoordinatesImpl pageID1 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
         pageID1.addPageSequence("00000001");
         
 
-        IdentifierImpl pageID2 = new IdentifierImpl(NON_EXISTING_VOLUME_ID);
+        ItemCoordinatesImpl pageID2 = new ItemCoordinatesImpl(NON_EXISTING_VOLUME_ID);
         pageID2.addPageSequence("00000002");
         pageID2.addPageSequence("00000003");
         pageID2.addPageSequence("00000001");
         
-        List<IdentifierImpl> idList = new ArrayList<IdentifierImpl>(2);
+        List<ItemCoordinatesImpl> idList = new ArrayList<ItemCoordinatesImpl>(2);
         idList.add(pageID1);
         idList.add(pageID2);
         
@@ -161,12 +161,12 @@ public class RequestValidityCheckerTest {
     // This case modifies the default limits setting so other limits won't trigger the exceptions
     @Test(expected = PolicyViolationException.class)
     public void testMaxVolumesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException, Exception {
-        IdentifierImpl[] volumeIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]), 
-                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]),
-                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[3]),
-                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[1])};
+        ItemCoordinatesImpl[] volumeIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]), 
+                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]),
+                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3]),
+                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1])};
         try {
-            List<IdentifierImpl> idList = Arrays.asList(volumeIDs);
+            List<ItemCoordinatesImpl> idList = Arrays.asList(volumeIDs);
     
             setupWithLimits("3", "50", "10");
             
@@ -181,21 +181,21 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyViolationException should be raised when number of pageIDs requested exceeds max volume limit of 3
     @Test(expected = PolicyViolationException.class)
     public void testMaxVolumesViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl pageID1 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]);
+        ItemCoordinatesImpl pageID1 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000001");
         
 
-        IdentifierImpl pageID2 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[3]);
+        ItemCoordinatesImpl pageID2 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3]);
         pageID2.addPageSequence("00000001");
 
 
-        IdentifierImpl pageID3 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]);
+        ItemCoordinatesImpl pageID3 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]);
         pageID3.addPageSequence("00000001");
 
-        IdentifierImpl pageID4 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]);
+        ItemCoordinatesImpl pageID4 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]);
         pageID4.addPageSequence("00000001");
         
-        List<IdentifierImpl> idList = new ArrayList<IdentifierImpl>(2);
+        List<ItemCoordinatesImpl> idList = new ArrayList<ItemCoordinatesImpl>(2);
         idList.add(pageID1);
         idList.add(pageID2);
         idList.add(pageID3);
@@ -209,11 +209,11 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyViolationException should be raised when volumes requested have total page count exceeding max total page limit of 10
     @Test(expected = PolicyViolationException.class)
     public void testMaxTotalPagesViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl[] volumeIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]), 
-                new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]),
-                new IdentifierImpl(TestHectorResource.VOLUME_IDS[3])};
+        ItemCoordinatesImpl[] volumeIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]), 
+                new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]),
+                new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3])};
 
-        List<IdentifierImpl> idList = Arrays.asList(volumeIDs);
+        List<ItemCoordinatesImpl> idList = Arrays.asList(volumeIDs);
         
         VolumeValidityChecker checker = new VolumeValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
         checker.validateRequest(idList);
@@ -222,27 +222,27 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyViolationException should be raised when total number of pages requested exceeds max total page limit of 10
     @Test(expected = PolicyViolationException.class)
     public void testMaxTotalPagesViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl pageID1 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]);
+        ItemCoordinatesImpl pageID1 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
         pageID1.addPageSequence("00000003");
         pageID1.addPageSequence("00000001");
         
 
-        IdentifierImpl pageID2 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]);
+        ItemCoordinatesImpl pageID2 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]);
         pageID2.addPageSequence("00000001");
         pageID2.addPageSequence("00000004");
         pageID2.addPageSequence("00000002");
         pageID2.addPageSequence("00000003");
 
 
-        IdentifierImpl pageID3 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]);
+        ItemCoordinatesImpl pageID3 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]);
         pageID3.addPageSequence("00000002");
         pageID3.addPageSequence("00000004");
         pageID3.addPageSequence("00000003");
 
         
-        List<IdentifierImpl> idList = new ArrayList<IdentifierImpl>(2);
+        List<ItemCoordinatesImpl> idList = new ArrayList<ItemCoordinatesImpl>(2);
         idList.add(pageID1);
         idList.add(pageID2);
         idList.add(pageID3);
@@ -254,10 +254,10 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyViolationException should be raised when a requested volume has number of pages exceeding max pages per volume limit of 5
     @Test(expected = PolicyViolationException.class)
     public void testMaxPagesPerVolumeViolation1() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl[] volumeIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]), 
-                new IdentifierImpl(TestHectorResource.VOLUME_IDS[0])};
+        ItemCoordinatesImpl[] volumeIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]), 
+                new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0])};
 
-        List<IdentifierImpl> idList = Arrays.asList(volumeIDs);
+        List<ItemCoordinatesImpl> idList = Arrays.asList(volumeIDs);
         
         VolumeValidityChecker checker = new VolumeValidityChecker(hectorResource, parameterContainer, policyCheckerRegistry);
         checker.validateRequest(idList);
@@ -267,14 +267,14 @@ public class RequestValidityCheckerTest {
     // This case tests that a PolicyViolationException should be raised when number of pages requested for a volume exceeeds max pages per volume limit of 5
     @Test(expected = PolicyViolationException.class)
     public void testMaxPagesPerVolumeViolation2() throws KeyNotFoundException, PolicyViolationException, RepositoryException {
-        IdentifierImpl pageID1 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]);
+        ItemCoordinatesImpl pageID1 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]);
         pageID1.addPageSequence("00000004");
         pageID1.addPageSequence("00000002");
         pageID1.addPageSequence("00000003");
         pageID1.addPageSequence("00000001");
         
 
-        IdentifierImpl pageID2 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]);
+        ItemCoordinatesImpl pageID2 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]);
         pageID2.addPageSequence("00000001");
         pageID2.addPageSequence("00000004");
         pageID2.addPageSequence("00000002");
@@ -283,13 +283,13 @@ public class RequestValidityCheckerTest {
         pageID2.addPageSequence("00000005");
 
 
-        IdentifierImpl pageID3 = new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]);
+        ItemCoordinatesImpl pageID3 = new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]);
         pageID3.addPageSequence("00000002");
         pageID3.addPageSequence("00000004");
         pageID3.addPageSequence("00000003");
 
         
-        List<IdentifierImpl> idList = new ArrayList<IdentifierImpl>(2);
+        List<ItemCoordinatesImpl> idList = new ArrayList<ItemCoordinatesImpl>(2);
         idList.add(pageID1);
         idList.add(pageID2);
         idList.add(pageID3);
@@ -306,14 +306,14 @@ public class RequestValidityCheckerTest {
         
         boolean testPassed = false;
 
-        IdentifierImpl[] volumeIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[2]), 
-                                                               new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]),
-                                                               new IdentifierImpl(TestHectorResource.VOLUME_IDS[3]),
-                                                               new IdentifierImpl(TestHectorResource.VOLUME_IDS[1])};
+        ItemCoordinatesImpl[] volumeIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2]), 
+                                                               new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]),
+                                                               new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3]),
+                                                               new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1])};
         
         
         try {
-            List<IdentifierImpl> idList = Arrays.asList(volumeIDs);
+            List<ItemCoordinatesImpl> idList = Arrays.asList(volumeIDs);
     
             setupWithLimits("0", "0", "0");
             
@@ -336,10 +336,10 @@ public class RequestValidityCheckerTest {
         
         boolean testPassed = false;
         
-        IdentifierImpl[] volumePageIDs = new IdentifierImpl[] {new IdentifierImpl(TestHectorResource.VOLUME_IDS[3]),
-                                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[1]),
-                                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[0]),
-                                                                           new IdentifierImpl(TestHectorResource.VOLUME_IDS[2])};
+        ItemCoordinatesImpl[] volumePageIDs = new ItemCoordinatesImpl[] {new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[3]),
+                                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[1]),
+                                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[0]),
+                                                                           new ItemCoordinatesImpl(TestHectorResource.VOLUME_IDS[2])};
 
         volumePageIDs[0].addPageSequence("00000001");
         volumePageIDs[0].addPageSequence("00000003");
@@ -364,7 +364,7 @@ public class RequestValidityCheckerTest {
         volumePageIDs[3].addPageSequence("00000002");
 
         try {
-            List<IdentifierImpl> idList = Arrays.asList(volumePageIDs);
+            List<ItemCoordinatesImpl> idList = Arrays.asList(volumePageIDs);
     
             setupWithLimits("0", "0", "0");
             

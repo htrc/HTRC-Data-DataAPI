@@ -47,7 +47,7 @@ public class IdentifierImplTest {
         
         String[] expectedString = new String[] {"00000099", "00021022", "00029340", "34521334", "99999999" };
         
-        IdentifierImpl id = new IdentifierImpl("test.identifier/impl");
+        ItemCoordinatesImpl id = new ItemCoordinatesImpl("test.identifier/impl");
         for (int i = 0; i < 5; i++) {
             id.addPageSequence(inputString[i]);
         }
@@ -64,7 +64,7 @@ public class IdentifierImplTest {
         
         String[] expectedString = new String[] {"00000099", "00021022", "00029340", "34521334", "99999999" };
         
-        IdentifierImpl id = new IdentifierImpl("test.identifier/impl");
+        ItemCoordinatesImpl id = new ItemCoordinatesImpl("test.identifier/impl");
         for (int i = 0; i < inputString.length; i++) {
             id.addPageSequence(inputString[i]);
         }
@@ -80,7 +80,7 @@ public class IdentifierImplTest {
         String[] inputString = new String[] {"page.count", "volume.copyright", "metadata.mets"};
         String[] expectedString = new String[] {"metadata.mets", "page.count", "volume.copyright"};
         
-        IdentifierImpl id = new IdentifierImpl("test.identifier/impl");
+        ItemCoordinatesImpl id = new ItemCoordinatesImpl("test.identifier/impl");
         for (int i = 0; i < inputString.length; i++) {
             id.addMetadataName(inputString[i]);
         }
@@ -96,7 +96,7 @@ public class IdentifierImplTest {
         String[] inputString = new String[] {"metadata.mets", "page.count", "volume.copyright", "page.count", "metadata.other", "metadata.mets"};
         String[] expectedString = new String[] {"metadata.mets", "metadata.other", "page.count", "volume.copyright"};
         
-        IdentifierImpl id = new IdentifierImpl("test.identifier/impl");
+        ItemCoordinatesImpl id = new ItemCoordinatesImpl("test.identifier/impl");
         for (int i = 0; i < inputString.length; i++) {
             id.addMetadataName(inputString[i]);
         }

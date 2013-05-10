@@ -66,6 +66,10 @@
       <param-value>100</param-value>
     </init-param>
     <init-param>
+      <param-name>token.count.thread.count</param-name>
+      <param-value>4</param-value>
+    </init-param>
+    <init-param>
       <param-name>max.volumes.allowed</param-name>
       <param-value>0</param-value>
     </init-param>

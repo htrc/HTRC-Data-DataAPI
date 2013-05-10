@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.indiana.d2i.htrc.access.Constants;
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.PolicyChecker;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
@@ -94,12 +94,12 @@ public class PageValidityChecker implements RequestValidityChecker {
      * @see edu.indiana.d2i.htrc.access.RequestValidityChecker#validateRequest(java.util.List)
      */
     @Override
-    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends RequestedItemCoordinates> idList) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         Map<String, VolumeInfo> volumeInfoMap = new HashMap<String, VolumeInfo>();
         
         int previousTotalPageCount = 0;
         
-        for (HTRCItemIdentifier id : idList) {
+        for (RequestedItemCoordinates id : idList) {
             String volumeID = id.getVolumeID();
             VolumeInfo volumeInfo = hectorResource.getVolumeInfo(volumeID);
 

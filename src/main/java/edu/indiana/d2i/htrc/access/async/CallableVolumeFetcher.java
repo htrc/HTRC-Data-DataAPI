@@ -37,7 +37,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
@@ -54,7 +54,7 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
 
     private static final Logger log = Logger.getLogger(CallableVolumeFetcher.class);
     
-    private final WeakReference<HTRCItemIdentifier> idWeakReference;
+    private final WeakReference<RequestedItemCoordinates> idWeakReference;
     private final HectorResource hectorResource;
     
     /**
@@ -63,8 +63,8 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
      * @param itemIdentifier an HTRCItemIdentifier object as the identifier of the item to be fetched
      * @param hectorResource an HectorResource object for communication with Cassandra
      */
-    public CallableVolumeFetcher(HTRCItemIdentifier itemIdentifier, HectorResource hectorResource) {
-        this.idWeakReference = new WeakReference<HTRCItemIdentifier>(itemIdentifier);
+    public CallableVolumeFetcher(RequestedItemCoordinates itemIdentifier, HectorResource hectorResource) {
+        this.idWeakReference = new WeakReference<RequestedItemCoordinates>(itemIdentifier);
         this.hectorResource = hectorResource;
         
     }
@@ -74,7 +74,7 @@ public class CallableVolumeFetcher implements Callable<VolumeReader> {
      */
     @Override
     public VolumeReader call() throws Exception {
-        HTRCItemIdentifier itemIdentifier = idWeakReference.get();
+        RequestedItemCoordinates itemIdentifier = idWeakReference.get();
         VolumeReaderImpl volumeReaderImpl = null;
         if (itemIdentifier != null) {
             volumeReaderImpl = new VolumeReaderImpl(itemIdentifier);

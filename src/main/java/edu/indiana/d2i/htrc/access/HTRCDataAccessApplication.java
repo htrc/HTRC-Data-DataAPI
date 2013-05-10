@@ -83,6 +83,7 @@ public class HTRCDataAccessApplication extends Application {
         Set<Class<?>> hashSet = new HashSet<Class<?>>();
         hashSet.add(VolumeAccessResource.class);
         hashSet.add(PageAccessResource.class);
+        hashSet.add(TokenCountAccessResource.class);
         return hashSet;
     }
 
@@ -101,6 +102,7 @@ public class HTRCDataAccessApplication extends Application {
         AuditorFactory.init(parameterContainer.getParameter("auditor.class"));
         generateSystemAuditor();
         
+        SystemResourcesContainerSingleton.init(parameterContainer);
         
         loadPolicyCheckerRegistry(parameterContainer);
         
@@ -134,7 +136,8 @@ public class HTRCDataAccessApplication extends Application {
         
         HectorResource.getSingletonInstance().shutdown();
         AsyncFetchManager.getInstance().shutdown();
-
+        SystemResourcesContainerSingleton.getInstance().shutdown();
+        
         auditor.log("SERVER_SHUTDOWN");
 
     }

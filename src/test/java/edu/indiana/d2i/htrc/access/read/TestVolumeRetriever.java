@@ -39,8 +39,8 @@ import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
-import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesImpl;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.ContentReaderImpl;
 
 /**
@@ -63,12 +63,12 @@ public class TestVolumeRetriever implements VolumeRetriever {
     }
     
     protected VolumeReader generateFakeVolumeReader(int volumeIDIndex, int maxPageSequence) throws Exception {
-        IdentifierImpl pageId = new IdentifierImpl("test.volume/id/" + volumeIDIndex);
+        ItemCoordinatesImpl pageId = new ItemCoordinatesImpl("test.volume/id/" + volumeIDIndex);
         List<ContentReader> pageReaders = new ArrayList<ContentReader>();
         List<ContentReader> metadataReaders = new ArrayList<ContentReader>();
         
         for (int i = 1; i <= maxPageSequence; i++) {
-            String pageSequenceString = IdentifierParserFactory.Parser.generatePageSequenceString(i);
+            String pageSequenceString = ItemCoordinatesParserFactory.Parser.generatePageSequenceString(i);
             pageId.addPageSequence(pageSequenceString);
             
             ContentReader pageReader = new ContentReaderImpl(pageSequenceString, ("the content of page " + i + " for volume " + pageId.getVolumeID()).getBytes("utf-8"));

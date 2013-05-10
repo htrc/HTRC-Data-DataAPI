@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader;
@@ -52,8 +52,8 @@ import edu.indiana.d2i.htrc.access.async.ExceptionContainer.ExceptionType;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.IdentifierImpl;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesImpl;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
 import edu.indiana.d2i.htrc.audit.Auditor;
 
@@ -81,8 +81,8 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     protected static int MIN_ENTRY_COUNT_TRIGGER_DISPATCH = 0;
     
     
-    protected List<? extends HTRCItemIdentifier> identifierList = null;
-    protected List<IdentifierImpl> workingList = null;
+    protected List<? extends RequestedItemCoordinates> identifierList = null;
+    protected List<ItemCoordinatesImpl> workingList = null;
     protected List<Future<VolumeReader>> resultList = null;
     protected List<ExceptionContainer> exceptionList = null;
     protected final Auditor auditor;
@@ -93,7 +93,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     // of the dropped client; without this map, the only reference to the VolumePageIdentifier
     // would be the WeakReference and it can get GC'ed before the CallableVolumeFetch is even
     // executed.
-    protected Map<Future<VolumeReader>, IdentifierImpl> resultToIDMap = null;
+    protected Map<Future<VolumeReader>, ItemCoordinatesImpl> resultToIDMap = null;
     
     protected Set<String> exceptionSet = new HashSet<String>();
     
@@ -129,17 +129,17 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
      */
     protected ThrottledVolumeRetrieverImpl(Auditor auditor) {
         this.auditor = auditor;
-        this.workingList = new LinkedList<IdentifierImpl>();
+        this.workingList = new LinkedList<ItemCoordinatesImpl>();
         this.resultList = new LinkedList<Future<VolumeReader>>();
         this.exceptionList = new LinkedList<ExceptionContainer>();
-        this.resultToIDMap = new HashMap<Future<VolumeReader>, IdentifierImpl>();
+        this.resultToIDMap = new HashMap<Future<VolumeReader>, ItemCoordinatesImpl>();
     }
     
     /**
      * Method for setting a List of HTRCItemIdentifier objects for retrieval
      * @param identifiers a List of HTRCItemIdentifier objects for retrieval
      */
-    public void setRetrievalIDs(List<? extends HTRCItemIdentifier> identifiers) {
+    public void setRetrievalIDs(List<? extends RequestedItemCoordinates> identifiers) {
         this.identifierList = identifiers;
         dispatchWork();
     }
@@ -158,7 +158,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         boolean done = false;
         while (availableSlots > 0 && !done) {
             if (!workingList.isEmpty()) {
-                IdentifierImpl identifierImpl = workingList.remove(0);
+                ItemCoordinatesImpl identifierImpl = workingList.remove(0);
                 Future<VolumeReader> future = asyncFetchManager.submit(identifierImpl);
                 resultList.add(future);
                 resultToIDMap.put(future, identifierImpl);
@@ -167,7 +167,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
                 if (log.isDebugEnabled()) log.debug("workingList not empty, availableSlots: " + availableSlots + " jobDispatched: " + jobDispatched);
             } else if (!identifierList.isEmpty()){
                 if (log.isDebugEnabled()) log.debug("workingList empty, breakdown identifierList");
-                HTRCItemIdentifier identifier = identifierList.remove(0);
+                RequestedItemCoordinates identifier = identifierList.remove(0);
                 String volumeID = identifier.getVolumeID();
                 List<String> pageSequences = identifier.getPageSequences();
                 if (pageSequences == null) {
@@ -185,13 +185,13 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
                 }
                 
                 if (pageSequences != null) {
-                    List<IdentifierImpl> workingIDList = breakdownPageSequences(volumeID, pageSequences);
+                    List<ItemCoordinatesImpl> workingIDList = breakdownPageSequences(volumeID, pageSequences);
                     workingList.addAll(workingIDList);
                 }
                 
                 List<String> metadataNames = identifier.getMetadataNames();
                 if (metadataNames != null) {
-                    List<IdentifierImpl> metadataList = breakdownMetadataNames(volumeID, metadataNames);
+                    List<ItemCoordinatesImpl> metadataList = breakdownMetadataNames(volumeID, metadataNames);
                     workingList.addAll(metadataList);
                 }
             } else {
@@ -209,14 +209,14 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
      * @param pageSequences a List of page sequence numbers to be retrieved
      * @return a List of IdentifierImpl objects containing the broken-down workloads
      */
-    protected List<IdentifierImpl> breakdownPageSequences(String volumeID, List<String> pageSequences) {
-        List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
+    protected List<ItemCoordinatesImpl> breakdownPageSequences(String volumeID, List<String> pageSequences) {
+        List<ItemCoordinatesImpl> identifiers = new LinkedList<ItemCoordinatesImpl>();
 
         int size = pageSequences.size();
         int fullBatchCount = (size / MAX_PAGES_PER_RETRIEVAL);
 
         for (int i = 0; i < fullBatchCount; i++) {
-            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
+            ItemCoordinatesImpl identifierImpl = new ItemCoordinatesImpl(volumeID);
             for (int j = 0; j < MAX_PAGES_PER_RETRIEVAL; j++) {
                 identifierImpl.addPageSequence(pageSequences.remove(0));
             }
@@ -226,7 +226,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
         int remainingCount = size % MAX_PAGES_PER_RETRIEVAL;
         
         if (remainingCount > 0) {
-            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
+            ItemCoordinatesImpl identifierImpl = new ItemCoordinatesImpl(volumeID);
             for (int i = 0; i < remainingCount; i++) {
                 identifierImpl.addPageSequence(pageSequences.remove(0));
             }
@@ -243,10 +243,10 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
      * @param metadataNames a List of metadata entry names to be retrieved
      * @return a List of IdentifierImpl objects containing the broken-down workloads
      */
-    protected List<IdentifierImpl> breakdownMetadataNames(String volumeID, List<String> metadataNames) {
-        List<IdentifierImpl> identifiers = new LinkedList<IdentifierImpl>();
+    protected List<ItemCoordinatesImpl> breakdownMetadataNames(String volumeID, List<String> metadataNames) {
+        List<ItemCoordinatesImpl> identifiers = new LinkedList<ItemCoordinatesImpl>();
         for (String metadataName : metadataNames) {
-            IdentifierImpl identifierImpl = new IdentifierImpl(volumeID);
+            ItemCoordinatesImpl identifierImpl = new ItemCoordinatesImpl(volumeID);
             identifierImpl.addMetadataName(metadataName);
             identifiers.add(identifierImpl);
         }
@@ -328,7 +328,7 @@ public class ThrottledVolumeRetrieverImpl implements VolumeRetriever {
     protected List<String> generatePageSequenceList(int pageCount) {
         List<String> pageSequences = new ArrayList<String>();
         for (int i = 1; i < pageCount; i++) {
-            String pageSequence = IdentifierParserFactory.Parser.generatePageSequenceString(i);
+            String pageSequence = ItemCoordinatesParserFactory.Parser.generatePageSequenceString(i);
             pageSequences.add(pageSequence);
         }
         return pageSequences;

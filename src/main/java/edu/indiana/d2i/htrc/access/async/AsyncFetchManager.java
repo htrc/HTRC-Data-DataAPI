@@ -35,7 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeReader;
 import edu.indiana.d2i.htrc.access.read.HectorResource;
@@ -89,7 +89,7 @@ public class AsyncFetchManager {
      * @param itemIdentifier an HTRCItemIdentifier to be fetched asynchronously
      * @return a Future of VolumeReader object
      */
-    public Future<VolumeReader> submit(HTRCItemIdentifier itemIdentifier) {
+    public Future<VolumeReader> submit(RequestedItemCoordinates itemIdentifier) {
         CallableVolumeFetcher callableVolumeFetcher = new CallableVolumeFetcher(itemIdentifier, hectorResource);
         Future<VolumeReader> future = executorService.submit(callableVolumeFetcher);
         return future;
@@ -99,7 +99,7 @@ public class AsyncFetchManager {
      * Method to dispose of resources such as the ExecutorService object
      */
     public void shutdown() {
-        this.executorService.shutdown();
+        this.executorService.shutdownNow();
     }
 
 }

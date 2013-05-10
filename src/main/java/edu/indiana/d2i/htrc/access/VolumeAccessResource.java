@@ -51,9 +51,9 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.IDTypeEnum;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.IDTypeEnum;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
@@ -127,14 +127,14 @@ public class VolumeAccessResource {
         ContextExtractor contextExtractor = new ContextExtractor(httpServletRequest, httpHeaders);
         Auditor auditor = AuditorFactory.getAuditor(contextExtractor.getContextMap());
         
-        Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
+        Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, PolicyCheckerRegistryImpl.getInstance());
         parser.setRetrieveMETS(retrieveMETS);
         
         try {
             if (volumeIDs != null) {
-                List<? extends HTRCItemIdentifier> volumeIDList = parser.parse(volumeIDs);
+                List<? extends RequestedItemCoordinates> volumeIDList = parser.parse(volumeIDs);
                 
-                for (HTRCItemIdentifier volumeIdentifier : volumeIDList) {
+                for (RequestedItemCoordinates volumeIdentifier : volumeIDList) {
                     String volumeID = volumeIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID);
                 }

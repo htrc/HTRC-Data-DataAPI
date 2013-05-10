@@ -18,7 +18,7 @@
 #
 # Project: data-api
 # File:  IdentifierImpl.java
-# Description:  This class is an implementation of the HTRCItemIdentifier interface
+# Description:  This class is an implementation of the RequestedItemCoordinates interface
 #
 # -----------------------------------------------------------------
 # 
@@ -37,7 +37,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 
 /**
  * This class is an implementation of the HTRCItemIdentifier interface
@@ -45,7 +45,7 @@ import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
  * @author Yiming Sun
  *
  */
-public class IdentifierImpl implements HTRCItemIdentifier {
+public class ItemCoordinatesImpl implements RequestedItemCoordinates {
 
     protected final String volumeID;
     protected final Set<String> metadataNameSet;
@@ -56,7 +56,7 @@ public class IdentifierImpl implements HTRCItemIdentifier {
      * 
      * @param volumeID ID of the volume
      */
-    public IdentifierImpl(String volumeID) {
+    public ItemCoordinatesImpl(String volumeID) {
         this.volumeID = volumeID;
         this.metadataNameSet = new HashSet<String>();
         this.pageSequenceSet = new HashSet<String>();
@@ -64,7 +64,7 @@ public class IdentifierImpl implements HTRCItemIdentifier {
     }
     
     /**
-     * @see edu.indiana.d2i.htrc.access.HTRCItemIdentifier#getVolumeID()
+     * @see edu.indiana.d2i.htrc.access.RequestedItemCoordinates#getVolumeID()
      */
     @Override
     public String getVolumeID() {
@@ -72,7 +72,7 @@ public class IdentifierImpl implements HTRCItemIdentifier {
     }
 
     /**
-     * @see edu.indiana.d2i.htrc.access.HTRCItemIdentifier#getPageSequences()
+     * @see edu.indiana.d2i.htrc.access.RequestedItemCoordinates#getPageSequences()
      */
     @Override
     public List<String> getPageSequences() {
@@ -108,7 +108,7 @@ public class IdentifierImpl implements HTRCItemIdentifier {
     }
 
     /**
-     * @see edu.indiana.d2i.htrc.access.HTRCItemIdentifier#getMetadataNames()
+     * @see edu.indiana.d2i.htrc.access.RequestedItemCoordinates#getMetadataNames()
      */
     @Override
     public List<String> getMetadataNames() {

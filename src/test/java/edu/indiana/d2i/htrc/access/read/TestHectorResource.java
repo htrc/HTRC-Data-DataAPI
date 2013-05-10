@@ -45,7 +45,7 @@ import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
 import edu.indiana.d2i.htrc.access.read.VolumeReaderImpl.ContentReaderImpl;
 
 /**
@@ -125,7 +125,7 @@ public class TestHectorResource extends HectorResource {
             Map<String, ContentReader> pageReaderMap = new HashMap<String, ContentReader>(PAGE_COUNTS[i]);
             for (int j = 1; j <= PAGE_COUNTS[i]; j++) {
                 ContentReader pageReader = generateFakePage(VOLUME_IDS[i], j);
-                pageReaderMap.put(IdentifierParserFactory.Parser.generatePageSequenceString(j), pageReader);
+                pageReaderMap.put(ItemCoordinatesParserFactory.Parser.generatePageSequenceString(j), pageReader);
             }
             pageReadersMap.put(VOLUME_IDS[i], pageReaderMap);
             
@@ -143,7 +143,7 @@ public class TestHectorResource extends HectorResource {
     }
     
     protected ContentReader generateFakePage(String volumeID, int page) throws Exception {
-        String pageSequenceString = IdentifierParserFactory.Parser.generatePageSequenceString(page);
+        String pageSequenceString = ItemCoordinatesParserFactory.Parser.generatePageSequenceString(page);
         
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write("Page contents for Volume ".getBytes("utf-8"));

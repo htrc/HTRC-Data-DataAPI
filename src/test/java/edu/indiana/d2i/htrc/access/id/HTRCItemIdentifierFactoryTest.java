@@ -37,12 +37,12 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.TestParameterContainer;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.IDTypeEnum;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.IDTypeEnum;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.NullPolicyCheckerRegistry;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
@@ -75,11 +75,11 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse1() throws ParseException, PolicyViolationException {
         String rawString = "loc.ark:/13960/t9q23z43f |miun.ajj3079.0001.001";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
         String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actual = new String[2];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         actual[0] = list.get(0).getVolumeID();
         actual[1] = list.get(1).getVolumeID();
             
@@ -90,8 +90,8 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         String actual = list.get(0).getVolumeID();
         String expected = "loc.ark:/13960/t9q23z43f";
         
@@ -102,11 +102,11 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testVolumeIDsParserParse3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f ||  | miun.ajj3079.0001.001";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
         String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actual = new String[2];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         actual[0] = list.get(0).getVolumeID();
         actual[1] = list.get(1).getVolumeID();
             
@@ -123,11 +123,11 @@ public class HTRCItemIdentifierFactoryTest {
         registry.registerPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME, new MaxVolumesPolicyChecker(container));
 
         String rawString = "loc.ark:/13960/t9q23z43f |miun.ajj3079.0001.001 | miun.ajj3079.0001.001 | loc.ark:/13960/t9q23z43f  |loc.ark:/13960/t9q23z43f ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, registry);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, registry);
         String[] expected = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actual = new String[2];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         actual[0] = list.get(0).getVolumeID();
         actual[1] = list.get(1).getVolumeID();
             
@@ -139,65 +139,65 @@ public class HTRCItemIdentifierFactoryTest {
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError1() throws ParseException, PolicyViolationException  {
         String rawString = " ||  |";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
     
     // This case tests that a malformed volumeID without any dot shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError2() throws ParseException, PolicyViolationException {
         String rawString = "abc";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
     
     // This case tests that a malformed volumeID with only a prefix shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError3() throws ParseException, PolicyViolationException {
         String rawString = "abc.";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
 
     // This case tests that a malformed volumeID with only a prefix and a trailing space shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError4() throws ParseException, PolicyViolationException {
         String rawString = "abc. ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
     
     // This case tests that a malformed volumeID with a dot but no prefix shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError5() throws ParseException, PolicyViolationException {
         String rawString = ".abc";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
 
     // This case tests that a malformed volumeID with a dot and a leading space but no prefix shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError6() throws ParseException, PolicyViolationException {
         String rawString = " .abc";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
 
     // This case tests that a malformed volumeID that is only a dot shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError7() throws ParseException, PolicyViolationException {
         String rawString = ".";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
     
     // This case tests that a malformed volumeID among well formed volumeIDs shall raise a ParseException
     @Test(expected = ParseException.class)
     public void testVolumeIDsParserParseError8() throws ParseException, PolicyViolationException {
         String rawString = "aaa.bcde|ac.10211| bad. | xyz.0334";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.VOLUME_ID, new NullPolicyCheckerRegistry());
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
     }
     
 
@@ -205,12 +205,12 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse1() throws ParseException, PolicyViolationException {
         String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100]|  miun.ajj3079.0001.001[4]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actualVolIDs = new String[2];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
         actualVolIDs[0] = list.get(0).getVolumeID();
         actualVolIDs[1] = list.get(1).getVolumeID();
@@ -233,12 +233,12 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100] | ||  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
         actualVolIDs[0] = list.get(0).getVolumeID();
         
@@ -257,12 +257,12 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [1 ,2  , 44  , 100 ]  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
         actualVolIDs[0] = list.get(0).getVolumeID();
         
@@ -280,12 +280,12 @@ public class HTRCItemIdentifierFactoryTest {
     @Test
     public void testPageIDsParserParse4() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [ , , , 1, ,, 2,,, ,  44,,, 100,, ,, ]  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f"};
         String[] actualVolIDs = new String[1];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
         actualVolIDs[0] = list.get(0).getVolumeID();
         
@@ -305,12 +305,12 @@ public class HTRCItemIdentifierFactoryTest {
     public void testPageIDsParserParse6() throws ParseException, PolicyViolationException {
 
         String rawString = "loc.ark:/13960/t9q23z43f [1,2, 44, 100, 2, 44]|  miun.ajj3079.0001.001[4] | loc.ark:/13960/t9q23z43f [22, 12, 2, 17]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
         String[] expectedVolIDs = new String[] {"loc.ark:/13960/t9q23z43f", "miun.ajj3079.0001.001"};
         String[] actualVolIDs = new String[2];
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
         actualVolIDs[0] = list.get(0).getVolumeID();
         actualVolIDs[1] = list.get(1).getVolumeID();
@@ -334,9 +334,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError1() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [ 1, -1 ]  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -344,9 +344,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError2() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [ one, two ]  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -355,9 +355,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError3() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f [  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -366,9 +366,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError4() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f 3,4,8,10]  ";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -376,9 +376,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError5() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f[]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
     
@@ -386,9 +386,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError6() throws ParseException, PolicyViolationException  {
         String rawString = "[1,2,3,4]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -397,9 +397,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError7() throws ParseException, PolicyViolationException  {
         String rawString = "loc.ark:/13960/t9q23z43f";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
     
@@ -408,9 +408,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError8() throws ParseException, PolicyViolationException  {
         String rawString = "ord.[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
     
@@ -419,9 +419,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError9() throws ParseException, PolicyViolationException  {
         String rawString = "ord[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
     
@@ -429,9 +429,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError10() throws ParseException, PolicyViolationException  {
         String rawString = ".ord[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -440,9 +440,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError11() throws ParseException, PolicyViolationException  {
         String rawString = " .ord[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -450,9 +450,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError12() throws ParseException, PolicyViolationException  {
         String rawString = ".[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 
@@ -460,9 +460,9 @@ public class HTRCItemIdentifierFactoryTest {
     @Test (expected = ParseException.class)
     public void testPageIDsParserParseError13() throws ParseException, PolicyViolationException  {
         String rawString = "ord.csa[1,2,3] | rpt.a123[43,11,19] | aadsf[12,4,2] | m.1[1,2,3]";
-        IdentifierParserFactory.Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
+        ItemCoordinatesParserFactory.Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, new NullPolicyCheckerRegistry());
 
-        List<? extends HTRCItemIdentifier> list = parser.parse(rawString);
+        List<? extends RequestedItemCoordinates> list = parser.parse(rawString);
         
     }
 

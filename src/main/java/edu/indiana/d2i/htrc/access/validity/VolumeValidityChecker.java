@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.indiana.d2i.htrc.access.Constants;
-import edu.indiana.d2i.htrc.access.HTRCItemIdentifier;
+import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.PolicyChecker;
 import edu.indiana.d2i.htrc.access.PolicyCheckerRegistry;
@@ -45,7 +45,7 @@ import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.exception.KeyNotFoundException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.exception.RepositoryException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
 import edu.indiana.d2i.htrc.access.policy.MaxPagesPerVolumePolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxTotalPagesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
@@ -93,12 +93,12 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
      * @see edu.indiana.d2i.htrc.access.RequestValidityChecker#validateRequest(java.util.List)
      */
     @Override
-    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends HTRCItemIdentifier> idList) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
+    public Map<String, ? extends VolumeInfo> validateRequest(List<? extends RequestedItemCoordinates> idList) throws KeyNotFoundException, PolicyViolationException, RepositoryException {
         Map<String, VolumeInfo> volumeInfoMap = new HashMap<String, VolumeInfo>();
         
         int previousTotalPageCount = 0;
         
-        for (HTRCItemIdentifier id : idList) {
+        for (RequestedItemCoordinates id : idList) {
             String volumeID = id.getVolumeID();
             VolumeInfo volumeInfo = hectorResource.getVolumeInfo(volumeID);
             
@@ -106,12 +106,12 @@ public class VolumeValidityChecker implements RequestValidityChecker  {
             maxVolumesPolicyChecker.check(volumeCount, volumeID);
 
             perVolumePageCount = volumeInfo.getPageCount();
-            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + IdentifierParserFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + Constants.PAGE_SEQ_END_MARK);
+            maxPagesPerVolumeChecker.check(perVolumePageCount, volumeID + Constants.PAGE_SEQ_START_MARK + ItemCoordinatesParserFactory.Parser.generatePageSequenceString(maxPagesPerVolumeChecker.getLimit() + 1) + Constants.PAGE_SEQ_END_MARK);
             
             totalPageCount += perVolumePageCount;
             
             int delta = maxTotalPagesPolicyChecker.getLimit() - previousTotalPageCount + 1;
-            String message = (delta > 0) ? volumeID + Constants.PAGE_SEQ_START_MARK + IdentifierParserFactory.Parser.generatePageSequenceString(delta) + Constants.PAGE_SEQ_END_MARK : volumeID;
+            String message = (delta > 0) ? volumeID + Constants.PAGE_SEQ_START_MARK + ItemCoordinatesParserFactory.Parser.generatePageSequenceString(delta) + Constants.PAGE_SEQ_END_MARK : volumeID;
             
             maxTotalPagesPolicyChecker.check(totalPageCount, message);
             

@@ -53,9 +53,9 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.htrc.access.async.ThrottledVolumeRetrieverImpl;
 import edu.indiana.d2i.htrc.access.exception.ParameterConflictException;
 import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.IDTypeEnum;
-import edu.indiana.d2i.htrc.access.id.IdentifierParserFactory.Parser;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.IDTypeEnum;
+import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.response.VolumeZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
@@ -128,7 +128,7 @@ public class PageAccessResource {
         ContextExtractor contextExtractor = new ContextExtractor(httpServletRequest, httpHeaders);
         Auditor auditor = AuditorFactory.getAuditor(contextExtractor.getContextMap());
         
-        Parser parser = IdentifierParserFactory.getParser(IDTypeEnum.PAGE_ID, PolicyCheckerRegistryImpl.getInstance());
+        Parser parser = ItemCoordinatesParserFactory.getParser(IDTypeEnum.PAGE_ID, PolicyCheckerRegistryImpl.getInstance());
         parser.setRetrieveMETS(retrieveMETS);
         try {
 
@@ -141,9 +141,9 @@ public class PageAccessResource {
             }
 
             if (pageIDs != null) {
-                List<? extends HTRCItemIdentifier> pageIDList = parser.parse(pageIDs);
+                List<? extends RequestedItemCoordinates> pageIDList = parser.parse(pageIDs);
                 
-                for (HTRCItemIdentifier pageIdentifier : pageIDList) {
+                for (RequestedItemCoordinates pageIdentifier : pageIDList) {
                     String volumeID = pageIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID, pageIdentifier.getPageSequences().toArray(new String[0]));
                 }
