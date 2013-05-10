@@ -58,15 +58,15 @@ import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.response.TokenCountZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.tokencount.Count;
 import edu.indiana.d2i.htrc.access.tokencount.EmptyTokenRemovalFilter;
-import edu.indiana.d2i.htrc.access.tokencount.PageTokenCountZipper;
 import edu.indiana.d2i.htrc.access.tokencount.SimpleTokenFilterChain;
 import edu.indiana.d2i.htrc.access.tokencount.SimpleTokenizer;
 import edu.indiana.d2i.htrc.access.tokencount.TokenCountComparatorFactory;
 import edu.indiana.d2i.htrc.access.tokencount.TokenCountComparatorFactory.TokenCountComparatorTypeEnum;
 import edu.indiana.d2i.htrc.access.tokencount.TokenCountZipper;
+import edu.indiana.d2i.htrc.access.tokencount.TokenCountZipperFactory;
+import edu.indiana.d2i.htrc.access.tokencount.TokenCountZipperFactory.TokenCountZipTypeEnum;
 import edu.indiana.d2i.htrc.access.tokencount.TokenFilterChain;
 import edu.indiana.d2i.htrc.access.tokencount.Tokenizer;
-import edu.indiana.d2i.htrc.access.tokencount.VolumeTokenCountZipper;
 import edu.indiana.d2i.htrc.audit.Auditor;
 import edu.indiana.d2i.htrc.audit.AuditorFactory;
 
@@ -112,9 +112,9 @@ public class TokenCountAccessResource {
                 Tokenizer tokenizer = new SimpleTokenizer(SystemResourcesContainerSingleton.getInstance().getTokenCountExecutorService());
                 
                 if (countLevel != null && "page".equalsIgnoreCase(countLevel)) {
-                    tokenCountZipper = new PageTokenCountZipper();
+                    tokenCountZipper = TokenCountZipperFactory.newInstance(TokenCountZipTypeEnum.PAGE_LEVEL, auditor);
                 } else {
-                    tokenCountZipper = new VolumeTokenCountZipper();
+                    tokenCountZipper = TokenCountZipperFactory.newInstance(TokenCountZipTypeEnum.VOLUME_LEVEL, auditor);
                 }
                 
                 if ("token".equalsIgnoreCase(sortBy)) {

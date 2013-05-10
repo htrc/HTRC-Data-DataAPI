@@ -37,10 +37,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import edu.indiana.d2i.htrc.audit.Auditor;
 
 /**
  * @author Yiming Sun
@@ -87,14 +89,14 @@ public class TokenCountZipperFactory {
         PAGE_LEVEL;
     }
     
-    public static TokenCountZipper newInstance(TokenCountZipTypeEnum type) {
+    public static TokenCountZipper newInstance(TokenCountZipTypeEnum type, Auditor auditor) {
         TokenCountZipper zipper = null;
         switch (type) {
         case VOLUME_LEVEL:
-            zipper = new VolumeTokenCountZipper();
+            zipper = new VolumeTokenCountZipper(auditor);
             break;
         case PAGE_LEVEL:
-            zipper = new PageTokenCountZipper();
+            zipper = new PageTokenCountZipper(auditor);
             break;
         }
         return zipper;

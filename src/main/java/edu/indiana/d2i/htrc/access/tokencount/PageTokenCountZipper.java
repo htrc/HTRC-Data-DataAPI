@@ -45,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
+import edu.indiana.d2i.htrc.audit.Auditor;
 import gov.loc.repository.pairtree.Pairtree;
 
 /**
@@ -52,7 +53,14 @@ import gov.loc.repository.pairtree.Pairtree;
  *
  */
 public class PageTokenCountZipper implements TokenCountZipper {
+    
+    protected final Auditor auditor;
+    protected static final String TOKEN_COUNT_ACCESSED_ACTION = "TOKEN_COUNT_ACCESSED";
 
+    public PageTokenCountZipper(Auditor auditor) {
+        this.auditor = auditor;
+    }
+    
     /**
      * @see edu.indiana.d2i.htrc.access.tokencount.TokenCountZipper#countAndZip(java.io.OutputStream, edu.indiana.d2i.htrc.access.VolumeRetriever, edu.indiana.d2i.htrc.access.tokencount.Tokenizer, edu.indiana.d2i.htrc.access.tokencount.TokenFilter, java.util.Comparator)
      */
@@ -60,6 +68,8 @@ public class PageTokenCountZipper implements TokenCountZipper {
     public void countAndZip(OutputStream outputStream, VolumeRetriever volumeRetriever, Tokenizer tokenizer, TokenFilter tokenFilter, Comparator<Entry<String, Count>> comparator) throws IOException {
         Pairtree pairtree = new Pairtree();
         ContentIdentifier identifier = null;
+        String currentVolumeID = null;
+        List<String> currentPageSequences = null;
         Map<String, Count> map = null;
         List<Exception> exceptionList = new LinkedList<Exception>();
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
@@ -73,6 +83,17 @@ public class PageTokenCountZipper implements TokenCountZipper {
             map = new HashMap<String, Count>();
             
             try {
+                
+                if (!identifier.getVolumeID().equals(currentVolumeID)) {
+                    if (currentVolumeID != null) {
+                        auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
+                    }
+                    currentVolumeID = identifier.getVolumeID();
+                    currentPageSequences = new LinkedList<String>();
+                }
+                
+                currentPageSequences.add(identifier.getPageSequenceID());
+                
                 List<String> tokenList = tokenPackage.getTokenList();
                 for (String token : tokenList) {
                     TokenCountZipperFactory.Helper.countToken(token, map);
@@ -83,7 +104,10 @@ public class PageTokenCountZipper implements TokenCountZipper {
             } catch (DataAPIException e) {
                 exceptionList.add(e);
             }
-            
+        }
+        
+        if (currentVolumeID != null) {
+            auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
         }
         
         if (!exceptionList.isEmpty()) {

@@ -45,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
+import edu.indiana.d2i.htrc.audit.Auditor;
 import gov.loc.repository.pairtree.Pairtree;
 
 /**
@@ -52,6 +53,13 @@ import gov.loc.repository.pairtree.Pairtree;
  *
  */
 public class VolumeTokenCountZipper implements TokenCountZipper {
+    
+    protected final Auditor auditor;
+    protected static final String TOKEN_COUNT_ACCESSED_ACTION = "TOKEN_COUNT_ACCESSED";
+    
+    public VolumeTokenCountZipper(Auditor auditor) {
+        this.auditor = auditor;
+    }
 
     /**
      * 
@@ -62,6 +70,7 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
         
         Pairtree pairtree = new Pairtree();
         ContentIdentifier currentIdentifier = null;
+        List<String> currentPageSequences = null;
         String hyphenedLastWord = null;
         ContentIdentifier identifier = null;
         Map<String, Count> map = null; 
@@ -81,6 +90,7 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
                 
                 // currentIdentifier was initially null because there was no previous volume.  But if it is not null, we must process the previous volume
                 if (currentIdentifier != null) {
+                    auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentIdentifier.getVolumeID(), currentPageSequences.toArray(new String[0]));
                     // the hyphenedLastWord is the last word on a page that ends with a hyphen. When we encounter such a word, we usually cannot token count it, because we must combine it with the
                     // first word from the following page to make a token, unless the following page belongs to a different volume (which is the case here)
                     if (hyphenedLastWord != null) {  
@@ -92,8 +102,11 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
                 }
                 map = new HashMap<String, Count>();
                 currentIdentifier = identifier;
+                currentPageSequences = new LinkedList<String>();
             }
-            
+
+            currentPageSequences.add(identifier.getPageSequenceID());
+
             try {
                 List<String> tokenList = tokenPackage.getTokenList();
                 int size = tokenList.size();
@@ -126,6 +139,7 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
         
         // wrap up what's remaining
         if (currentIdentifier != null) {
+            auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentIdentifier.getVolumeID(), currentPageSequences.toArray(new String[0]));
             if (hyphenedLastWord != null) {  
                 TokenCountZipperFactory.Helper.countToken(hyphenedLastWord, map);
                 hyphenedLastWord = null;
