@@ -56,8 +56,5 @@ public final class Constants {
     public static final char PAGE_SEQ_END_MARK = ']';
     public static final String PAGE_SEQ_SEPARATOR = ",";
     public static final char PAGE_SEQ_PADDING_CHAR = '0';
-    
-
-    
 }
 

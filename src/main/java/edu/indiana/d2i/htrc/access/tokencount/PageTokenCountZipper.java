@@ -97,9 +97,10 @@ public class PageTokenCountZipper implements TokenCountZipper {
                 List<String> tokenList = tokenPackage.getTokenList();
                 for (String token : tokenList) {
                     TokenCountZipperFactory.Helper.countToken(token, map);
-                    String entryName = identifier.getPrefix() + "." + pairtree.cleanId(identifier.getHeadlessID()) + "/" + identifier.getPageSequenceID() + ".count";
-                    TokenCountZipperFactory.Helper.sendEntry(map, entryName, zipOutputStream, comparator);
                 }
+                String entryName = identifier.getPrefix() + "." + pairtree.cleanId(identifier.getHeadlessID()) + "/" + identifier.getPageSequenceID() + ".count";
+                TokenCountZipperFactory.Helper.sendEntry(map, entryName, zipOutputStream, comparator);
+                
                 
             } catch (DataAPIException e) {
                 exceptionList.add(e);

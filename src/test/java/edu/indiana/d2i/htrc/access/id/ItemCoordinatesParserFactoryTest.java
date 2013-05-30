@@ -51,7 +51,7 @@ import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
  * @author Yiming Sun
  *
  */
-public class HTRCItemIdentifierFactoryTest {
+public class ItemCoordinatesParserFactoryTest {
     
     // This case tests that a positive page number generates the correct page sequence string
     @Test

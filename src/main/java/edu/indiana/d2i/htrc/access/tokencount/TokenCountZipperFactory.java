@@ -50,8 +50,9 @@ import edu.indiana.d2i.htrc.audit.Auditor;
  */
 public class TokenCountZipperFactory {
     
-    
     public static class Helper {
+        public static final String UTF_8 = "utf-8";
+
         
         protected static void sendEntry(Map<String, Count> map, String entryName, ZipOutputStream outputStream, Comparator<Entry<String, Count>> comparator) throws IOException {
             try {
@@ -62,10 +63,10 @@ public class TokenCountZipperFactory {
                 list.addAll(entrySet);
                 Collections.sort(list, comparator);
                 for (Entry<String, Count> entry : list) {
-                    outputStream.write(entry.getKey().getBytes());
-                    outputStream.write(" ".getBytes());
-                    outputStream.write(Integer.toString(entry.getValue().value()).getBytes());
-                    outputStream.write(System.getProperty("line.separator").getBytes());
+                    outputStream.write(entry.getKey().getBytes(UTF_8));
+                    outputStream.write(" ".getBytes(UTF_8));
+                    outputStream.write(Integer.toString(entry.getValue().value()).getBytes(UTF_8));
+                    outputStream.write(System.getProperty("line.separator").getBytes(UTF_8));
                 }
             } finally {
                 outputStream.closeEntry();

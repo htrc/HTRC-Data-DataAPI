@@ -53,7 +53,6 @@ import me.prettyprint.hector.api.query.SliceQuery;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.htrc.access.Constants;
-import edu.indiana.d2i.htrc.access.RequestedItemCoordinates;
 import edu.indiana.d2i.htrc.access.ParameterContainer;
 import edu.indiana.d2i.htrc.access.VolumeInfo;
 import edu.indiana.d2i.htrc.access.VolumeReader.ContentReader;

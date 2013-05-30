@@ -138,7 +138,6 @@ public class VolumeAccessResource {
                     String volumeID = volumeIdentifier.getVolumeID();
                     auditor.audit("REQUESTED", volumeID);
                 }
-                
 
                 ThrottledVolumeRetrieverImpl volumeRetriever = ThrottledVolumeRetrieverImpl.newInstance(auditor);
                 volumeRetriever.setRetrievalIDs(volumeIDList);
@@ -152,7 +151,6 @@ public class VolumeAccessResource {
                 log.error("Required parameter volumeIDs is null");
                 response = Response.status(Status.BAD_REQUEST).header(Constants.HTTP_HEADER_CONTENT_TYPE, Constants.CONTENT_TYPE_TEXT_PLAIN).entity("Missing required parameter volumeIDs").build();
                 auditor.error("Missing Parameter", "Parameter volumeIDs required", "");
-
             }
             
         } catch (ParseException e) {

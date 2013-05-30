@@ -38,7 +38,7 @@ import org.junit.Test;
  * @author Yiming Sun
  *
  */
-public class IdentifierImplTest {
+public class ItemCoordinatesImplTest {
 
     // This case tests that an IdentifierImpl should output its page sequences sorted in ascending order
     @Test

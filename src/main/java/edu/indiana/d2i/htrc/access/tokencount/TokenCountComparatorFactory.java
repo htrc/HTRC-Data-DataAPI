@@ -72,7 +72,11 @@ public class TokenCountComparatorFactory {
          */
         @Override
         public int compare(Entry<String, Count> o1, Entry<String, Count> o2) {
-            return o1.getValue().compareTo(o2.getValue());
+            int value = o1.getValue().compareTo(o2.getValue());
+            if (value == 0) {
+                value = o1.getKey().compareTo(o2.getKey());
+            }
+            return value;
         }
         
 
@@ -86,7 +90,11 @@ public class TokenCountComparatorFactory {
          */
         @Override
         public int compare(Entry<String, Count> o1, Entry<String, Count> o2) {
-            return o2.getValue().compareTo(o1.getValue());
+            int value = o2.getValue().compareTo(o1.getValue());
+            if (value == 0) {
+                value = o2.getKey().compareTo(o1.getKey());
+            }
+            return value;
         }
         
 
