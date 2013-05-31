@@ -57,10 +57,7 @@ public class MakeZipUtility {
         while (volumeRetriever.hasMoreVolumes()) {
             VolumeReader nextVolume = volumeRetriever.nextVolume();
             String safeVolumeID = nextVolume.getPairtreeCleanedVolumeID();
-//            ZipEntry zipEntry = new ZipEntry(safeVolumeID + "/");
-//            zipOutputStream.putNextEntry(zipEntry);
-//            zipOutputStream.closeEntry();
-            
+
             while (nextVolume.hasMorePages()) {
                 ContentReader nextPage = nextVolume.nextPage();
                 String pageSeq = nextPage.getContentName();

@@ -40,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.zip.Deflater;
 import java.util.zip.ZipOutputStream;
 
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
@@ -76,7 +77,7 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
         Map<String, Count> map = null; 
         List<Exception> exceptionList = new LinkedList<Exception>();
         ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
-        zipOutputStream.setLevel(0);
+        zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
         
         Iterator<TokenPackage> iterator = tokenizer.tokenize(volumeRetriever);
         

@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -74,7 +75,7 @@ public class PageTokenCountZipperTest {
             
             ByteArrayOutputStream expectedOutputStream = new ByteArrayOutputStream();
             ZipOutputStream zipOutputStream = new ZipOutputStream(expectedOutputStream);
-            zipOutputStream.setLevel(0);
+            zipOutputStream.setLevel(Deflater.NO_COMPRESSION);
             
             ZipEntry zipEntry = new ZipEntry("test.volume1/00000001.count");
             zipOutputStream.putNextEntry(zipEntry);
