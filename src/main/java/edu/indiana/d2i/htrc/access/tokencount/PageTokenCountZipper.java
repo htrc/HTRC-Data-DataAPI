@@ -43,6 +43,8 @@ import java.util.Map.Entry;
 import java.util.zip.Deflater;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.log4j.Logger;
+
 import edu.indiana.d2i.htrc.access.VolumeRetriever;
 import edu.indiana.d2i.htrc.access.exception.DataAPIException;
 import edu.indiana.d2i.htrc.access.zip.ZipMakerFactory;
@@ -55,6 +57,7 @@ import gov.loc.repository.pairtree.Pairtree;
  */
 public class PageTokenCountZipper implements TokenCountZipper {
     
+    private static Logger log = Logger.getLogger(PageTokenCountZipper.class);
     protected final Auditor auditor;
     protected static final String TOKEN_COUNT_ACCESSED_ACTION = "TOKEN_COUNT_ACCESSED";
 
@@ -97,6 +100,7 @@ public class PageTokenCountZipper implements TokenCountZipper {
                 
                 List<String> tokenList = tokenPackage.getTokenList();
                 for (String token : tokenList) {
+                    if (log.isDebugEnabled()) log.debug("zipping entry for " + currentVolumeID + " " + identifier.getPageSequenceID());
                     TokenCountZipperFactory.Helper.countToken(token, map);
                 }
                 String entryName = identifier.getPrefix() + "." + pairtree.cleanId(identifier.getHeadlessID()) + "/" + identifier.getPageSequenceID() + ".count";

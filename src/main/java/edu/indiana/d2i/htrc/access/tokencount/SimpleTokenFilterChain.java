@@ -34,11 +34,14 @@ package edu.indiana.d2i.htrc.access.tokencount;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author Yiming Sun
  *
  */
 public class SimpleTokenFilterChain implements TokenFilterChain {
+    private static Logger log = Logger.getLogger(SimpleTokenFilterChain.class);
     protected List<TokenFilter> chain;
     
     public SimpleTokenFilterChain() {
@@ -54,9 +57,11 @@ public class SimpleTokenFilterChain implements TokenFilterChain {
     @Override
     public TokenPackage filter(TokenPackage tokenPackage) {
         TokenPackage filteredTokenPackage = tokenPackage;
+        if (log.isDebugEnabled()) log.debug("feeding into filter chain");
         for (TokenFilter filter : chain) {
             filteredTokenPackage = filter.filter(filteredTokenPackage);
         }
+        if (log.isDebugEnabled()) log.debug("out of filter chain");
         return filteredTokenPackage;
     }
 }

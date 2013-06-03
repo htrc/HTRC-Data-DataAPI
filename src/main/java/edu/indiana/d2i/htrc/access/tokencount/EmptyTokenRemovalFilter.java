@@ -53,9 +53,10 @@ public class EmptyTokenRemovalFilter implements TokenFilter {
     public TokenPackage filter(TokenPackage tokenPackage) {
         TokenPackage returnTokenPackage = null;
         if (tokenPackage instanceof ExceptionTokenPackage) {
+            if (log.isDebugEnabled()) log.debug("encountered ExceptionTokenPackage");
             returnTokenPackage = tokenPackage;
         } else {
-            
+            if (log.isDebugEnabled()) log.debug("traversing token list");
             try {
                 List<String> tokenList = tokenPackage.getTokenList();
                 List<String> newTokenList = new LinkedList<String>();
@@ -64,6 +65,7 @@ public class EmptyTokenRemovalFilter implements TokenFilter {
                         newTokenList.add(token);
                     }
                 }
+                if (log.isDebugEnabled()) log.debug("done traversing token list");
                 returnTokenPackage = new SimpleTokenPackageImpl(tokenPackage.getContentIdentifier(), newTokenList);
             } catch (DataAPIException e) {
                 returnTokenPackage = new ExceptionTokenPackage(e);

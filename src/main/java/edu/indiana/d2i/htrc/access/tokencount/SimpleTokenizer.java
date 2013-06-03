@@ -61,7 +61,8 @@ import edu.indiana.d2i.htrc.access.exception.RepositoryException;
 public class SimpleTokenizer implements Tokenizer {
     
     
-
+    private static Logger log = Logger.getLogger(SimpleTokenizer.class);
+    
     static class TokenizationCallable implements Callable<TokenPackage> {
         protected final String volumeID;
         protected final ContentReader contentReader;
@@ -82,7 +83,7 @@ public class SimpleTokenizer implements Tokenizer {
             String line = null;
             String hangingWord = null;
             List<String> tokenList = new LinkedList<String>();
-            
+            if (log.isDebugEnabled()) log.debug("tokenizing page content");
             do {
                 line = reader.readLine();
                 if (line != null) {
@@ -121,6 +122,7 @@ public class SimpleTokenizer implements Tokenizer {
             
             ContentIdentifier contentIdentifier = new ContentIdentifierImpl(volumeID, contentReader.getContentName());
             TokenPackage tokenPackage = new SimpleTokenPackageImpl(contentIdentifier, tokenList);
+            if (log.isDebugEnabled()) log.debug("built TokenPackage for " + volumeID + " " + contentReader.getContentName());
             return tokenPackage;
         }
         
@@ -209,6 +211,7 @@ public class SimpleTokenizer implements Tokenizer {
         }
         
         Iterator<TokenPackage> iterator = new TokenPackageIterator(futureList, exceptionList);
+        if (log.isDebugEnabled()) log.debug("returning token package iterator");
         return iterator;
     }
 
