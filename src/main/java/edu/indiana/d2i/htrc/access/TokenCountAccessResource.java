@@ -109,7 +109,7 @@ public class TokenCountAccessResource {
                 
                 TokenCountZipper tokenCountZipper = null;
                 Comparator<Entry<String, Count>> comparator = null;
-                Tokenizer tokenizer = new SimpleTokenizer(SystemResourcesContainerSingleton.getInstance().getTokenCountExecutorService());
+                Tokenizer tokenizer = new SimpleTokenizer(SystemResourcesContainerSingleton.getInstance().getTokenCountExecutorService(), ParameterContainerSingleton.getInstance());
                 
                 if (countLevel != null && "page".equalsIgnoreCase(countLevel)) {
                     tokenCountZipper = TokenCountZipperFactory.newInstance(TokenCountZipTypeEnum.PAGE_LEVEL, auditor);

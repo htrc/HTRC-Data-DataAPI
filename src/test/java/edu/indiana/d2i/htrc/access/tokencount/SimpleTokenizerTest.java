@@ -57,7 +57,7 @@ public class SimpleTokenizerTest {
         
         VolumeRetriever volumeRetriever = new TestTokenCountVolumeRetrieverImpl();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Tokenizer tokenizer = new SimpleTokenizer(executorService);
+        Tokenizer tokenizer = new SimpleTokenizer(executorService, new TestTokenCountParameterContainerImpl());
         Iterator<TokenPackage> actualIterator = tokenizer.tokenize(volumeRetriever);
         
         List<TokenPackage> expectedTokenPackages = new LinkedList<TokenPackage>();

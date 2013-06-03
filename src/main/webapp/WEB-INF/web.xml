@@ -70,6 +70,14 @@
       <param-value>4</param-value>
     </init-param>
     <init-param>
+      <param-name>max.tokenization.tasks</param-name>
+      <param-value>10</param-value>
+    </init-param>
+    <init-param>
+      <param-name>min.tokenization.tasks</param-name>
+      <param-value>2</param-value>
+    </init-param>
+    <init-param>
       <param-name>max.volumes.allowed</param-name>
       <param-value>0</param-value>
     </init-param>

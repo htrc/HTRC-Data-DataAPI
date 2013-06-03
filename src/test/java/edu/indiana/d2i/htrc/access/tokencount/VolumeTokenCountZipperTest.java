@@ -64,7 +64,7 @@ public class VolumeTokenCountZipperTest {
         VolumeRetriever volumeRetriever = new TestTokenCountVolumeRetrieverImpl();
         ByteArrayOutputStream actualOutputStream = new ByteArrayOutputStream();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Tokenizer tokenizer = new SimpleTokenizer(executorService);
+        Tokenizer tokenizer = new SimpleTokenizer(executorService, new TestTokenCountParameterContainerImpl());
         TokenFilter tokenFilter = new SimpleTokenFilterChain();
         Comparator<Entry<String, Count>> comparator = TokenCountComparatorFactory.getComparator(TokenCountComparatorTypeEnum.TOKEN_LEX_ASC);
 
@@ -112,7 +112,7 @@ public class VolumeTokenCountZipperTest {
         VolumeRetriever volumeRetriever = new TestTokenCountVolumeRetrieverImpl();
         ByteArrayOutputStream actualOutputStream = new ByteArrayOutputStream();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Tokenizer tokenizer = new SimpleTokenizer(executorService);
+        Tokenizer tokenizer = new SimpleTokenizer(executorService, new TestTokenCountParameterContainerImpl());
         TokenFilter tokenFilter = new SimpleTokenFilterChain();
         Comparator<Entry<String, Count>> comparator = TokenCountComparatorFactory.getComparator(TokenCountComparatorTypeEnum.TOKEN_LEX_DESC);
 
@@ -160,7 +160,7 @@ public class VolumeTokenCountZipperTest {
         VolumeRetriever volumeRetriever = new TestTokenCountVolumeRetrieverImpl();
         ByteArrayOutputStream actualOutputStream = new ByteArrayOutputStream();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Tokenizer tokenizer = new SimpleTokenizer(executorService);
+        Tokenizer tokenizer = new SimpleTokenizer(executorService, new TestTokenCountParameterContainerImpl());
         TokenFilter tokenFilter = new SimpleTokenFilterChain();
         Comparator<Entry<String, Count>> comparator = TokenCountComparatorFactory.getComparator(TokenCountComparatorTypeEnum.TOKEN_COUNT_ASC);
 
@@ -208,7 +208,7 @@ public class VolumeTokenCountZipperTest {
         VolumeRetriever volumeRetriever = new TestTokenCountVolumeRetrieverImpl();
         ByteArrayOutputStream actualOutputStream = new ByteArrayOutputStream();
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Tokenizer tokenizer = new SimpleTokenizer(executorService);
+        Tokenizer tokenizer = new SimpleTokenizer(executorService, new TestTokenCountParameterContainerImpl());
         TokenFilter tokenFilter = new SimpleTokenFilterChain();
         Comparator<Entry<String, Count>> comparator = TokenCountComparatorFactory.getComparator(TokenCountComparatorTypeEnum.TOKEN_COUNT_DESC);
 
