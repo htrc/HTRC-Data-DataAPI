@@ -100,10 +100,10 @@ public class PageTokenCountZipper implements TokenCountZipper {
                 
                 List<String> tokenList = tokenPackage.getTokenList();
                 for (String token : tokenList) {
-                    if (log.isDebugEnabled()) log.debug("zipping entry for " + currentVolumeID + " " + identifier.getPageSequenceID());
                     TokenCountZipperFactory.Helper.countToken(token, map);
                 }
                 String entryName = identifier.getPrefix() + "." + pairtree.cleanId(identifier.getHeadlessID()) + "/" + identifier.getPageSequenceID() + ".count";
+                if (log.isDebugEnabled()) log.debug("zipping entry for " + currentVolumeID + " " + identifier.getPageSequenceID());
                 TokenCountZipperFactory.Helper.sendEntry(map, entryName, zipOutputStream, comparator);
                 
                 
