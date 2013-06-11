@@ -254,7 +254,7 @@ public class VolumeTokenCountZipperTest {
     private void writeZipContent(ZipOutputStream zipOutputStream, String[] tokenCounts) throws IOException {
         for (String tokenCount : tokenCounts) {
             zipOutputStream.write(tokenCount.getBytes(TokenCountZipperFactory.Helper.UTF_8));
-            zipOutputStream.write(System.getProperty("line.separator").getBytes(TokenCountZipperFactory.Helper.UTF_8));
+            zipOutputStream.write(TokenCountZipperFactory.Helper.LINE_FEED.getBytes(TokenCountZipperFactory.Helper.UTF_8));
         }
     }
 

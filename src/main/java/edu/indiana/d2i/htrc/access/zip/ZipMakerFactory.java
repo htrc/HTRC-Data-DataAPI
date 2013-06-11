@@ -57,8 +57,9 @@ public class ZipMakerFactory {
      *
      */
     public static class Helper {
+        static final String LINE_FEED = "\n";
         
-        protected static final String ERROR_ENTRY_HEADING = "Caught the following errors while generating the ZIP file.  This ZIP file is likely to be incomplete and missing some entries." + System.getProperty("line.separator");
+        protected static final String ERROR_ENTRY_HEADING = "Caught the following errors while generating the ZIP file.  This ZIP file is likely to be incomplete and missing some entries." + LINE_FEED;
         protected static final Map<String, String> metadataSuffixMap = new HashMap<String, String>();
         protected static final Map<String, String> metadataEntryMap = new HashMap<String, String>();
         protected static final String METS_ENTRY_SUFFIX = ".mets.xml";
