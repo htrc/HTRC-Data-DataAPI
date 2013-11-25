@@ -54,6 +54,7 @@ import edu.indiana.d2i.htrc.access.exception.PolicyViolationException;
 import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory;
 import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.IDTypeEnum;
 import edu.indiana.d2i.htrc.access.id.ItemCoordinatesParserFactory.Parser;
+import edu.indiana.d2i.htrc.access.policy.MaxVolumesPolicyChecker;
 import edu.indiana.d2i.htrc.access.policy.PolicyCheckerRegistryImpl;
 import edu.indiana.d2i.htrc.access.response.TokenCountZipStreamingOutput;
 import edu.indiana.d2i.htrc.access.tokencount.Count;
@@ -98,6 +99,11 @@ public class TokenCountAccessResource {
         try {
             if (volumeIDs != null) {
                 List<? extends RequestedItemCoordinates> volumeIDList = parser.parse(volumeIDs);
+                
+                // TODO: remove this hack
+                PolicyChecker policyChecker = PolicyCheckerRegistryImpl.getInstance().getPolicyChecker(MaxVolumesPolicyChecker.POLICY_NAME);
+                policyChecker.check(volumeIDList.size(), "");
+                // 
                 
                 for (RequestedItemCoordinates itemCoordinates : volumeIDList) {
                     String volumeID = itemCoordinates.getVolumeID();

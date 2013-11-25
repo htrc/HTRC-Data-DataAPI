@@ -88,7 +88,10 @@ public class PageTokenCountZipper implements TokenCountZipper {
             
             try {
                 
-                if (!identifier.getVolumeID().equals(currentVolumeID)) {
+            	// TODO need to return more error info
+				if (identifier == null) throw new Exception("Cannot find some volumes");
+            	
+                if (identifier != null && !identifier.getVolumeID().equals(currentVolumeID)) {
                     if (currentVolumeID != null) {
                         auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentVolumeID, currentPageSequences.toArray(new String[0]));
                     }
@@ -105,9 +108,7 @@ public class PageTokenCountZipper implements TokenCountZipper {
                 String entryName = identifier.getPrefix() + "." + pairtree.cleanId(identifier.getHeadlessID()) + "/" + identifier.getPageSequenceID() + ".count";
                 if (log.isDebugEnabled()) log.debug("zipping entry for " + currentVolumeID + " " + identifier.getPageSequenceID());
                 TokenCountZipperFactory.Helper.sendEntry(map, entryName, zipOutputStream, comparator);
-                
-                
-            } catch (DataAPIException e) {
+            } catch (Exception e) {
                 exceptionList.add(e);
             }
         }

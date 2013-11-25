@@ -82,60 +82,75 @@ public class VolumeTokenCountZipper implements TokenCountZipper {
         Iterator<TokenPackage> iterator = tokenizer.tokenize(volumeRetriever);
         
         while (iterator.hasNext()) {
-            TokenPackage tokenPackage = tokenFilter.filter(iterator.next());
-            identifier = tokenPackage.getContentIdentifier();
-            
-            // if the volumeID has changed, must conclude the previous volumeID (althoug assigned in the variable named currentIdentifier) by 
-            // sending its token count to the client, and then reset the map
-            if (currentIdentifier == null || !identifier.getVolumeID().equals(currentIdentifier.getVolumeID())) {
-                
-                // currentIdentifier was initially null because there was no previous volume.  But if it is not null, we must process the previous volume
-                if (currentIdentifier != null) {
-                    auditor.audit(TOKEN_COUNT_ACCESSED_ACTION, currentIdentifier.getVolumeID(), currentPageSequences.toArray(new String[0]));
-                    // the hyphenedLastWord is the last word on a page that ends with a hyphen. When we encounter such a word, we usually cannot token count it, because we must combine it with the
-                    // first word from the following page to make a token, unless the following page belongs to a different volume (which is the case here)
-                    if (hyphenedLastWord != null) {  
-                        TokenCountZipperFactory.Helper.countToken(hyphenedLastWord, map);
-                        hyphenedLastWord = null;
-                    }
-                    String entryName = currentIdentifier.getPrefix() + "." + pairtree.cleanId(currentIdentifier.getHeadlessID()) + ".count";
-                    TokenCountZipperFactory.Helper.sendEntry(map, entryName, zipOutputStream, comparator);
-                }
-                map = new HashMap<String, Count>();
-                currentIdentifier = identifier;
-                currentPageSequences = new LinkedList<String>();
-            }
+			try {
+				TokenPackage tokenPackage = tokenFilter.filter(iterator.next());
+				identifier = tokenPackage.getContentIdentifier();
 
-            currentPageSequences.add(identifier.getPageSequenceID());
+				// TODO need to return more error info
+				if (identifier == null) throw new Exception("Cannot find some volumes");
+				
+				// if the volumeID has changed, must conclude the previous volumeID (althoug assigned in the variable named currentIdentifier) by 
+	            // sending its token count to the client, and then reset the map
+				if (currentIdentifier == null|| 
+					!identifier.getVolumeID().equals(currentIdentifier.getVolumeID())) {
 
-            try {
-                List<String> tokenList = tokenPackage.getTokenList();
-                int size = tokenList.size();
-                if (size > 0) {
-                    if (hyphenedLastWord != null) {
-                        String pendingFullWord = hyphenedLastWord + tokenList.get(0);
-                        TokenCountZipperFactory.Helper.countToken(pendingFullWord, map);
-                        hyphenedLastWord = null;
-                    } else {
-                        TokenCountZipperFactory.Helper.countToken(tokenList.get(0), map);
-                    }
-                }
-                
-                for (int i = 1; i < size - 1; i++) {
-                    TokenCountZipperFactory.Helper.countToken(tokenList.get(i), map);
-                }
-                
-                if (size > 1) {
-                    String string = tokenList.get(size - 1);
-                    if (string.endsWith(Tokenizer.HYPHEN)) {
-                        hyphenedLastWord = string;
-                    } else {
-                        TokenCountZipperFactory.Helper.countToken(string, map);
-                    }
-                }
-            } catch (DataAPIException e) {
-                exceptionList.add(e);
-            }
+					// currentIdentifier was initially null because there was no previous volume.  But if it is not null, we must process the previous volume
+					if (currentIdentifier != null) {
+						auditor.audit(TOKEN_COUNT_ACCESSED_ACTION,
+								currentIdentifier.getVolumeID(),
+								currentPageSequences.toArray(new String[0]));
+						// the hyphenedLastWord is the last word on a page that ends with a hyphen. When we encounter such a word, we usually cannot token count it, because we must combine it with the
+	                    // first word from the following page to make a token, unless the following page belongs to a different volume (which is the case here)
+						if (hyphenedLastWord != null) {
+							TokenCountZipperFactory.Helper.countToken(
+									hyphenedLastWord, map);
+							hyphenedLastWord = null;
+						}
+						String entryName = currentIdentifier.getPrefix()
+								+ "."
+								+ pairtree.cleanId(currentIdentifier
+										.getHeadlessID()) + ".count";
+						TokenCountZipperFactory.Helper.sendEntry(map,
+								entryName, zipOutputStream, comparator);
+					}
+					map = new HashMap<String, Count>();
+					currentIdentifier = identifier;
+					currentPageSequences = new LinkedList<String>();
+				}
+
+				currentPageSequences.add(identifier.getPageSequenceID());
+
+				List<String> tokenList = tokenPackage.getTokenList();
+				int size = tokenList.size();
+				if (size > 0) {
+					if (hyphenedLastWord != null) {
+						String pendingFullWord = hyphenedLastWord
+								+ tokenList.get(0);
+						TokenCountZipperFactory.Helper.countToken(
+								pendingFullWord, map);
+						hyphenedLastWord = null;
+					} else {
+						TokenCountZipperFactory.Helper.countToken(
+								tokenList.get(0), map);
+					}
+				}
+
+				for (int i = 1; i < size - 1; i++) {
+					TokenCountZipperFactory.Helper.countToken(tokenList.get(i),
+							map);
+				}
+
+				if (size > 1) {
+					String string = tokenList.get(size - 1);
+					if (string.endsWith(Tokenizer.HYPHEN)) {
+						hyphenedLastWord = string;
+					} else {
+						TokenCountZipperFactory.Helper.countToken(string, map);
+					}
+				}
+			} catch (Exception e) {
+				exceptionList.add(e);
+			}
         }
         
         // wrap up what's remaining
